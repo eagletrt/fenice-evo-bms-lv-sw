@@ -1,0 +1,13 @@
+digraph "porket" {
+    init
+    run [label="do_run"]
+    charging [label="do_charging"]
+    error [label="do_error"]
+
+    init -> run [label="init_to_run"]
+    init -> error [label="to_error"]
+    charging -> run [label="charging_to_run"]
+    charging -> error [label="to_error"]
+    run -> charging [label="run_to_charging"]
+    run -> error [label="to_error"]
+}
