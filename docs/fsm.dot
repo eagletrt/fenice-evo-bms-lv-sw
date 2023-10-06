@@ -1,0 +1,30 @@
+digraph "bms_lv" {
+    init
+    idle [label="do_idle"]
+    init_run [label="do_init_run"]
+    run [label="do_run"]
+    deinit_run [label="do_deinit_run"]
+    flashing [label="do_flashing"]
+    charging [label="do_charging"]
+    error [label="do_error"]
+
+    init -> idle [label="init_to_idle"]
+    idle -> flashing [label="idle_to_flashing"]
+    idle -> charging [label="idle_to_charging"]
+    charging -> idle [label="charging_to_idle"]
+    charging -> charging
+    idle -> idle
+    idle -> init_run [label="idle_to_init_run"]
+    init_run -> run [label="init_run_to_run"]
+    run -> run
+    run -> deinit_run [label="run_to_deinit_run"]
+    deinit_run -> idle [label="deinit_run_to_idle"]
+
+    init -> error [label="to_error"]
+    idle -> error [label="to_error"]
+    flashing -> error [label="to_error"]
+    charging -> error [label="to_error"]
+    deinit_run -> error [label="to_error"]
+    init_run -> error [label="to_error"]
+    run -> error [label="to_error"]
+}
