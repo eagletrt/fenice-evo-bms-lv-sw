@@ -20,7 +20,8 @@ floatAbi: -mfloat-abi=hard
 ldscript: STM32F446RETx_FLASH.ld # linker script
 
 # Compiler definitions. The -D prefix for the compiler will be automatically added.
-cDefinitions: []
+cDefinitions:
+  - NOLOGGER
 cxxDefinitions: []
 asDefinitions: []
 
@@ -44,7 +45,9 @@ assemblyFlags:
   - -fdata-sections
   - -ffunction-sections
 
-linkerFlags: []
+linkerFlags:
+  - -specs=nano.specs
+  - -u_printf_float
 
 # libraries to be included. The -l prefix to the library will be automatically added.
 libraries: 
@@ -64,6 +67,19 @@ excludes:
   - "**/Example/**"
   - "**/example/**"
   - "**_template.*"
+  - "**/micro-libs/can-fifo-queue/**"
+  - "**/micro-libs/priority-queue/priority_queue.*"
+  - "**/micro-libs/fsm/**"
+  - "**/micro-libs/fsm/**"
+  - "**/micro-libs/munit/**"
+  - "**/micro-libs/logger/**"
+  - "**/micro-libs/can-sensor-programmer/**"
+  - "**/micro-libs/m95256/**"
+  - "**/micro-libs/eeprom-config/**"
+  - "**/micro-libs/bms-monitor/**"
+  - "**/test.c"
+  - "**/test/**"
+  - "**/*.pb.*"
 
 
 # Include directories (directories containing .h or .hpp files)
