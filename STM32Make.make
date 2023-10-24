@@ -37,6 +37,7 @@ BUILD_DIR = build
 # C sources
 C_SOURCES =  \
 Core/Src/adc.c \
+Core/Src/bms_fsm.c \
 Core/Src/can.c \
 Core/Src/dac.c \
 Core/Src/dma.c \
@@ -130,6 +131,7 @@ AS_DEFS =
 
 # C defines
 C_DEFS =  \
+-DNOLOGGER \
 -DSTM32F446xx \
 -DUSE_HAL_DRIVER
 
@@ -186,7 +188,7 @@ LIBDIR = \
 
 
 # Additional LD Flags from config file
-ADDITIONALLDFLAGS = -specs=nano.specs 
+ADDITIONALLDFLAGS = -specs=nano.specs -u_printf_float 
 
 LDFLAGS = $(MCU) $(ADDITIONALLDFLAGS) -T$(LDSCRIPT) $(LIBDIR) $(LIBS) -Wl,-Map=$(BUILD_DIR)/$(TARGET).map,--cref -Wl,--gc-sections
 

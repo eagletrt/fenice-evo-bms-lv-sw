@@ -28,7 +28,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "fsm.h"
+#include "bms_fsm.h"
 
 /* USER CODE END Includes */
 
@@ -108,7 +108,18 @@ int main(void)
   MX_TIM1_Init();
   /* USER CODE BEGIN 2 */
 
-  bmslv_state_t cur_state = BMSLV_STATE_INIT;
+  //  MX_DMA_Init() must be executed before MX_ADC_Init() otherwise the ADC doesnt' work in DMA mode correctly
+  //  but since __CUBEMIX e' stronzo__(cit.), this isn't enforced by the code generator
+  //  threfore manual intervention is necessary
+  //  https://community.st.com/s/question/0D50X0000ALudz8SQB/how-to-enable-adc-continuous-mode-with-dma
+  
+  MX_DMA_Init();
+  MX_ADC1_Init();
+  MX_ADC2_Init();
+
+  state_t cur_state = STATE_INIT;
+
+
 
   /* USER CODE END 2 */
 
@@ -116,7 +127,7 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-    cur_state = bmslv_run_state(cur_state, NULL);
+    cur_state = run_state(cur_state, NULL);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
