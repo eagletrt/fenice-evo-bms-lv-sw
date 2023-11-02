@@ -14,6 +14,8 @@ The finite state machine has:
 
 #include "bms_fsm.h"
 
+#include "timer_utility.h"
+
 // SEARCH FOR Your Code Here FOR CODE INSERTION POINTS!
 
 // GLOBALS
@@ -22,27 +24,27 @@ const char *state_names[] = {"init", "idle", "error", "init_run", "flashing", "c
 
 // List of state functions
 state_func_t *const state_table[NUM_STATES] = {
-  do_init,       // in state init
-  do_idle,       // in state idle
-  do_error,      // in state error
-  do_init_run,   // in state init_run
-  do_flashing,   // in state flashing
-  do_charging,   // in state charging
-  do_run,        // in state run
-  do_deinit_run, // in state deinit_run
+    do_init,        // in state init
+    do_idle,        // in state idle
+    do_error,       // in state error
+    do_init_run,    // in state init_run
+    do_flashing,    // in state flashing
+    do_charging,    // in state charging
+    do_run,         // in state run
+    do_deinit_run,  // in state deinit_run
 };
 
 // Table of transition functions
 transition_func_t *const transition_table[NUM_STATES][NUM_STATES] = {
-  /* states:        init              , idle              , error             , init_run          , flashing          , charging          , run               , deinit_run         */
-  /* init       */ {NULL              , init_to_idle      , to_error          , NULL              , NULL              , NULL              , NULL              , NULL              }, 
-  /* idle       */ {NULL              , NULL              , to_error          , idle_to_init_run  , idle_to_flashing  , idle_to_charging  , NULL              , NULL              }, 
-  /* error      */ {NULL              , NULL              , NULL              , NULL              , NULL              , NULL              , NULL              , NULL              }, 
-  /* init_run   */ {NULL              , NULL              , to_error          , NULL              , NULL              , NULL              , init_run_to_run   , NULL              }, 
-  /* flashing   */ {NULL              , NULL              , to_error          , NULL              , NULL              , NULL              , NULL              , NULL              }, 
-  /* charging   */ {NULL              , charging_to_idle  , to_error          , NULL              , NULL              , NULL              , NULL              , NULL              }, 
-  /* run        */ {NULL              , NULL              , to_error          , NULL              , NULL              , NULL              , NULL              , run_to_deinit_run }, 
-  /* deinit_run */ {NULL              , deinit_run_to_idle, to_error          , NULL              , NULL              , NULL              , NULL              , NULL              }, 
+    /* states:        init              , idle              , error             , init_run          , flashing          , charging          , run               , deinit_run         */
+    /* init       */ {NULL, init_to_idle, to_error, NULL, NULL, NULL, NULL, NULL},
+    /* idle       */ {NULL, NULL, to_error, idle_to_init_run, idle_to_flashing, idle_to_charging, NULL, NULL},
+    /* error      */ {NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL},
+    /* init_run   */ {NULL, NULL, to_error, NULL, NULL, NULL, init_run_to_run, NULL},
+    /* flashing   */ {NULL, NULL, to_error, NULL, NULL, NULL, NULL, NULL},
+    /* charging   */ {NULL, charging_to_idle, to_error, NULL, NULL, NULL, NULL, NULL},
+    /* run        */ {NULL, NULL, to_error, NULL, NULL, NULL, NULL, run_to_deinit_run},
+    /* deinit_run */ {NULL, deinit_run_to_idle, to_error, NULL, NULL, NULL, NULL, NULL},
 };
 
 /*  ____  _        _       
@@ -56,44 +58,41 @@ transition_func_t *const transition_table[NUM_STATES][NUM_STATES] = {
  * | |_| | | | '_ \ / __| __| |/ _ \| '_ \/ __|
  * |  _| |_| | | | | (__| |_| | (_) | | | \__ \
  * |_|  \__,_|_| |_|\___|\__|_|\___/|_| |_|___/
- */                                             
+ */
 
 // Function to be executed in state init
 // valid return states: STATE_IDLE, STATE_ERROR
 state_t do_init(state_data_t *data) {
-  state_t next_state = STATE_IDLE;
-  
-  /* Your Code Here */
+    state_t next_state = STATE_IDLE;
 
-  // Usefull if it's necessary to stop the timer counter when debugging
+    /* Your Code Here */
+
+    // Usefull if it's necessary to stop the timer counter when debugging
 #ifdef DEBUG_TIMER_MCU
     DBGMCU->APB2FZ = DBGMCU_APB2_FZ_DBG_TIM10_STOP;
 #endif
 
-    // START OF WARM UP STAGE
-    lv_status.status = PRIMARY_LV_STATUS_STATUS_INIT_CHOICE;
-    // Turn on startup button
-    // TODO: change button pin
+    // cli_bms_lv_init();
 
-    // Blink to signal correct MX_XXX_init processes (usuefull for CAN transciever)
-    cli_bms_lv_init();
-    error_init();
-    health_init(&hs);
+    //TODO implements init functions commented with //-
+    // -error_init();
+    // -health_init(&hs);
 
     //Init ADC related stuff
-    ADC_init_status_flags();
-    ADC_init_mux();
-    ADC_Vref_Calibration();
-    ADC_start_ADC2_readings();
+    // -ADC_init_status_flags();
+    // -ADC_init_mux();
+    // -ADC_Vref_Calibration();
+    // -ADC_start_ADC2_readings();
 
-    monitor_init();
+    // -monitor_init();
 
-    init_inverter_struct(&car_inverters);
+    // -init_inverter_struct(&car_inverters);
+
     //Init feedbacks chip
-    mcp23017_basic_config_init(&hmcp, &hi2c3);
-    radiator_init();
-    dac_pump_handle_init(&hdac_pump, 0.0, 0.0);
-    dac_pump_store_and_set_value_on_both_channels(&hdac_pump, 0.0, 0.0);
+    // -mcp23017_basic_config_init(&hmcp, &hi2c3);
+    // -radiator_init();
+    // -dac_pump_handle_init(&hdac_pump, 0.0, 0.0);
+    // -dac_pump_store_and_set_value_on_both_channels(&hdac_pump, 0.0, 0.0);
 
     // Buzzer congiguration
     pwm_set_period(&BZZR_HTIM, 1);
@@ -105,193 +104,171 @@ state_t do_init(state_data_t *data) {
     // pwm_start_channel(&INTERNAL_FAN_HTIM, INTERNAL_FAN_PWM_TIM_CHNL);
     // pwm_start_channel(&BZZR_HTIM, BZZR_PWM_TIM_CHNL);
 
-    // Keeps SPI CS high
-    // ltc6810_disable_cs(&SPI);
-#ifdef DEBUG_LTC_ID
-    sprintf(main_buff, "LTC ID %s", ltc6810_return_serial_id());
-    printl(main_buff, NO_HEADER);
-#endif
+    // printl("Relay out disabled, waiting 0.5 seconds before reading voltages\r\n", NO_HEADER);
+    // HAL_Delay(500);
 
-    printl("Relay out disabled, waiting 0.5 seconds before reading voltages\r\n", NO_HEADER);
-    HAL_Delay(500);
+    // -check_initial_voltage();
+    // -set_flash_pin();
+    // -check_lvms();
 
-    check_initial_voltage();
-    set_flash_pin();
-    check_lvms();
-
-    //fans_radiators_pumps_init();
+    //fans_radiators_pumps_init(); maybe
 
     //init for both can
-    can_primary_init();
-    can_secondary_init();
+    // -can_primary_init();
+    // -can_secondary_init();
 
-    measurements_init(&MEASUREMENTS_TIMER);
+    // -measurements_init(&MEASUREMENTS_TIMER);
     // END OF WARM UP STAGE
 
-    /* USER CODE END 2 */
-
-    /* Infinite loop */
-    /* USER CODE BEGIN WHILE */
-    init_timer = HAL_GetTick();
-    mcp23017_set_gpio(&hmcp, MCP23017_PORTB, LED_R, 1);
-    if (lv_status.status == PRIMARY_LV_STATUS_STATUS_INIT_CHOICE) {
-        lv_status.status = PRIMARY_LV_STATUS_STATUS_RUN_CHOICE;
-    }
+    // init_timer = HAL_GetTick();
+    // -mcp23017_set_gpio(&hmcp, MCP23017_PORTB, LED_R, 1);
 
     //start timer for cooling routine
-    HAL_TIM_Base_Start_IT(&htim7);
+    // -HAL_TIM_Base_Start_IT(&htim7);
     //static bool first = true;
-  
-  switch (next_state) {
-    case STATE_IDLE:
-    case STATE_ERROR:
-      break;
-    default:
-      next_state = NO_CHANGE;
-  }
-  
-  return next_state;
-}
 
+    switch (next_state) {
+        case STATE_IDLE:
+        case STATE_ERROR:
+            break;
+        default:
+            next_state = NO_CHANGE;
+    }
+
+    return next_state;
+}
 
 // Function to be executed in state idle
 // valid return states: NO_CHANGE, STATE_IDLE, STATE_INIT_RUN, STATE_FLASHING, STATE_CHARGING, STATE_ERROR
 state_t do_idle(state_data_t *data) {
-  state_t next_state = NO_CHANGE;
-  
-  /* Your Code Here */
-  
-  switch (next_state) {
-    case NO_CHANGE:
-    case STATE_IDLE:
-    case STATE_INIT_RUN:
-    case STATE_FLASHING:
-    case STATE_CHARGING:
-    case STATE_ERROR:
-      break;
-    default:
-      next_state = NO_CHANGE;
-  }
-  
-  return next_state;
-}
+    state_t next_state = NO_CHANGE;
 
+    /* Your Code Here */
+
+    switch (next_state) {
+        case NO_CHANGE:
+        case STATE_IDLE:
+        case STATE_INIT_RUN:
+        case STATE_FLASHING:
+        case STATE_CHARGING:
+        case STATE_ERROR:
+            break;
+        default:
+            next_state = NO_CHANGE;
+    }
+
+    return next_state;
+}
 
 // Function to be executed in state error
 // valid return states: NO_CHANGE
 state_t do_error(state_data_t *data) {
-  state_t next_state = NO_CHANGE;
-  
-  /* Your Code Here */
-  
-  switch (next_state) {
-    case NO_CHANGE:
-      break;
-    default:
-      next_state = NO_CHANGE;
-  }
-  
-  return next_state;
-}
+    state_t next_state = NO_CHANGE;
 
+    /* Your Code Here */
+
+    switch (next_state) {
+        case NO_CHANGE:
+            break;
+        default:
+            next_state = NO_CHANGE;
+    }
+
+    return next_state;
+}
 
 // Function to be executed in state init_run
 // valid return states: STATE_RUN, STATE_ERROR
 state_t do_init_run(state_data_t *data) {
-  state_t next_state = STATE_RUN;
-  
-  /* Your Code Here */
-  
-  switch (next_state) {
-    case STATE_RUN:
-    case STATE_ERROR:
-      break;
-    default:
-      next_state = NO_CHANGE;
-  }
-  
-  return next_state;
-}
+    state_t next_state = STATE_RUN;
 
+    /* Your Code Here */
+
+    switch (next_state) {
+        case STATE_RUN:
+        case STATE_ERROR:
+            break;
+        default:
+            next_state = NO_CHANGE;
+    }
+
+    return next_state;
+}
 
 // Function to be executed in state flashing
 // valid return states: STATE_ERROR
 state_t do_flashing(state_data_t *data) {
-  state_t next_state = STATE_ERROR;
-  
-  /* Your Code Here */
-  
-  switch (next_state) {
-    case STATE_ERROR:
-      break;
-    default:
-      next_state = NO_CHANGE;
-  }
-  
-  return next_state;
-}
+    state_t next_state = STATE_ERROR;
 
+    /* Your Code Here */
+
+    switch (next_state) {
+        case STATE_ERROR:
+            break;
+        default:
+            next_state = NO_CHANGE;
+    }
+
+    return next_state;
+}
 
 // Function to be executed in state charging
 // valid return states: NO_CHANGE, STATE_IDLE, STATE_CHARGING, STATE_ERROR
 state_t do_charging(state_data_t *data) {
-  state_t next_state = NO_CHANGE;
-  
-  /* Your Code Here */
-  
-  switch (next_state) {
-    case NO_CHANGE:
-    case STATE_IDLE:
-    case STATE_CHARGING:
-    case STATE_ERROR:
-      break;
-    default:
-      next_state = NO_CHANGE;
-  }
-  
-  return next_state;
-}
+    state_t next_state = NO_CHANGE;
 
+    /* Your Code Here */
+
+    switch (next_state) {
+        case NO_CHANGE:
+        case STATE_IDLE:
+        case STATE_CHARGING:
+        case STATE_ERROR:
+            break;
+        default:
+            next_state = NO_CHANGE;
+    }
+
+    return next_state;
+}
 
 // Function to be executed in state run
 // valid return states: NO_CHANGE, STATE_RUN, STATE_DEINIT_RUN, STATE_ERROR
 state_t do_run(state_data_t *data) {
-  state_t next_state = NO_CHANGE;
-  
-  /* Your Code Here */
-  
-  switch (next_state) {
-    case NO_CHANGE:
-    case STATE_RUN:
-    case STATE_DEINIT_RUN:
-    case STATE_ERROR:
-      break;
-    default:
-      next_state = NO_CHANGE;
-  }
-  
-  return next_state;
-}
+    state_t next_state = NO_CHANGE;
 
+    /* Your Code Here */
+
+    switch (next_state) {
+        case NO_CHANGE:
+        case STATE_RUN:
+        case STATE_DEINIT_RUN:
+        case STATE_ERROR:
+            break;
+        default:
+            next_state = NO_CHANGE;
+    }
+
+    return next_state;
+}
 
 // Function to be executed in state deinit_run
 // valid return states: STATE_IDLE, STATE_ERROR
 state_t do_deinit_run(state_data_t *data) {
-  state_t next_state = STATE_IDLE;
-  
-  /* Your Code Here */
-  
-  switch (next_state) {
-    case STATE_IDLE:
-    case STATE_ERROR:
-      break;
-    default:
-      next_state = NO_CHANGE;
-  }
-  
-  return next_state;
-}
+    state_t next_state = STATE_IDLE;
 
+    /* Your Code Here */
+
+    switch (next_state) {
+        case STATE_IDLE:
+        case STATE_ERROR:
+            break;
+        default:
+            next_state = NO_CHANGE;
+    }
+
+    return next_state;
+}
 
 /*  _____                    _ _   _              
  * |_   _| __ __ _ _ __  ___(_) |_(_) ___  _ __   
@@ -304,12 +281,12 @@ state_t do_deinit_run(state_data_t *data) {
  * | |_| | | | '_ \ / __| __| |/ _ \| '_ \/ __|
  * |  _| |_| | | | | (__| |_| | (_) | | | \__ \
  * |_|  \__,_|_| |_|\___|\__|_|\___/|_| |_|___/
- */    
-                                         
+ */
+
 // This function is called in 1 transition:
 // 1. from init to idle
 void init_to_idle(state_data_t *data) {
-  /* Your Code Here */
+    /* Your Code Here */
 }
 
 // This function is called in 7 transitions:
@@ -321,51 +298,50 @@ void init_to_idle(state_data_t *data) {
 // 6. from flashing to error
 // 7. from charging to error
 void to_error(state_data_t *data) {
-  /* Your Code Here */
+    /* Your Code Here */
 }
 
 // This function is called in 1 transition:
 // 1. from idle to init_run
 void idle_to_init_run(state_data_t *data) {
-  /* Your Code Here */
+    /* Your Code Here */
 }
 
 // This function is called in 1 transition:
 // 1. from idle to flashing
 void idle_to_flashing(state_data_t *data) {
-  /* Your Code Here */
+    /* Your Code Here */
 }
 
 // This function is called in 1 transition:
 // 1. from idle to charging
 void idle_to_charging(state_data_t *data) {
-  /* Your Code Here */
+    /* Your Code Here */
 }
 
 // This function is called in 1 transition:
 // 1. from init_run to run
 void init_run_to_run(state_data_t *data) {
-  /* Your Code Here */
+    /* Your Code Here */
 }
 
 // This function is called in 1 transition:
 // 1. from run to deinit_run
 void run_to_deinit_run(state_data_t *data) {
-  /* Your Code Here */
+    /* Your Code Here */
 }
 
 // This function is called in 1 transition:
 // 1. from deinit_run to idle
 void deinit_run_to_idle(state_data_t *data) {
-  /* Your Code Here */
+    /* Your Code Here */
 }
 
 // This function is called in 1 transition:
 // 1. from charging to idle
 void charging_to_idle(state_data_t *data) {
-  /* Your Code Here */
+    /* Your Code Here */
 }
-
 
 /*  ____  _        _        
  * / ___|| |_ __ _| |_ ___  
@@ -382,23 +358,24 @@ void charging_to_idle(state_data_t *data) {
  */
 
 state_t run_state(state_t cur_state, state_data_t *data) {
-  state_t new_state = state_table[cur_state](data);
-  if (new_state == NO_CHANGE) new_state = cur_state;
-  transition_func_t *transition = transition_table[cur_state][new_state];
-  if (transition)
-    transition(data);
-  return new_state;
+    state_t new_state = state_table[cur_state](data);
+    if (new_state == NO_CHANGE)
+        new_state = cur_state;
+    transition_func_t *transition = transition_table[cur_state][new_state];
+    if (transition)
+        transition(data);
+    return new_state;
 };
 
 #ifdef TEST_MAIN
 #include <unistd.h>
 int main() {
-  state_t cur_state = STATE_INIT;
-  do {
-    cur_state = run_state(cur_state, NULL);
-    sleep(1);
-  } while (cur_state != STATE_ERROR);
-  run_state(cur_state, NULL);
-  return 0;
+    state_t cur_state = STATE_INIT;
+    do {
+        cur_state = run_state(cur_state, NULL);
+        sleep(1);
+    } while (cur_state != STATE_ERROR);
+    run_state(cur_state, NULL);
+    return 0;
 }
 #endif

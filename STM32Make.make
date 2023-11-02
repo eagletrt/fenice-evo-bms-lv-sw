@@ -36,6 +36,27 @@ BUILD_DIR = build
 ######################################
 # C sources
 C_SOURCES =  \
+Core/Lib/can-lib/lib/bms/bms_network.c \
+Core/Lib/can-lib/lib/bms/bms_watchdog.c \
+Core/Lib/can-lib/lib/inverters/inverters_network.c \
+Core/Lib/can-lib/lib/inverters/inverters_watchdog.c \
+Core/Lib/can-lib/lib/primary/primary_network.c \
+Core/Lib/can-lib/lib/primary/primary_watchdog.c \
+Core/Lib/can-lib/lib/secondary/secondary_network.c \
+Core/Lib/can-lib/lib/secondary/secondary_watchdog.c \
+Core/Lib/current_transducer/current_transducer.c \
+Core/Lib/micro-libs/blink/blink.c \
+Core/Lib/micro-libs/circ-buf/circ-buf.c \
+Core/Lib/micro-libs/cli/cli.c \
+Core/Lib/micro-libs/ctrl-nwk-utils/ctrl-nwk-utils.c \
+Core/Lib/micro-libs/error-utils/error-utils.c \
+Core/Lib/micro-libs/invlib/invlib.c \
+Core/Lib/micro-libs/llist/llist.c \
+Core/Lib/micro-libs/pid/pid.c \
+Core/Lib/micro-libs/priority-queue/priority_queue_fast_insert.c \
+Core/Lib/micro-libs/pwm/pwm.c \
+Core/Lib/micro-libs/timer-utils/timer_utils.c \
+Core/Lib/radiators/radiator.c \
 Core/Src/adc.c \
 Core/Src/bms_fsm.c \
 Core/Src/can.c \
@@ -93,7 +114,7 @@ PREFIX = arm-none-eabi-
 POSTFIX = "
 # The gcc compiler bin path can be either defined in make command via GCC_PATH variable (> make GCC_PATH=xxx)
 # either it can be added to the PATH environment variable.
-GCC_PATH="/usr/bin
+GCC_PATH="/Users/dimitri/Library/Application Support/Code/User/globalStorage/bmd.stm32-for-vscode/@xpack-dev-tools/arm-none-eabi-gcc/11.3.1-1.1.2/.content/bin
 ifdef GCC_PATH
 CXX = $(GCC_PATH)/$(PREFIX)g++$(POSTFIX)
 CC = $(GCC_PATH)/$(PREFIX)gcc$(POSTFIX)
@@ -148,6 +169,27 @@ AS_INCLUDES = \
 # C includes
 C_INCLUDES =  \
 -ICore/Inc \
+-ICore/Lib/can-lib/lib/bms \
+-ICore/Lib/can-lib/lib/inverters \
+-ICore/Lib/can-lib/lib/primary \
+-ICore/Lib/can-lib/lib/secondary \
+-ICore/Lib/can-lib/proto/bms \
+-ICore/Lib/can-lib/proto/inverters \
+-ICore/Lib/can-lib/proto/primary \
+-ICore/Lib/can-lib/proto/secondary \
+-ICore/Lib/current_transducer \
+-ICore/Lib/micro-libs/blink \
+-ICore/Lib/micro-libs/circ-buf \
+-ICore/Lib/micro-libs/cli \
+-ICore/Lib/micro-libs/ctrl-nwk-utils \
+-ICore/Lib/micro-libs/error-utils \
+-ICore/Lib/micro-libs/invlib \
+-ICore/Lib/micro-libs/llist \
+-ICore/Lib/micro-libs/pid \
+-ICore/Lib/micro-libs/priority-queue \
+-ICore/Lib/micro-libs/pwm \
+-ICore/Lib/micro-libs/timer-utils \
+-ICore/Lib/radiators \
 -IDrivers/CMSIS/Device/ST/STM32F4xx/Include \
 -IDrivers/CMSIS/Include \
 -IDrivers/STM32F4xx_HAL_Driver/Inc \
@@ -248,13 +290,13 @@ $(BUILD_DIR):
 # flash
 #######################################
 flash: $(BUILD_DIR)/$(TARGET).elf
-	"/usr/bin/openocd" -f ./openocd.cfg -c "program $(BUILD_DIR)/$(TARGET).elf verify reset exit"
+	"/Users/dimitri/Library/Application Support/Code/User/globalStorage/bmd.stm32-for-vscode/@xpack-dev-tools/openocd/0.11.0-5.1/.content/bin/openocd" -f ./openocd.cfg -c "program $(BUILD_DIR)/$(TARGET).elf verify reset exit"
 
 #######################################
 # erase
 #######################################
 erase: $(BUILD_DIR)/$(TARGET).elf
-	"/usr/bin/openocd" -f ./openocd.cfg -c "init; reset halt; stm32f4x mass_erase 0; exit"
+	"/Users/dimitri/Library/Application Support/Code/User/globalStorage/bmd.stm32-for-vscode/@xpack-dev-tools/openocd/0.11.0-5.1/.content/bin/openocd" -f ./openocd.cfg -c "init; reset halt; stm32f4x mass_erase 0; exit"
 
 #######################################
 # clean up

@@ -37,6 +37,9 @@ extern ADC_HandleTypeDef hadc2;
 
 /* USER CODE BEGIN Private defines */
 
+#define N_ADC_CALIBRATION_SAMPLES  500
+#define N_ADC_CALIBRATION_CHANNELS 2
+
 /* USER CODE END Private defines */
 
 void MX_ADC1_Init(void);
@@ -51,4 +54,3 @@ void MX_ADC2_Init(void);
 #endif
 
 #endif /* __ADC_H__ */
-
