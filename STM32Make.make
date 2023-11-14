@@ -59,17 +59,18 @@ Core/Lib/micro-libs/priority-queue/priority_queue_heap.c \
 Core/Lib/micro-libs/pwm/pwm.c \
 Core/Lib/micro-libs/timer-utils/timer_utils.c \
 Core/Lib/mux/mux.c \
-Core/Lib/radiators/radiator.c \
 Core/Src/adc.c \
 Core/Src/bms_fsm.c \
 Core/Src/can.c \
 Core/Src/current_sensor.c \
 Core/Src/dac.c \
+Core/Src/dac_pump.c \
 Core/Src/dma.c \
 Core/Src/gpio.c \
 Core/Src/health_signals.c \
 Core/Src/i2c.c \
 Core/Src/main.c \
+Core/Src/radiator.c \
 Core/Src/spi.c \
 Core/Src/stm32f4xx_hal_msp.c \
 Core/Src/stm32f4xx_it.c \
@@ -196,7 +197,6 @@ C_INCLUDES =  \
 -ICore/Lib/micro-libs/pwm \
 -ICore/Lib/micro-libs/timer-utils \
 -ICore/Lib/mux \
--ICore/Lib/radiators \
 -IDrivers/CMSIS/Device/ST/STM32F4xx/Include \
 -IDrivers/CMSIS/Include \
 -IDrivers/STM32F4xx_HAL_Driver/Inc \

@@ -15,6 +15,7 @@ The finite state machine has:
 #include "bms_fsm.h"
 
 #include "adc.h"
+#include "dac_pump.h"
 #include "health_signals.h"
 #include "pwm.h"
 #include "radiator.h"
