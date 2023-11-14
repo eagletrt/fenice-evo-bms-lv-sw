@@ -46,7 +46,6 @@ Core/Lib/can-lib/lib/secondary/secondary_network.c \
 Core/Lib/can-lib/lib/secondary/secondary_watchdog.c \
 Core/Lib/can-lib/lib/simulator/simulator_network.c \
 Core/Lib/can-lib/lib/simulator/simulator_watchdog.c \
-Core/Lib/health_signals/health_signals.c \
 Core/Lib/micro-libs/blink/blink.c \
 Core/Lib/micro-libs/circ-buf/circ-buf.c \
 Core/Lib/micro-libs/cli/cli.c \
@@ -68,6 +67,7 @@ Core/Src/current_sensor.c \
 Core/Src/dac.c \
 Core/Src/dma.c \
 Core/Src/gpio.c \
+Core/Src/health_signals.c \
 Core/Src/i2c.c \
 Core/Src/main.c \
 Core/Src/spi.c \
@@ -184,7 +184,6 @@ C_INCLUDES =  \
 -ICore/Lib/can-lib/proto/primary \
 -ICore/Lib/can-lib/proto/secondary \
 -ICore/Lib/can-lib/proto/simulator \
--ICore/Lib/health_signals \
 -ICore/Lib/micro-libs/blink \
 -ICore/Lib/micro-libs/circ-buf \
 -ICore/Lib/micro-libs/cli \

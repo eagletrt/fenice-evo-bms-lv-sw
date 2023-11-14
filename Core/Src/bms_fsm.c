@@ -15,6 +15,7 @@ The finite state machine has:
 #include "bms_fsm.h"
 
 #include "adc.h"
+#include "health_signals.h"
 #include "pwm.h"
 #include "timer_utility.h"
 
@@ -78,7 +79,7 @@ state_t do_init(state_data_t *data) {
 
     //TODO implements init functions commented with //-
     // -error_init();
-    // -health_init(&hs);
+    health_init(&hs);
 
     //Init ADC related stuff
     ADC_init_status_flags();
