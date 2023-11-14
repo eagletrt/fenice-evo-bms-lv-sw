@@ -17,6 +17,7 @@ The finite state machine has:
 #include "adc.h"
 #include "health_signals.h"
 #include "pwm.h"
+#include "radiator.h"
 #include "timer_utility.h"
 
 // SEARCH FOR Your Code Here FOR CODE INSERTION POINTS!
@@ -93,9 +94,9 @@ state_t do_init(state_data_t *data) {
 
     //Init feedbacks chip
     // -mcp23017_basic_config_init(&hmcp, &hi2c3);
-    // -radiator_init();
-    // -dac_pump_handle_init(&hdac_pump, 0.0, 0.0);
-    // -dac_pump_store_and_set_value_on_both_channels(&hdac_pump, 0.0, 0.0);
+    radiator_init();
+    dac_pump_handle_init(&hdac_pump, 0.0, 0.0);
+    dac_pump_store_and_set_value_on_both_channels(&hdac_pump, 0.0, 0.0);
 
     // Buzzer congiguration
     pwm_set_period(&BZZR_HTIM, 1);
