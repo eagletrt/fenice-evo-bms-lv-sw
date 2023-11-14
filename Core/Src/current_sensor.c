@@ -10,7 +10,7 @@
  */
 
 /* Includes ------------------------------------------------------------------*/
-#include "current_transducer.h"
+#include "current_sensor.h"
 
 #include "adc.h"
 #include "adc_utility.h"
@@ -62,7 +62,7 @@ static float __calculate_current_mA(uint32_t adc_raw_value);
 
 /* Exported functions --------------------------------------------------------*/
 
-float CT_get_electric_current_mA(uint32_t adc_raw_value) {
+float CS_get_electric_current_mA(uint32_t adc_raw_value) {
     float current_in_mA = __calculate_current_mA(adc_raw_value);
     //float current_in_mA = CT_get_average_electric_current(128)
     isOvercurrent = (current_in_mA > CT_OVERCURRENT_THRESHOLD_MA);
@@ -78,11 +78,11 @@ static float __calculate_current_mA(uint32_t adc_raw_value) {
     return current;
 }
 
-bool CT_is_overcurrent() {
+bool CS_is_overcurrent() {
     return isOvercurrent;
 };
 
-void CT_OCD_callback(bool isOn) {
+void CS_OCD_callback(bool isOn) {
     if (isOn && !isOvercurrent) {
         // Do something here like toggle the LVMS or trigger a CAN MSG send
         isOvercurrent = true;

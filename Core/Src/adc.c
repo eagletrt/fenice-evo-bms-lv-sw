@@ -21,15 +21,27 @@
 #include "adc.h"
 
 #include "adc_utility.h"
+#include "current_sensor.h"
 #include "timer_utility.h"
 
 /* USER CODE BEGIN 0 */
+
+#define ADC_FSVR_mV (3300U)  // ADC Full-Scale Voltage Range or span in milliVolts (VrefHi-VrefLow)
+ADC_status_flags_t adc_status_flags;
+
+ADC2_Channels_t adc2_channels;
+ADC2_Sampled_Signals_t adc2_sampled_signals;
+ADC_converted adcs_converted_values;
+
+bool vref_calibration = true;
+uint16_t vref;  // Voltage used by the ADC as a reference
+primary_lv_feedbacks_converted_t primary_lv_feedbacks_converted;
 
 void ADC_start_ADC2_readings() {
     HAL_TIM_Base_Start_IT(&TIMER_ADC_MEAS);
 }
 
-void ADC_Vref_Calibration() {
+void ADC_vref_Calibration() {
     uint16_t buffer[N_ADC_CALIBRATION_CHANNELS * N_ADC_CALIBRATION_SAMPLES] = {};
     uint32_t vdda                                                           = 0;
     uint32_t vref_int                                                       = 0;
@@ -43,7 +55,7 @@ void ADC_Vref_Calibration() {
     }
 
     //Wait until 500 samples has been reached
-    while (1) {
+    while (1 /*vref_calibration*/) {
     }
 
     HAL_TIM_PWM_Stop(&TIMER_ADC_CALIBRATION, TIMER_ADC_CALIBRATION_CHANNEL);
@@ -55,22 +67,256 @@ void ADC_Vref_Calibration() {
     vdda /= N_ADC_CALIBRATION_SAMPLES;
     vref_int /= N_ADC_CALIBRATION_SAMPLES;
 
-    // vref = ADC_get_value_mV(&hadc1, vdda) * ((float)*factory_calibration / vref_int);
-    // if (vref < 3100 || vref > 3300) {
-    //     //error_set(ERROR_ADC_INIT, 0);
-    // }
+    vref = ADC_get_value_mV(&hadc1, vdda) * ((float)*factory_calibration / vref_int);
+    if (vref < 3100 || vref > 3300) {
+        //error_set(ERROR_ADC_INIT, 0);
+    }
 }
 
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *AdcHandle) {
-    // if (AdcHandle->Instance == ADC_HALL_AND_FB.Instance) {
-    //     adc_status_flags.is_adc2_conv_complete   = true;
-    //     adc_status_flags.mux_hall_index_external = (adc_status_flags.mux_hall_index_external + 1) % N_ADC_SAMPLES;
-    //     adc_status_flags.is_value_stored         = true;
-    // } else if (AdcHandle->Instance == CALIBRATION_ADC.Instance) {
-    //     vref_calibration = false;
-    // }
+    if (AdcHandle->Instance == ADC_HALL_AND_FB.Instance) {
+        // adc_status_flags.is_adc2_conv_complete   = true;
+        // adc_status_flags.mux_hall_index_external = (adc_status_flags.mux_hall_index_external + 1) % N_ADC_SAMPLES;
+        // adc_status_flags.is_value_stored         = true;
+    } else if (AdcHandle->Instance == CALIBRATION_ADC.Instance) {
+        // vref_calibration = false;
+    }
 }
 
+void ADC_init_mux() {
+    ADC_set_mux_address(0x0);
+}
+
+void ADC_init_status_flags() {
+    adc_status_flags.is_adc2_conv_complete   = false;
+    adc_status_flags.is_value_stored         = true;  // in order to start the first conversion
+    adc_status_flags.mux_address_index       = 0;
+    adc_status_flags.mux_hall_index_internal = 0;
+    adc_status_flags.mux_fb_index_internal   = 0;
+    adc_status_flags.mux_hall_index_external = 0;
+    adc_status_flags.mux_fb_index_external   = 0;
+}
+
+uint8_t ADC_get_mux_address_by_port_name(uint8_t portname) {
+    /*
+    NOTE: MUX_FB_INPUT_ADDRESSES has been used to define the mux addresses
+    anyway because the muxes share the same address pins the MUX_HALL_INPUTS_ADDRESSES
+    are also (implicitly) included in this switch case
+    */
+
+    switch (portname) {
+        case SD_END:
+            return MUX_I0;
+        case BSPD_FB:
+            return MUX_I1;
+        case HVD_FB:
+            return MUX_I2;
+        case LVMS_FB:
+            return MUX_I3;
+        case RES_FB:
+            return MUX_I4;
+        case S_HALL2:
+            return MUX_I5;
+        case LV_ENCL_FB:
+            return MUX_I6;
+        case LVAC_TEMP1:
+            return MUX_I7;
+        case INVC_LID_FB:
+            return MUX_I8;
+        case HV_ENCL_2_FB:
+            return MUX_I9;
+        case BACK_PLATE_FB:
+            return MUX_I10;
+        case INVC_INTERLOCK_FB:
+            return MUX_I11;
+        case AMS_FB:
+            return MUX_I12;
+        case ASMS_FB:
+            return MUX_I13;
+        case INTERLOCK_IMD_FB:
+            return MUX_I14;
+        case SD_START:
+            return MUX_I15;
+        default:
+            return 255;
+    }
+}
+
+void ADC_set_mux_address(uint8_t address) {
+    // A0 A1 A2 A3
+    HAL_GPIO_WritePin(MUX_A3_GPIO_Port, MUX_A3_Pin, (address & 0x01) ? GPIO_PIN_SET : GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(MUX_A2_GPIO_Port, MUX_A2_Pin, (address & 0x02) ? GPIO_PIN_SET : GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(MUX_A1_GPIO_Port, MUX_A1_Pin, (address & 0x04) ? GPIO_PIN_SET : GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(MUX_A0_GPIO_Port, MUX_A0_Pin, (address & 0x08) ? GPIO_PIN_SET : GPIO_PIN_RESET);
+}
+
+void ADC_Routine() {
+    if (adc_status_flags.is_adc2_conv_complete) {
+        // First channel
+        if (adc_status_flags.mux_address_index < MUX_HALL_LEN) {
+            uint16_t *mux_hall_val =
+                (uint16_t *)&adc2_sampled_signals.adcs_raw_hall[adc_status_flags.mux_hall_index_external];
+            *(mux_hall_val + adc_status_flags.mux_hall_index_internal) = adc2_channels.mux_hall;
+            adc_status_flags.mux_hall_index_external = (adc_status_flags.mux_hall_index_external + 1) %
+                                                       N_ADC_SAMPLES_MUX_HALL;
+        }
+
+        // Second channel
+        uint16_t *mux_fb_val = (uint16_t *)&adc2_sampled_signals.adcs_raw_fb[adc_status_flags.mux_fb_index_external];
+        *(mux_fb_val + adc_status_flags.mux_fb_index_internal) = adc2_channels.mux_fb;
+        adc_status_flags.mux_fb_index_external = (adc_status_flags.mux_fb_index_external + 1) % N_ADC_SAMPLES_MUX_FB;
+
+        // Third channel
+        uint16_t *as_computer_fb_val =
+            &adc2_sampled_signals.adcs_raw_as_computer_fb[adc_status_flags.as_computer_fb_index_external];
+        *(as_computer_fb_val)                          = adc2_channels.adcs_as_computer_fb;
+        adc_status_flags.as_computer_fb_index_external = (adc_status_flags.as_computer_fb_index_external + 1) %
+                                                         N_ADC_SAMPLES_AS_COMPUTER_FB;
+
+        // Fourth channel
+        uint16_t *relay_out_val = &adc2_sampled_signals.adcs_raw_relay_out[adc_status_flags.relay_out_index_external];
+        *(relay_out_val)        = adc2_channels.adcs_relay_out;
+        adc_status_flags.relay_out_index_external = (adc_status_flags.relay_out_index_external + 1) %
+                                                    N_ADC_SAMPLES_RELAY_OUT;
+
+        // Fifth channel
+        uint16_t *lvms_out_val = &adc2_sampled_signals.adcs_raw_lvms_out[adc_status_flags.lvms_out_index_external];
+        *(lvms_out_val)        = adc2_channels.adcs_lvms_out;
+        adc_status_flags.lvms_out_index_external = (adc_status_flags.lvms_out_index_external + 1) %
+                                                   N_ADC_SAMPLES_LVMS_OUT;
+
+        // Sixth channel
+        uint16_t *batt_out_val = &adc2_sampled_signals.adcs_raw_batt_out[adc_status_flags.batt_out_index_external];
+        *(batt_out_val)        = adc2_channels.adcs_batt_out;
+        adc_status_flags.batt_out_index_external = (adc_status_flags.batt_out_index_external + 1) %
+                                                   N_ADC_SAMPLES_BATT_OUT;
+
+        adc_status_flags.is_adc2_conv_complete = false;
+        adc_status_flags.is_value_stored       = true;
+    }
+}
+
+uint8_t ADC_get_resolution_bits(ADC_HandleTypeDef *adcHandle) {
+    // To get this value look at the reference manual RM0390
+    // page 385 section 13.13.2 register ADC_CR1 RES[1:0] bits
+    uint8_t ret = 12;
+    switch (ADC_GET_RESOLUTION(adcHandle)) {
+        case 0U:
+            ret = 12U;
+            break;
+        case 1U:
+            ret = 10U;
+            break;
+        case 2U:
+            ret = 8U;
+            break;
+        case 4U:
+            ret = 6U;
+            break;
+    }
+    return ret;
+}
+
+uint32_t ADC_get_tot_voltage_levels(ADC_HandleTypeDef *adcHandle) {
+    uint8_t value = ADC_get_resolution_bits(adcHandle);
+    return ((uint32_t)(1U << value) - 1);  // 2^value - 1
+}
+
+float ADC_get_value_mV(ADC_HandleTypeDef *adcHandle, uint32_t value_from_adc) {
+    return value_from_adc * ((float)ADC_FSVR_mV / ADC_get_tot_voltage_levels(adcHandle));
+}
+
+float ADC_get_calibrated_mV(ADC_HandleTypeDef *adcHandle, uint32_t value_from_adc) {
+    return value_from_adc * ((float)vref / ADC_get_tot_voltage_levels(adcHandle));
+}
+
+void relay_out_conversion() {
+    uint32_t result = 0;
+    for (uint8_t i = 0; i < N_ADC_SAMPLES_RELAY_OUT; i++) {
+        result += adc2_sampled_signals.adcs_raw_relay_out[i];
+    }
+    adcs_converted_values.relay_out = ADC_get_calibrated_mV(&ADC_HALL_AND_FB, result / N_ADC_SAMPLES_RELAY_OUT) *
+                                      ADC2_VOLTAGE_DIVIDER_MULTIPLIER;
+}
+
+void lvms_out_conversion() {
+    uint32_t result = 0;
+    for (uint8_t i = 0; i < N_ADC_SAMPLES_LVMS_OUT; i++) {
+        result += adc2_sampled_signals.adcs_raw_lvms_out[i];
+    }
+    adcs_converted_values.lvms_out = ADC_get_calibrated_mV(&ADC_HALL_AND_FB, result / N_ADC_SAMPLES_LVMS_OUT) *
+                                     ADC2_VOLTAGE_DIVIDER_MULTIPLIER;
+}
+
+void as_computer_fb_conversion() {
+    uint32_t result = 0;
+    for (uint8_t i = 0; i < N_ADC_SAMPLES_AS_COMPUTER_FB; i++) {
+        result += adc2_sampled_signals.adcs_raw_as_computer_fb[i];
+    }
+    adcs_converted_values.as_computer_fb =
+        ADC_get_calibrated_mV(&ADC_HALL_AND_FB, result / N_ADC_SAMPLES_AS_COMPUTER_FB) *
+        ADC2_VOLTAGE_DIVIDER_MULTIPLIER;
+}
+
+void mux_hall_conversion() {
+    uint32_t result = 0;
+    uint16_t *mux_hall_raw;
+    float *mux_hall_converted = (float *)&adcs_converted_values.mux_hall;
+    for (uint8_t i = 0; i < MUX_HALL_LEN; i++) {
+        for (uint8_t j = 0; j < N_ADC_SAMPLES_MUX_HALL; j++) {
+            mux_hall_raw = (uint16_t *)(&adc2_sampled_signals.adcs_raw_hall[j]) + i;
+            result += *mux_hall_raw;
+        }
+        if (i != S_HALL0 && i != S_HALL1 && i != S_HALL2) {
+            *(mux_hall_converted + i) = ADC_get_calibrated_mV(&ADC_HALL_AND_FB, result / N_ADC_SAMPLES_MUX_HALL);
+        } else if (i == S_HALL1) {
+            *(mux_hall_converted + i) = CS_get_electric_current_mA(result / N_ADC_SAMPLES_MUX_HALL) -
+                                        S_HALL_1_OFFSET_mA;
+        } else if (i == S_HALL2) {
+            *(mux_hall_converted + i) = CS_get_electric_current_mA(result / N_ADC_SAMPLES_MUX_HALL) -
+                                        S_HALL_2_OFFSET_mA;
+        }
+#ifndef AS_SYSTEM_MOUNTED
+        else if (i == S_HALL0) {
+            *(mux_hall_converted + i) = 0.0;
+        }
+#endif
+
+        else {
+            *(mux_hall_converted + i) = CS_get_electric_current_mA(result / N_ADC_SAMPLES_MUX_HALL);
+        }
+        result = 0;
+    }
+}
+
+void mux_fb_conversion() {
+    uint32_t result = 0;
+    uint16_t *mux_fb_raw;
+    float *mux_fb_converted = (float *)&adcs_converted_values.mux_fb;
+
+    for (uint8_t i = 0; i < MUX_FB_LEN; i++) {
+        if (i != N_CONNECTED_1 || i != N_CONNECTED_2) {
+            for (uint8_t j = 0; j < N_ADC_SAMPLES_MUX_FB; j++) {
+                mux_fb_raw = (uint16_t *)(&adc2_sampled_signals.adcs_raw_fb[j]) + i;
+                result += *mux_fb_raw;
+            }
+
+            *(mux_fb_converted + i) = ADC_get_calibrated_mV(&ADC_HALL_AND_FB, result / N_ADC_SAMPLES_MUX_FB) *
+                                      ADC2_VOLTAGE_DIVIDER_MULTIPLIER;
+            result = 0;
+        }
+    }
+}
+
+void batt_out_conversion() {
+    uint32_t result = 0;
+
+    for (uint8_t i = 0; i < N_ADC_SAMPLES_BATT_OUT; i++) {
+        result += adc2_sampled_signals.adcs_raw_batt_out[i];
+    }
+    adcs_converted_values.batt_out = ADC_get_calibrated_mV(&ADC_HALL_AND_FB, result / N_ADC_SAMPLES_BATT_OUT) *
+                                     ADC2_VOLTAGE_DIVIDER_MULTIPLIER;
+}
 /* USER CODE END 0 */
 
 ADC_HandleTypeDef hadc1;

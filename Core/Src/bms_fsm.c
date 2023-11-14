@@ -14,6 +14,8 @@ The finite state machine has:
 
 #include "bms_fsm.h"
 
+#include "adc.h"
+#include "pwm.h"
 #include "timer_utility.h"
 
 // SEARCH FOR Your Code Here FOR CODE INSERTION POINTS!
@@ -79,10 +81,10 @@ state_t do_init(state_data_t *data) {
     // -health_init(&hs);
 
     //Init ADC related stuff
-    // -ADC_init_status_flags();
-    // -ADC_init_mux();
-    // -ADC_Vref_Calibration();
-    // -ADC_start_ADC2_readings();
+    ADC_init_status_flags();
+    ADC_init_mux();
+    ADC_vref_Calibration();
+    ADC_start_ADC2_readings();
 
     // -monitor_init();
 

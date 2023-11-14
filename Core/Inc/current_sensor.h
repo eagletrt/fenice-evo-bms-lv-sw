@@ -1,5 +1,5 @@
 /**
- * @file      current_transducer.h
+ * @file      current_sensor.h
  * @author    Simone Ruffini [simone.ruffini@tutanota.com]
  * @date      Fri May 20 05:35:10 PM CEST 2022
  * 
@@ -10,8 +10,8 @@
  */
 
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef __CURRENT_TRANSDUCER_H__
-#define __CURRENT_TRANSDUCER_H__
+#ifndef CURRENT_SENSOR_H
+#define CURRENT_SENSOR_H
 
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f4xx_hal.h"
@@ -35,7 +35,7 @@
  * @return true 
  * @return false 
  */
-bool CT_is_overcurrent();
+bool CS_is_overcurrent();
 
 /**
  * @brief  Get electric current value currently flowing in the Current Transducer
@@ -44,7 +44,7 @@ bool CT_is_overcurrent();
  * @return Current in mA flowing inside the transducer
  *         if 0xFFFF then error
  */
-float CT_get_electric_current_mA(uint32_t adc_raw_value);
+float CS_get_electric_current_mA(uint32_t adc_raw_value);
 
 /**
  * @brief Over-Current Detection callback (put this in the correct ISR)
@@ -52,10 +52,10 @@ float CT_get_electric_current_mA(uint32_t adc_raw_value);
  * @param isOn value of the OCD pin: true if rising edge false if falling edge
  *             of OCD pin
  */
-void CT_OCD_callback(bool isOn);
+void CS_OCD_callback(bool isOn);
 
 /* Private types -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 /* Private constants ---------------------------------------------------------*/
 /* Private Macros -----------------------------------------------------------*/
-#endif
+#endif  //CURRENT_SENSOR_H
