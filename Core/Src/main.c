@@ -30,7 +30,7 @@
 /* USER CODE BEGIN Includes */
 #include "bms_fsm.h"
 #include "can_manager.h"
-#include "can_messages_handling.h"
+#include "can_messages.h"
 
 /* USER CODE END Includes */
 
@@ -52,9 +52,6 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-extern HAL_StatusTypeDef can_manager_hal_status_retval;
-extern int can_manager_error_code;
-
 CAN_FilterTypeDef primary_filter = {
   .FilterMode       = CAN_FILTERMODE_IDMASK,
   .FilterIdLow      = 0 << 5,                 // Take all ids from 0
@@ -157,10 +154,11 @@ int main(void)
 
   state_t cur_state = STATE_INIT;
 
+  extern HAL_StatusTypeDef can_manager_hal_status_retval;
+  extern int can_manager_error_code;
   int primary_can_id = can_init(&hcan1, can_primary_ntw_handler, CAN_IT_ERROR | CAN_IT_RX_FIFO0_MSG_PENDING, &primary_filter);
   if (can_manager_hal_status_retval != HAL_OK)
   {
-    //errors during init of primary can
     can_init_errors_handler(can_manager_error_code);
   }
   
@@ -168,7 +166,6 @@ int main(void)
   int secondary_can_id = can_init(&hcan2, can_secondary_ntw_handler, CAN_IT_ERROR | CAN_IT_RX_FIFO1_MSG_PENDING, &seconday_filter);
   if (can_manager_hal_status_retval != HAL_OK)
   {
-    //errors during init of secondary can
     can_init_errors_handler(can_manager_error_code);
   }
   /* USER CODE END 2 */
