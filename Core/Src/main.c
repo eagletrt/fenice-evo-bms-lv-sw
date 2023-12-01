@@ -29,6 +29,8 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "bms_fsm.h"
+#include "can_manager.h"
+#include "can_messages.h"
 
 /* USER CODE END Includes */
 
@@ -39,6 +41,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -49,7 +52,39 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
+CAN_FilterTypeDef primary_filter = {
+  .FilterMode       = CAN_FILTERMODE_IDMASK,
+  .FilterIdLow      = 0 << 5,                 // Take all ids from 0
+  .FilterIdHigh     = ((1U << 11) - 1) << 5,  // to 2^11 - 1
+  .FilterMaskIdHigh = 0 << 5,                 // Don't care on can id bits
+  .FilterMaskIdLow  = 0 << 5,                 // Don't care on can id bits
+  /* HAL considers IdLow and IdHigh not as just the ID of the can message but
+      as the combination of: 
+      STDID + RTR + IDE + 4 most significant bits of EXTID
+  */
+  .FilterFIFOAssignment = CAN_FILTER_FIFO0,
+  .FilterBank           = 0,
+  .FilterScale          = CAN_FILTERSCALE_16BIT,
+  .FilterActivation     = ENABLE,
+  .SlaveStartFilterBank = 14,
+};
 
+CAN_FilterTypeDef seconday_filter = {
+  .FilterMode       = CAN_FILTERMODE_IDMASK,
+  .FilterIdLow      = 0 << 5,                 // Take all ids from 0
+  .FilterIdHigh     = ((1U << 11) - 1) << 5,  // to 2^11 - 1
+  .FilterMaskIdHigh = 0 << 5,                 // Don't care on can id bits
+  .FilterMaskIdLow  = 0 << 5,                 // Don't care on can id bits
+  /* HAL considers IdLow and IdHigh not as just the ID of the can message but
+      as the combination of: 
+      STDID + RTR + IDE + 4 most significant bits of EXTID
+  */
+  .FilterFIFOAssignment = CAN_FILTER_FIFO1,
+  .FilterBank           = 14,
+  .FilterScale          = CAN_FILTERSCALE_16BIT,
+  .FilterActivation     = ENABLE,
+  .SlaveStartFilterBank = 14,
+};
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -119,8 +154,20 @@ int main(void)
 
   state_t cur_state = STATE_INIT;
 
+  extern HAL_StatusTypeDef can_manager_hal_status_retval;
+  extern int can_manager_error_code;
+  int primary_can_id = can_init(&hcan1, can_primary_ntw_handler, CAN_IT_ERROR | CAN_IT_RX_FIFO0_MSG_PENDING, &primary_filter);
+  if (can_manager_hal_status_retval != HAL_OK)
+  {
+    can_init_errors_handler(can_manager_error_code);
+  }
+  
 
-
+  int secondary_can_id = can_init(&hcan2, can_secondary_ntw_handler, CAN_IT_ERROR | CAN_IT_RX_FIFO1_MSG_PENDING, &seconday_filter);
+  if (can_manager_hal_status_retval != HAL_OK)
+  {
+    can_init_errors_handler(can_manager_error_code);
+  }
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -128,6 +175,11 @@ int main(void)
   while (1)
   {
     cur_state = run_state(cur_state, NULL);
+
+    consume_rx_queue(primary_can_id);
+    consume_rx_queue(secondary_can_id);
+    flush_tx_queue(primary_can_id);
+    flush_tx_queue(secondary_can_id);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
