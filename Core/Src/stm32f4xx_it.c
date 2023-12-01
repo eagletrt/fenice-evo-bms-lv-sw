@@ -19,7 +19,6 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f4xx_it.h"
-
 #include "main.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */

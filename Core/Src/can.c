@@ -41,6 +41,7 @@ CAN_HandleTypeDef hcan2;
 
 /* CAN1 init function */
 void MX_CAN1_Init(void) {
+
   /* USER CODE BEGIN CAN1_Init 0 */
 
   /* USER CODE END CAN1_Init 0 */
@@ -95,6 +96,7 @@ void MX_CAN1_Init(void) {
 }
 /* CAN2 init function */
 void MX_CAN2_Init(void) {
+
   /* USER CODE BEGIN CAN2_Init 0 */
 
   /* USER CODE END CAN2_Init 0 */
@@ -147,6 +149,7 @@ void MX_CAN2_Init(void) {
 static uint32_t HAL_RCC_CAN1_CLK_ENABLED = 0;
 
 void HAL_CAN_MspInit(CAN_HandleTypeDef *canHandle) {
+
   GPIO_InitTypeDef GPIO_InitStruct = {0};
   if (canHandle->Instance == CAN1) {
     /* USER CODE BEGIN CAN1_MspInit 0 */
@@ -160,9 +163,9 @@ void HAL_CAN_MspInit(CAN_HandleTypeDef *canHandle) {
 
     __HAL_RCC_GPIOB_CLK_ENABLE();
     /**CAN1 GPIO Configuration
-PB8     ------> CAN1_RX
-PB9     ------> CAN1_TX
-*/
+    PB8     ------> CAN1_RX
+    PB9     ------> CAN1_TX
+    */
     GPIO_InitStruct.Pin = GPIO_PIN_8 | GPIO_PIN_9;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
@@ -193,9 +196,9 @@ PB9     ------> CAN1_TX
 
     __HAL_RCC_GPIOB_CLK_ENABLE();
     /**CAN2 GPIO Configuration
-PB5     ------> CAN2_RX
-PB6     ------> CAN2_TX
-*/
+    PB5     ------> CAN2_RX
+    PB6     ------> CAN2_TX
+    */
     GPIO_InitStruct.Pin = GPIO_PIN_5 | GPIO_PIN_6;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
@@ -217,6 +220,7 @@ PB6     ------> CAN2_TX
 }
 
 void HAL_CAN_MspDeInit(CAN_HandleTypeDef *canHandle) {
+
   if (canHandle->Instance == CAN1) {
     /* USER CODE BEGIN CAN1_MspDeInit 0 */
 
@@ -228,9 +232,9 @@ void HAL_CAN_MspDeInit(CAN_HandleTypeDef *canHandle) {
     }
 
     /**CAN1 GPIO Configuration
-PB8     ------> CAN1_RX
-PB9     ------> CAN1_TX
-*/
+    PB8     ------> CAN1_RX
+    PB9     ------> CAN1_TX
+    */
     HAL_GPIO_DeInit(GPIOB, GPIO_PIN_8 | GPIO_PIN_9);
 
     /* CAN1 interrupt Deinit */
@@ -252,9 +256,9 @@ PB9     ------> CAN1_TX
     }
 
     /**CAN2 GPIO Configuration
-PB5     ------> CAN2_RX
-PB6     ------> CAN2_TX
-*/
+    PB5     ------> CAN2_RX
+    PB6     ------> CAN2_TX
+    */
     HAL_GPIO_DeInit(GPIOB, GPIO_PIN_5 | GPIO_PIN_6);
 
     /* CAN2 interrupt Deinit */

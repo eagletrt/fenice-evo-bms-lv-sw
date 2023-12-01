@@ -114,6 +114,7 @@ DMA_HandleTypeDef hdma_adc2;
 
 /* ADC1 init function */
 void MX_ADC1_Init(void) {
+
   /* USER CODE BEGIN ADC1_Init 0 */
 
   /* USER CODE END ADC1_Init 0 */
@@ -123,6 +124,7 @@ void MX_ADC1_Init(void) {
   /* USER CODE BEGIN ADC1_Init 1 */
 
   /* USER CODE END ADC1_Init 1 */
+
   /** Configure the global features of the ADC (Clock, Resolution, Data
    * Alignment and number of conversion)
    */
@@ -141,6 +143,7 @@ void MX_ADC1_Init(void) {
   if (HAL_ADC_Init(&hadc1) != HAL_OK) {
     Error_Handler();
   }
+
   /** Configure for the selected ADC regular channel its corresponding rank in
    * the sequencer and its sample time.
    */
@@ -165,6 +168,7 @@ void MX_ADC1_Init(void) {
 }
 /* ADC2 init function */
 void MX_ADC2_Init(void) {
+
   /* USER CODE BEGIN ADC2_Init 0 */
 
   /* USER CODE END ADC2_Init 0 */
@@ -174,6 +178,7 @@ void MX_ADC2_Init(void) {
   /* USER CODE BEGIN ADC2_Init 1 */
 
   /* USER CODE END ADC2_Init 1 */
+
   /** Configure the global features of the ADC (Clock, Resolution, Data
    * Alignment and number of conversion)
    */
@@ -254,6 +259,7 @@ void MX_ADC2_Init(void) {
 }
 
 void HAL_ADC_MspInit(ADC_HandleTypeDef *adcHandle) {
+
   GPIO_InitTypeDef GPIO_InitStruct = {0};
   if (adcHandle->Instance == ADC1) {
     /* USER CODE BEGIN ADC1_MspInit 0 */
@@ -264,8 +270,8 @@ void HAL_ADC_MspInit(ADC_HandleTypeDef *adcHandle) {
 
     __HAL_RCC_GPIOA_CLK_ENABLE();
     /**ADC1 GPIO Configuration
-PA2     ------> ADC1_IN2
-*/
+    PA2     ------> ADC1_IN2
+    */
     GPIO_InitStruct.Pin = VREF_ADC_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
@@ -305,13 +311,13 @@ PA2     ------> ADC1_IN2
     __HAL_RCC_GPIOC_CLK_ENABLE();
     __HAL_RCC_GPIOA_CLK_ENABLE();
     /**ADC2 GPIO Configuration
-PC3     ------> ADC2_IN13
-PA0-WKUP     ------> ADC2_IN0
-PA1     ------> ADC2_IN1
-PA3     ------> ADC2_IN3
-PC4     ------> ADC2_IN14
-PC5     ------> ADC2_IN15
-*/
+    PC3     ------> ADC2_IN13
+    PA0-WKUP     ------> ADC2_IN0
+    PA1     ------> ADC2_IN1
+    PA3     ------> ADC2_IN3
+    PC4     ------> ADC2_IN14
+    PC5     ------> ADC2_IN15
+    */
     GPIO_InitStruct.Pin =
         AS_COMPUTER_FB_Pin | REAY_OUT_ANALOG_FB_Pin | LVMS_OUT_ANALOG_FB_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
@@ -352,6 +358,7 @@ PC5     ------> ADC2_IN15
 }
 
 void HAL_ADC_MspDeInit(ADC_HandleTypeDef *adcHandle) {
+
   if (adcHandle->Instance == ADC1) {
     /* USER CODE BEGIN ADC1_MspDeInit 0 */
 
@@ -360,8 +367,8 @@ void HAL_ADC_MspDeInit(ADC_HandleTypeDef *adcHandle) {
     __HAL_RCC_ADC1_CLK_DISABLE();
 
     /**ADC1 GPIO Configuration
-PA2     ------> ADC1_IN2
-*/
+    PA2     ------> ADC1_IN2
+    */
     HAL_GPIO_DeInit(VREF_ADC_GPIO_Port, VREF_ADC_Pin);
 
     /* ADC1 DMA DeInit */
@@ -387,13 +394,13 @@ PA2     ------> ADC1_IN2
     __HAL_RCC_ADC2_CLK_DISABLE();
 
     /**ADC2 GPIO Configuration
-PC3     ------> ADC2_IN13
-PA0-WKUP     ------> ADC2_IN0
-PA1     ------> ADC2_IN1
-PA3     ------> ADC2_IN3
-PC4     ------> ADC2_IN14
-PC5     ------> ADC2_IN15
-*/
+    PC3     ------> ADC2_IN13
+    PA0-WKUP     ------> ADC2_IN0
+    PA1     ------> ADC2_IN1
+    PA3     ------> ADC2_IN3
+    PC4     ------> ADC2_IN14
+    PC5     ------> ADC2_IN15
+    */
     HAL_GPIO_DeInit(GPIOC, AS_COMPUTER_FB_Pin | REAY_OUT_ANALOG_FB_Pin |
                                LVMS_OUT_ANALOG_FB_Pin);
 

@@ -18,11 +18,8 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-
-#include "adc.h"
 #include "can.h"
 #include "dac.h"
-#include "dma.h"
 #include "gpio.h"
 #include "i2c.h"
 #include "spi.h"
@@ -99,7 +96,6 @@ int main(void) {
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
-  MX_DMA_Init();
   MX_CAN2_Init();
   MX_DAC_Init();
   MX_I2C3_Init();
@@ -109,14 +105,12 @@ int main(void) {
   MX_USART1_UART_Init();
   MX_CAN1_Init();
   MX_TIM8_Init();
-  MX_ADC2_Init();
-  MX_TIM5_Init();
   MX_TIM7_Init();
   MX_TIM4_Init();
   MX_UART5_Init();
   MX_TIM10_Init();
-  MX_ADC1_Init();
   MX_TIM1_Init();
+  MX_TIM5_Init();
   /* USER CODE BEGIN 2 */
 
   state_t cur_state = STATE_INIT;
@@ -147,6 +141,7 @@ void SystemClock_Config(void) {
    */
   __HAL_RCC_PWR_CLK_ENABLE();
   __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
+
   /** Initializes the RCC Oscillators according to the specified parameters
    * in the RCC_OscInitTypeDef structure.
    */

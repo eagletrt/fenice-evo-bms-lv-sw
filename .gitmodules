@@ -5,3 +5,4 @@
 [submodule "Core/Lib/micro-libs"]
 	path = Core/Lib/micro-libs
 	url = git@github.com:eagletrt/micro-libs.git
+	branch = error-utils

@@ -28,6 +28,7 @@ I2C_HandleTypeDef hi2c3;
 
 /* I2C3 init function */
 void MX_I2C3_Init(void) {
+
   /* USER CODE BEGIN I2C3_Init 0 */
 
   /* USER CODE END I2C3_Init 0 */
@@ -53,6 +54,7 @@ void MX_I2C3_Init(void) {
 }
 
 void HAL_I2C_MspInit(I2C_HandleTypeDef *i2cHandle) {
+
   GPIO_InitTypeDef GPIO_InitStruct = {0};
   if (i2cHandle->Instance == I2C3) {
     /* USER CODE BEGIN I2C3_MspInit 0 */
@@ -62,9 +64,9 @@ void HAL_I2C_MspInit(I2C_HandleTypeDef *i2cHandle) {
     __HAL_RCC_GPIOC_CLK_ENABLE();
     __HAL_RCC_GPIOA_CLK_ENABLE();
     /**I2C3 GPIO Configuration
-PC9     ------> I2C3_SDA
-PA8     ------> I2C3_SCL
-*/
+    PC9     ------> I2C3_SDA
+    PA8     ------> I2C3_SCL
+    */
     GPIO_InitStruct.Pin = GPIO_PIN_9;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_OD;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
@@ -88,6 +90,7 @@ PA8     ------> I2C3_SCL
 }
 
 void HAL_I2C_MspDeInit(I2C_HandleTypeDef *i2cHandle) {
+
   if (i2cHandle->Instance == I2C3) {
     /* USER CODE BEGIN I2C3_MspDeInit 0 */
 
@@ -96,9 +99,9 @@ void HAL_I2C_MspDeInit(I2C_HandleTypeDef *i2cHandle) {
     __HAL_RCC_I2C3_CLK_DISABLE();
 
     /**I2C3 GPIO Configuration
-PC9     ------> I2C3_SDA
-PA8     ------> I2C3_SCL
-*/
+    PC9     ------> I2C3_SDA
+    PA8     ------> I2C3_SCL
+    */
     HAL_GPIO_DeInit(GPIOC, GPIO_PIN_9);
 
     HAL_GPIO_DeInit(GPIOA, GPIO_PIN_8);

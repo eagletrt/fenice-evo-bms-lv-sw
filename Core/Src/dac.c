@@ -28,6 +28,7 @@ DAC_HandleTypeDef hdac;
 
 /* DAC init function */
 void MX_DAC_Init(void) {
+
   /* USER CODE BEGIN DAC_Init 0 */
 
   /* USER CODE END DAC_Init 0 */
@@ -37,12 +38,14 @@ void MX_DAC_Init(void) {
   /* USER CODE BEGIN DAC_Init 1 */
 
   /* USER CODE END DAC_Init 1 */
+
   /** DAC Initialization
    */
   hdac.Instance = DAC;
   if (HAL_DAC_Init(&hdac) != HAL_OK) {
     Error_Handler();
   }
+
   /** DAC channel OUT1 config
    */
   sConfig.DAC_Trigger = DAC_TRIGGER_NONE;
@@ -62,6 +65,7 @@ void MX_DAC_Init(void) {
 }
 
 void HAL_DAC_MspInit(DAC_HandleTypeDef *dacHandle) {
+
   GPIO_InitTypeDef GPIO_InitStruct = {0};
   if (dacHandle->Instance == DAC) {
     /* USER CODE BEGIN DAC_MspInit 0 */
@@ -72,9 +76,9 @@ void HAL_DAC_MspInit(DAC_HandleTypeDef *dacHandle) {
 
     __HAL_RCC_GPIOA_CLK_ENABLE();
     /**DAC GPIO Configuration
-PA4     ------> DAC_OUT1
-PA5     ------> DAC_OUT2
-*/
+    PA4     ------> DAC_OUT1
+    PA5     ------> DAC_OUT2
+    */
     GPIO_InitStruct.Pin = PUMP_L_Pin | PUMP_R_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
@@ -90,6 +94,7 @@ PA5     ------> DAC_OUT2
 }
 
 void HAL_DAC_MspDeInit(DAC_HandleTypeDef *dacHandle) {
+
   if (dacHandle->Instance == DAC) {
     /* USER CODE BEGIN DAC_MspDeInit 0 */
 
@@ -98,9 +103,9 @@ void HAL_DAC_MspDeInit(DAC_HandleTypeDef *dacHandle) {
     __HAL_RCC_DAC_CLK_DISABLE();
 
     /**DAC GPIO Configuration
-PA4     ------> DAC_OUT1
-PA5     ------> DAC_OUT2
-*/
+    PA4     ------> DAC_OUT1
+    PA5     ------> DAC_OUT2
+    */
     HAL_GPIO_DeInit(GPIOA, PUMP_L_Pin | PUMP_R_Pin);
 
     /* DAC interrupt Deinit */

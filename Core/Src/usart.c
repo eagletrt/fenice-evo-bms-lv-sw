@@ -29,6 +29,7 @@ UART_HandleTypeDef huart1;
 
 /* UART5 init function */
 void MX_UART5_Init(void) {
+
   /* USER CODE BEGIN UART5_Init 0 */
 
   /* USER CODE END UART5_Init 0 */
@@ -54,6 +55,7 @@ void MX_UART5_Init(void) {
 /* USART1 init function */
 
 void MX_USART1_UART_Init(void) {
+
   /* USER CODE BEGIN USART1_Init 0 */
 
   /* USER CODE END USART1_Init 0 */
@@ -78,6 +80,7 @@ void MX_USART1_UART_Init(void) {
 }
 
 void HAL_UART_MspInit(UART_HandleTypeDef *uartHandle) {
+
   GPIO_InitTypeDef GPIO_InitStruct = {0};
   if (uartHandle->Instance == UART5) {
     /* USER CODE BEGIN UART5_MspInit 0 */
@@ -88,8 +91,8 @@ void HAL_UART_MspInit(UART_HandleTypeDef *uartHandle) {
 
     __HAL_RCC_GPIOC_CLK_ENABLE();
     /**UART5 GPIO Configuration
-PC12     ------> UART5_TX
-*/
+    PC12     ------> UART5_TX
+    */
     GPIO_InitStruct.Pin = STP_PDN_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_OD;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
@@ -109,9 +112,9 @@ PC12     ------> UART5_TX
 
     __HAL_RCC_GPIOA_CLK_ENABLE();
     /**USART1 GPIO Configuration
-PA9     ------> USART1_TX
-PA10     ------> USART1_RX
-*/
+    PA9     ------> USART1_TX
+    PA10     ------> USART1_RX
+    */
     GPIO_InitStruct.Pin = GPIO_PIN_9 | GPIO_PIN_10;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
@@ -129,6 +132,7 @@ PA10     ------> USART1_RX
 }
 
 void HAL_UART_MspDeInit(UART_HandleTypeDef *uartHandle) {
+
   if (uartHandle->Instance == UART5) {
     /* USER CODE BEGIN UART5_MspDeInit 0 */
 
@@ -137,8 +141,8 @@ void HAL_UART_MspDeInit(UART_HandleTypeDef *uartHandle) {
     __HAL_RCC_UART5_CLK_DISABLE();
 
     /**UART5 GPIO Configuration
-PC12     ------> UART5_TX
-*/
+    PC12     ------> UART5_TX
+    */
     HAL_GPIO_DeInit(STP_PDN_GPIO_Port, STP_PDN_Pin);
 
     /* USER CODE BEGIN UART5_MspDeInit 1 */
@@ -152,9 +156,9 @@ PC12     ------> UART5_TX
     __HAL_RCC_USART1_CLK_DISABLE();
 
     /**USART1 GPIO Configuration
-PA9     ------> USART1_TX
-PA10     ------> USART1_RX
-*/
+    PA9     ------> USART1_TX
+    PA10     ------> USART1_RX
+    */
     HAL_GPIO_DeInit(GPIOA, GPIO_PIN_9 | GPIO_PIN_10);
 
     /* USART1 interrupt Deinit */
