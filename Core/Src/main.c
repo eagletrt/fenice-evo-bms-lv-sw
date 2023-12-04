@@ -100,12 +100,12 @@ int main(void)
   MX_USART1_UART_Init();
   MX_CAN1_Init();
   MX_TIM8_Init();
-  MX_TIM5_Init();
   MX_TIM7_Init();
   MX_TIM4_Init();
   MX_UART5_Init();
   MX_TIM10_Init();
   MX_TIM1_Init();
+  MX_TIM5_Init();
   /* USER CODE BEGIN 2 */
 
   //  MX_DMA_Init() must be executed before MX_ADC_Init() otherwise the ADC doesnt' work in DMA mode correctly
