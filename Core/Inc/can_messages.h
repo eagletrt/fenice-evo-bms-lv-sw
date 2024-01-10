@@ -15,7 +15,7 @@
   ntw##_##msg_name##_converted_t converted;                                    \
   ntw##_##msg_name##_unpack(&raw, msg->data, NTW##_##MSG_NAME##_BYTE_SIZE);    \
   ntw##_##msg_name##_raw_to_conversion_struct(&converted, &raw);               \
-  can##_##msg_name##_##handler(converted);                                     \  
+  can##_##msg_name##_##handler(converted);                                     \
 
 void can_init_errors_handler(int can_manager_error_code);
 void can_primary_ntw_handler(can_manager_message_t* msg);
