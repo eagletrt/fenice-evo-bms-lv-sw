@@ -39,6 +39,7 @@ void MX_DAC_Init(void)
   /* USER CODE BEGIN DAC_Init 1 */
 
   /* USER CODE END DAC_Init 1 */
+
   /** DAC Initialization
   */
   hdac.Instance = DAC;
@@ -46,6 +47,7 @@ void MX_DAC_Init(void)
   {
     Error_Handler();
   }
+
   /** DAC channel OUT1 config
   */
   sConfig.DAC_Trigger = DAC_TRIGGER_NONE;
@@ -54,6 +56,7 @@ void MX_DAC_Init(void)
   {
     Error_Handler();
   }
+
   /** DAC channel OUT2 config
   */
   if (HAL_DAC_ConfigChannel(&hdac, &sConfig, DAC_CHANNEL_2) != HAL_OK)
@@ -115,7 +118,14 @@ void HAL_DAC_MspDeInit(DAC_HandleTypeDef* dacHandle)
     HAL_GPIO_DeInit(GPIOA, PUMP_L_Pin|PUMP_R_Pin);
 
     /* DAC interrupt Deinit */
-    HAL_NVIC_DisableIRQ(TIM6_DAC_IRQn);
+  /* USER CODE BEGIN DAC:TIM6_DAC_IRQn disable */
+    /**
+    * Uncomment the line below to disable the "TIM6_DAC_IRQn" interrupt
+    * Be aware, disabling shared interrupt may affect other IPs
+    */
+    /* HAL_NVIC_DisableIRQ(TIM6_DAC_IRQn); */
+  /* USER CODE END DAC:TIM6_DAC_IRQn disable */
+
   /* USER CODE BEGIN DAC_MspDeInit 1 */
 
   /* USER CODE END DAC_MspDeInit 1 */

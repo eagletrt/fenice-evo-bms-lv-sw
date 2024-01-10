@@ -36,9 +36,34 @@ BUILD_DIR = build
 ######################################
 # C sources
 C_SOURCES =  \
+Core/Lib/can/lib/bms/bms_network.c \
+Core/Lib/can/lib/bms/bms_watchdog.c \
+Core/Lib/can/lib/inverters/inverters_network.c \
+Core/Lib/can/lib/inverters/inverters_watchdog.c \
+Core/Lib/can/lib/primary/primary_network.c \
+Core/Lib/can/lib/primary/primary_watchdog.c \
+Core/Lib/can/lib/secondary/secondary_network.c \
+Core/Lib/can/lib/secondary/secondary_watchdog.c \
+Core/Lib/can/lib/simulator/simulator_network.c \
+Core/Lib/can/lib/simulator/simulator_watchdog.c \
+Core/Lib/micro-libs/blink/blink.c \
+Core/Lib/micro-libs/can-manager/can_manager.c \
+Core/Lib/micro-libs/circ-buf/circ-buf.c \
+Core/Lib/micro-libs/cli/cli.c \
+Core/Lib/micro-libs/ctrl-nwk-utils/ctrl-nwk-utils.c \
+Core/Lib/micro-libs/generic-queue/generic_queue.c \
+Core/Lib/micro-libs/invlib/invlib.c \
+Core/Lib/micro-libs/llist/llist.c \
+Core/Lib/micro-libs/mcp23017_driver/mcp23017.c \
+Core/Lib/micro-libs/pid/pid.c \
+Core/Lib/micro-libs/priority-queue/priority_queue_fast_insert.c \
+Core/Lib/micro-libs/priority-queue/priority_queue_heap.c \
+Core/Lib/micro-libs/pwm/pwm.c \
+Core/Lib/micro-libs/timer-utils/timer_utils.c \
 Core/Src/adc.c \
 Core/Src/bms_fsm.c \
 Core/Src/can.c \
+Core/Src/can_messages.c \
 Core/Src/dac.c \
 Core/Src/dma.c \
 Core/Src/gpio.c \
@@ -93,7 +118,7 @@ PREFIX = arm-none-eabi-
 POSTFIX = "
 # The gcc compiler bin path can be either defined in make command via GCC_PATH variable (> make GCC_PATH=xxx)
 # either it can be added to the PATH environment variable.
-GCC_PATH="/usr/bin
+GCC_PATH="/home/kalsifer/.config/Code/User/globalStorage/bmd.stm32-for-vscode/@xpack-dev-tools/arm-none-eabi-gcc/12.3.1-1.2.1/.content/bin
 ifdef GCC_PATH
 CXX = $(GCC_PATH)/$(PREFIX)g++$(POSTFIX)
 CC = $(GCC_PATH)/$(PREFIX)gcc$(POSTFIX)
@@ -148,6 +173,29 @@ AS_INCLUDES = \
 # C includes
 C_INCLUDES =  \
 -ICore/Inc \
+-ICore/Lib/can/lib/bms \
+-ICore/Lib/can/lib/inverters \
+-ICore/Lib/can/lib/primary \
+-ICore/Lib/can/lib/secondary \
+-ICore/Lib/can/lib/simulator \
+-ICore/Lib/can/proto/bms \
+-ICore/Lib/can/proto/inverters \
+-ICore/Lib/can/proto/primary \
+-ICore/Lib/can/proto/secondary \
+-ICore/Lib/can/proto/simulator \
+-ICore/Lib/micro-libs/blink \
+-ICore/Lib/micro-libs/can-manager \
+-ICore/Lib/micro-libs/circ-buf \
+-ICore/Lib/micro-libs/cli \
+-ICore/Lib/micro-libs/ctrl-nwk-utils \
+-ICore/Lib/micro-libs/generic-queue \
+-ICore/Lib/micro-libs/invlib \
+-ICore/Lib/micro-libs/llist \
+-ICore/Lib/micro-libs/mcp23017_driver \
+-ICore/Lib/micro-libs/pid \
+-ICore/Lib/micro-libs/priority-queue \
+-ICore/Lib/micro-libs/pwm \
+-ICore/Lib/micro-libs/timer-utils \
 -IDrivers/CMSIS/Device/ST/STM32F4xx/Include \
 -IDrivers/CMSIS/Include \
 -IDrivers/STM32F4xx_HAL_Driver/Inc \
@@ -208,7 +256,6 @@ OBJECTS += $(addprefix $(BUILD_DIR)/,$(notdir $(C_SOURCES:.c=.o)))
 vpath %.c $(sort $(dir $(C_SOURCES)))
 
 # list of ASM program objects
-# list of ASM program objects
 UPPER_CASE_ASM_SOURCES = $(filter %.S,$(ASM_SOURCES))
 LOWER_CASE_ASM_SOURCES = $(filter %.s,$(ASM_SOURCES))
 
@@ -248,13 +295,13 @@ $(BUILD_DIR):
 # flash
 #######################################
 flash: $(BUILD_DIR)/$(TARGET).elf
-	"/usr/bin/openocd" -f ./openocd.cfg -c "program $(BUILD_DIR)/$(TARGET).elf verify reset exit"
+	"/home/kalsifer/.config/Code/User/globalStorage/bmd.stm32-for-vscode/@xpack-dev-tools/openocd/0.12.0-2.1/.content/bin/openocd" -f ./openocd.cfg -c "program $(BUILD_DIR)/$(TARGET).elf verify reset exit"
 
 #######################################
 # erase
 #######################################
 erase: $(BUILD_DIR)/$(TARGET).elf
-	"/usr/bin/openocd" -f ./openocd.cfg -c "init; reset halt; stm32f4x mass_erase 0; exit"
+	"/home/kalsifer/.config/Code/User/globalStorage/bmd.stm32-for-vscode/@xpack-dev-tools/openocd/0.12.0-2.1/.content/bin/openocd" -f ./openocd.cfg -c "init; reset halt; stm32f4x mass_erase 0; exit"
 
 #######################################
 # clean up
