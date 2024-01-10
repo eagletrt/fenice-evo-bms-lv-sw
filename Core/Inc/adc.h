@@ -33,9 +33,41 @@ extern "C" {
 /* USER CODE END Includes */
 
 extern ADC_HandleTypeDef hadc1;
+
 extern ADC_HandleTypeDef hadc2;
 
 /* USER CODE BEGIN Private defines */
+
+#define HISTORY_L         25
+#define ADC2_CHANNELS_N   6
+
+enum multiplexer_channel_addresses {
+  multiplexer_channel_0,
+  multiplexer_channel_8,
+  multiplexer_channel_4,
+  multiplexer_channel_12,
+  multiplexer_channel_2,
+  multiplexer_channel_10,
+  multiplexer_channel_6,
+  multiplexer_channel_14,
+  multiplexer_channel_1,
+  multiplexer_channel_9,
+  multiplexer_channel_5,
+  multiplexer_channel_13,
+  multiplexer_channel_3,
+  multiplexer_channel_11,
+  multiplexer_channel_7,
+  multiplexer_channel_15
+};
+
+enum ADC2_channels {
+  adc2_channel_mux_hall,
+  adc2_channel_mux_fb,
+  adc2_channel_adcs_as_computer_fb,
+  adc2_channel_adcs_relay_out,
+  adc2_channel_adcs_lvms_out,
+  adc2_channel_adcs_batt_out,
+};
 
 /* USER CODE END Private defines */
 
@@ -43,6 +75,8 @@ void MX_ADC1_Init(void);
 void MX_ADC2_Init(void);
 
 /* USER CODE BEGIN Prototypes */
+
+void ADC_routine_start();
 
 /* USER CODE END Prototypes */
 
