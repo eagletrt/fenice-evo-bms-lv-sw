@@ -21,7 +21,6 @@
 #include "adc.h"
 
 /* USER CODE BEGIN 0 */
-
 /* USER CODE END 0 */
 
 ADC_HandleTypeDef hadc1;
@@ -65,6 +64,7 @@ void MX_ADC1_Init(void) {
     if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK) {
         Error_Handler();
     }
+
     /** Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time.
   */
     sConfig.Channel = ADC_CHANNEL_2;
@@ -104,6 +104,7 @@ void MX_ADC2_Init(void) {
     if (HAL_ADC_Init(&hadc2) != HAL_OK) {
         Error_Handler();
     }
+
     /** Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time.
   */
     sConfig.Channel      = ADC_CHANNEL_1;
@@ -112,6 +113,7 @@ void MX_ADC2_Init(void) {
     if (HAL_ADC_ConfigChannel(&hadc2, &sConfig) != HAL_OK) {
         Error_Handler();
     }
+
     /** Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time.
   */
     sConfig.Channel = ADC_CHANNEL_0;
@@ -119,6 +121,7 @@ void MX_ADC2_Init(void) {
     if (HAL_ADC_ConfigChannel(&hadc2, &sConfig) != HAL_OK) {
         Error_Handler();
     }
+
     /** Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time.
   */
     sConfig.Channel      = ADC_CHANNEL_13;
@@ -127,6 +130,7 @@ void MX_ADC2_Init(void) {
     if (HAL_ADC_ConfigChannel(&hadc2, &sConfig) != HAL_OK) {
         Error_Handler();
     }
+
     /** Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time.
   */
     sConfig.Channel = ADC_CHANNEL_14;
@@ -134,6 +138,7 @@ void MX_ADC2_Init(void) {
     if (HAL_ADC_ConfigChannel(&hadc2, &sConfig) != HAL_OK) {
         Error_Handler();
     }
+
     /** Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time.
   */
     sConfig.Channel = ADC_CHANNEL_15;
@@ -141,6 +146,7 @@ void MX_ADC2_Init(void) {
     if (HAL_ADC_ConfigChannel(&hadc2, &sConfig) != HAL_OK) {
         Error_Handler();
     }
+
     /** Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time.
   */
     sConfig.Channel = ADC_CHANNEL_3;
@@ -315,5 +321,247 @@ void HAL_ADC_MspDeInit(ADC_HandleTypeDef *adcHandle) {
 }
 
 /* USER CODE BEGIN 1 */
+/**
+ * @author Enrico Dalla Croce (Kalsifer-742)
+ * @date 24/01/2024
+ * 
+ * @brief Code to read, average and convert values read from the ADC2
+*/
 
+uint32_t adc2_raw_values[ADC2_CHANNELS_N]                           = {0};
+uint32_t fb_raw_values[MUX_CHANNELS_N]                              = {0};
+uint32_t hall_raw_values[MUX_CHANNELS_N]                            = {0};
+uint32_t fb_avg_values[MUX_CHANNELS_N]                              = {0};
+uint32_t hall_avg_values[MUX_CHANNELS_N]                            = {0};
+float fb_final_values[MUX_CHANNELS_N]                               = {0};
+float hall_final_values[MUX_CHANNELS_N]                             = {0};
+float raw_directly_connected_lv_feedbacks[N_DIRECTLY_CONNECTED_FBS] = {0};
+float avg_directly_connected_lv_feedbacks[N_DIRECTLY_CONNECTED_FBS] = {0};
+float fin_directly_connected_lv_feedbacks[N_DIRECTLY_CONNECTED_FBS] = {0};
+float global_bms_lv_vref                                            = 0;
+
+// flags
+bool vref_samples_acquired = false;
+bool is_adc_dma_complete   = false;
+bool start_adc_acquisition = false;
+
+void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc) {
+    if (hadc == ADC_HALL_AND_FB) {
+        is_adc_dma_complete = true;
+    } else if (hadc == ADC_VREF_CALIBRATION) {
+        vref_samples_acquired = true;
+    }
+}
+
+void ADC_routine(TIM_HandleTypeDef *htim) {
+    start_adc_acquisition = true;
+}
+
+void ADC_routine_start() {
+    HAL_TIM_RegisterCallback(TIMER_ADC_ROUTINE, HAL_TIM_PERIOD_ELAPSED_CB_ID, &ADC_routine);
+    HAL_TIM_Base_Start_IT(TIMER_ADC_ROUTINE);
+}
+
+void set_address(uint8_t multiplexer_channel_address) {
+    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, (multiplexer_channel_address >> 0) & 1 ? GPIO_PIN_SET : GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, (multiplexer_channel_address >> 1) & 1 ? GPIO_PIN_SET : GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_11, (multiplexer_channel_address >> 2) & 1 ? GPIO_PIN_SET : GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_12, (multiplexer_channel_address >> 3) & 1 ? GPIO_PIN_SET : GPIO_PIN_RESET);
+}
+
+uint8_t ADC_get_resolution_bits(ADC_HandleTypeDef *adcHandle) {
+    /**
+     * To get this value look at the reference manual RM0390
+     * page 385 section 13.13.2 register ADC_CR1 RES[1:0] bits
+    */
+    uint8_t ret = 12;
+    switch (ADC_GET_RESOLUTION(adcHandle)) {
+        case 0U:
+            ret = 12U;
+            break;
+        case 1U:
+            ret = 10U;
+            break;
+        case 2U:
+            ret = 8U;
+            break;
+        case 4U:
+            ret = 6U;
+            break;
+    }
+    return ret;
+}
+
+uint32_t ADC_get_tot_voltage_levels(ADC_HandleTypeDef *adcHandle) {
+    uint8_t value = ADC_get_resolution_bits(adcHandle);
+    return ((uint32_t)(1U << value) - 1);
+}
+
+float ADC_get_value_mV(ADC_HandleTypeDef *adcHandle, uint32_t value_from_adc) {
+    const uint16_t ADC_FSVR_mV = 3300U;
+    return value_from_adc * ((float)ADC_FSVR_mV / ADC_get_tot_voltage_levels(adcHandle));
+}
+
+// See Documentation/STM32_VREF.pdf for more information
+void ADC_vref_calibration() {
+    uint16_t buffer[ADC_CALIBRATION_CHANNELS_N * ADC_CALIBRATION_SAMPLES_N] = {0};
+    uint32_t vdda                                                           = 0;
+    uint32_t vref_int                                                       = 0;
+    uint16_t *factory_calibration                                           = (uint16_t *)0x1FFF7A2A;
+    HAL_TIM_PWM_Start(TIMER_ADC_CALIBRATION, TIMER_ADC_CALIBRATION_CHANNEL);
+    if (HAL_ADC_Start_DMA(
+            ADC_VREF_CALIBRATION, (uint32_t *)&buffer, ADC_CALIBRATION_CHANNELS_N * ADC_CALIBRATION_SAMPLES_N) !=
+        HAL_OK) {
+        // error_set(ERROR_ADC_INIT, 0);
+        // TO-DO generate error
+    } else {
+        // error_reset(ERROR_ADC_INIT, 0);
+        // TO-DO generate error
+    }
+
+    // Wait until 500 samples has been reached
+    while (!vref_samples_acquired) {
+    }
+
+    HAL_TIM_PWM_Stop(&htim1, TIM_CHANNEL_1);
+    for (uint16_t i = 0; i < ADC_CALIBRATION_SAMPLES_N; i++) {
+        vref_int += buffer[ADC_CALIBRATION_CHANNELS_N * i];
+        vdda += buffer[ADC_CALIBRATION_CHANNELS_N * i + 1];
+    }
+
+    vdda /= 500;
+    vref_int /= 500;
+
+    global_bms_lv_vref = ADC_get_value_mV(ADC_HALL_AND_FB, vdda) * ((float)*factory_calibration / vref_int);
+
+    // if (global_bms_lv_vref < 3100 || global_bms_lv_vref > 3300) {
+    //     error_set(ERROR_ADC_INIT, 0);
+    // }
+
+    // TO-DO generate error if global_bms_lv_vref is not plausible
+}
+
+float ADC_get_calibrated_mV(ADC_HandleTypeDef *adcHandle, uint32_t value_from_adc) {
+    return value_from_adc * ((float)global_bms_lv_vref / ADC_get_tot_voltage_levels(adcHandle));
+}
+
+float calculate_current_mA(uint32_t value_from_adc) {
+    float adc_val_mV = ADC_get_calibrated_mV(ADC_HALL_AND_FB, value_from_adc);
+    // current [mA] = ((Vadc-Vref)[mV] / Sensibility [mV/A])*1000
+    const uint16_t HO_50_SP33_1106_VREF_mV              = 1645U;
+    const float HO_50_SP33_1106_THEORETICAL_SENSITIVITY = 9.2f;
+
+    float current = ((adc_val_mV - HO_50_SP33_1106_VREF_mV) / HO_50_SP33_1106_THEORETICAL_SENSITIVITY) * 1000;
+    return current;
+}
+
+float current_transducer_get_electric_current_mA(uint32_t value_from_adc) {
+    float current_in_mA = calculate_current_mA(value_from_adc);
+
+    // #define CT_OVERCURRENT_THRESHOLD_MA (50000U)
+    // is_overcurrent = (current_in_ma > CT_OVERCURRENT_THRESHOLD_MA);
+
+    // TO-DO generate error if overcurrent
+
+    return current_in_mA;
+}
+
+void read_adc_channels() {
+    HAL_ADC_Start_DMA(ADC_HALL_AND_FB, adc2_raw_values, ADC2_CHANNELS_N);
+    while (!is_adc_dma_complete) {
+        continue;
+    }
+
+    hall_raw_values[0] = adc2_raw_values[adc2_channel_mux_hall];
+    fb_raw_values[0]   = adc2_raw_values[adc2_channel_mux_fb];
+
+    // this values need to be read only once
+    raw_directly_connected_lv_feedbacks[FB_COMPUTER_FB_IDX] = adc2_raw_values[adc2_channel_adcs_as_computer_fb];
+    raw_directly_connected_lv_feedbacks[FB_RELAY_OUT_IDX]   = adc2_raw_values[adc2_channel_adcs_relay_out];
+    raw_directly_connected_lv_feedbacks[FB_LVMS_OUT_IDX]    = adc2_raw_values[adc2_channel_adcs_lvms_out];
+    raw_directly_connected_lv_feedbacks[FB_BATT_OUT_IDX]    = adc2_raw_values[adc2_channel_adcs_batt_out];
+
+    for (uint8_t i = 1; i < MUX_CHANNELS_N; i++) {
+        set_address(i);
+
+        while (!is_adc_dma_complete) {
+            continue;
+        }
+        is_adc_dma_complete = false;
+
+        hall_raw_values[i] = adc2_raw_values[adc2_channel_mux_hall];
+        fb_raw_values[i]   = adc2_raw_values[adc2_channel_mux_fb];
+
+        HAL_ADC_Start_DMA(ADC_HALL_AND_FB, adc2_raw_values, ADC2_CHANNELS_N);
+    }
+}
+
+// Stack OverMazzucchi
+// https://github.com/eagletrt/not-yet-acquisinator-sw/blob/master/Core/Src/acquisinator.c
+
+uint32_t mean_values[MEAN_VALUES_ARRAY_LEN]             = {0};
+uint32_t adc2_history[MEAN_VALUES_ARRAY_LEN][HISTORY_L] = {0};
+uint8_t adc2_filled[MEAN_VALUES_ARRAY_LEN]              = {0};
+uint32_t adc2_curri[MEAN_VALUES_ARRAY_LEN]              = {0};
+
+int moving_avg(int cidx) {
+    if (adc2_filled[cidx]) {
+        mean_values[cidx] = mean_values[cidx] - (adc2_history[cidx][adc2_curri[cidx]]) +
+                            (adc2_raw_values[cidx] / HISTORY_L);
+        adc2_history[cidx][adc2_curri[cidx]] = adc2_raw_values[cidx] / HISTORY_L;
+    } else {
+        mean_values[cidx] += (adc2_raw_values[cidx] / HISTORY_L);
+        adc2_history[cidx][adc2_curri[cidx]] = adc2_raw_values[cidx] / HISTORY_L;
+    }
+    ++adc2_curri[cidx];
+    if (adc2_curri[cidx] == HISTORY_L) {
+        adc2_curri[cidx]  = 0;
+        adc2_filled[cidx] = 1;
+    }
+    if (adc2_filled[cidx]) {
+        return mean_values[cidx];
+    }
+    return -1;
+}
+
+void calculate_avarages() {
+    for (uint8_t i = 0; i < MUX_CHANNELS_N; i++) {
+        fb_avg_values[i]   = moving_avg(i);
+        hall_avg_values[i] = moving_avg(MUX_CHANNELS_N + i);
+    }
+    for (size_t ifb_idx = 0; ifb_idx < N_DIRECTLY_CONNECTED_FBS; ifb_idx++) {
+        avg_directly_connected_lv_feedbacks[ifb_idx] = moving_avg(MUX_CHANNELS_N * 2 + ifb_idx);
+    }
+}
+
+void convert_values() {
+    for (uint8_t i = 0; i < MUX_CHANNELS_N; i++) {
+        fb_final_values[i] = ADC_get_calibrated_mV(ADC_HALL_AND_FB, fb_avg_values[i]);
+
+        // S_HALL0 is currently not used
+        // if (i == S_HALL0) {}
+        if (i == S_HALL1) {
+            hall_final_values[i] = current_transducer_get_electric_current_mA(hall_avg_values[MUX_CHANNELS_N + 1]) -
+                                   S_HALL1_OFFSET_mA;
+        } else if (i == S_HALL2) {
+            hall_final_values[i] = current_transducer_get_electric_current_mA(hall_avg_values[MUX_CHANNELS_N + 1]) -
+                                   S_HALL2_OFFSET_mA;
+        } else {
+            hall_final_values[i] = current_transducer_get_electric_current_mA(hall_avg_values[MUX_CHANNELS_N + 1]);
+        }
+    }
+
+    for (size_t ifb_idx = 0; ifb_idx < N_DIRECTLY_CONNECTED_FBS; ifb_idx++) {
+        fin_directly_connected_lv_feedbacks[ifb_idx] =
+            ADC_get_calibrated_mV(ADC_HALL_AND_FB, avg_directly_connected_lv_feedbacks[ifb_idx]) *
+            ADC2_VOLTAGE_DIVIDER_MULTIPLIER;
+    }
+}
+
+void adc_acquisition() {
+    start_adc_acquisition = false;
+    read_adc_channels();
+    calculate_avarages();
+    convert_values();
+}
 /* USER CODE END 1 */

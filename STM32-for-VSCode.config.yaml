@@ -74,6 +74,7 @@ excludes:
   - "**/micro-libs/munit/**"
   - "**/micro-libs/logger/**"
   - "**/micro-libs/can-sensor-programmer/**"
+  - "**/micro-libs/candump-to-serial/**"
   - "**/micro-libs/m95256/**"
   - "**/micro-libs/eeprom-config/**"
   - "**/micro-libs/bms-monitor/**"

@@ -29,10 +29,12 @@ extern "C" {
 #include "main.h"
 
 /* USER CODE BEGIN Includes */
-
+#include "bms_lv_config.h"
+#include "tim.h"
 /* USER CODE END Includes */
 
 extern ADC_HandleTypeDef hadc1;
+
 extern ADC_HandleTypeDef hadc2;
 
 /* USER CODE BEGIN Private defines */
@@ -43,6 +45,10 @@ void MX_ADC1_Init(void);
 void MX_ADC2_Init(void);
 
 /* USER CODE BEGIN Prototypes */
+
+void ADC_vref_calibration();
+void ADC_routine_start();
+void adc_acquisition();
 
 /* USER CODE END Prototypes */
 

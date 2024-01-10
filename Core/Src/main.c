@@ -19,8 +19,10 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 
+#include "adc.h"
 #include "can.h"
 #include "dac.h"
+#include "dma.h"
 #include "gpio.h"
 #include "i2c.h"
 #include "spi.h"
@@ -29,6 +31,8 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+
+#include "adc.h"
 #include "bms_fsm.h"
 #include "can_manager.h"
 #include "can_messages.h"
@@ -53,39 +57,11 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-CAN_FilterTypeDef primary_filter = {
-    .FilterMode       = CAN_FILTERMODE_IDMASK,
-    .FilterIdLow      = 0 << 5,                 // Take all ids from 0
-    .FilterIdHigh     = ((1U << 11) - 1) << 5,  // to 2^11 - 1
-    .FilterMaskIdHigh = 0 << 5,                 // Don't care on can id bits
-    .FilterMaskIdLow  = 0 << 5,                 // Don't care on can id bits
-    /* HAL considers IdLow and IdHigh not as just the ID of the can message but
-      as the combination of: 
-      STDID + RTR + IDE + 4 most significant bits of EXTID
-  */
-    .FilterFIFOAssignment = CAN_FILTER_FIFO0,
-    .FilterBank           = 0,
-    .FilterScale          = CAN_FILTERSCALE_16BIT,
-    .FilterActivation     = ENABLE,
-    .SlaveStartFilterBank = 14,
-};
 
-CAN_FilterTypeDef seconday_filter = {
-    .FilterMode       = CAN_FILTERMODE_IDMASK,
-    .FilterIdLow      = 0 << 5,                 // Take all ids from 0
-    .FilterIdHigh     = ((1U << 11) - 1) << 5,  // to 2^11 - 1
-    .FilterMaskIdHigh = 0 << 5,                 // Don't care on can id bits
-    .FilterMaskIdLow  = 0 << 5,                 // Don't care on can id bits
-    /* HAL considers IdLow and IdHigh not as just the ID of the can message but
-      as the combination of: 
-      STDID + RTR + IDE + 4 most significant bits of EXTID
-  */
-    .FilterFIFOAssignment = CAN_FILTER_FIFO1,
-    .FilterBank           = 14,
-    .FilterScale          = CAN_FILTERSCALE_16BIT,
-    .FilterActivation     = ENABLE,
-    .SlaveStartFilterBank = 14,
-};
+extern HAL_StatusTypeDef can_manager_hal_status_retval;
+extern int can_manager_error_code;
+extern bool start_adc_acquisition;
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -126,6 +102,7 @@ int main(void) {
 
     /* Initialize all configured peripherals */
     MX_GPIO_Init();
+    MX_DMA_Init();
     MX_CAN2_Init();
     MX_DAC_Init();
     MX_I2C3_Init();
@@ -135,27 +112,47 @@ int main(void) {
     MX_USART1_UART_Init();
     MX_CAN1_Init();
     MX_TIM8_Init();
+    MX_ADC2_Init();
     MX_TIM5_Init();
     MX_TIM7_Init();
     MX_TIM4_Init();
     MX_UART5_Init();
     MX_TIM10_Init();
+    MX_ADC1_Init();
     MX_TIM1_Init();
     /* USER CODE BEGIN 2 */
 
-    //  MX_DMA_Init() must be executed before MX_ADC_Init() otherwise the ADC doesnt' work in DMA mode correctly
-    //  but since __CUBEMIX e' stronzo__(cit.), this isn't enforced by the code generator
-    //  threfore manual intervention is necessary
-    //  https://community.st.com/s/question/0D50X0000ALudz8SQB/how-to-enable-adc-continuous-mode-with-dma
-
-    MX_DMA_Init();
-    MX_ADC1_Init();
-    MX_ADC2_Init();
-
     state_t cur_state = STATE_INIT;
 
-    extern HAL_StatusTypeDef can_manager_hal_status_retval;
-    extern int can_manager_error_code;
+    /* HAL considers IdLow and IdHigh not as just the ID of the can message but
+      as the combination of: 
+      STDID + RTR + IDE + 4 most significant bits of EXTID
+    */
+    CAN_FilterTypeDef primary_filter = {
+        .FilterMode           = CAN_FILTERMODE_IDMASK,
+        .FilterIdLow          = 0 << 5,                 // Take all ids from 0
+        .FilterIdHigh         = ((1U << 11) - 1) << 5,  // to 2^11 - 1
+        .FilterMaskIdHigh     = 0 << 5,                 // Don't care on can id bits
+        .FilterMaskIdLow      = 0 << 5,                 // Don't care on can id bits
+        .FilterFIFOAssignment = CAN_FILTER_FIFO0,
+        .FilterBank           = 0,
+        .FilterScale          = CAN_FILTERSCALE_16BIT,
+        .FilterActivation     = ENABLE,
+        .SlaveStartFilterBank = 14,
+    };
+
+    CAN_FilterTypeDef seconday_filter = {
+        .FilterMode           = CAN_FILTERMODE_IDMASK,
+        .FilterIdLow          = 0 << 5,                 // Take all ids from 0
+        .FilterIdHigh         = ((1U << 11) - 1) << 5,  // to 2^11 - 1
+        .FilterMaskIdHigh     = 0 << 5,                 // Don't care on can id bits
+        .FilterMaskIdLow      = 0 << 5,                 // Don't care on can id bits
+        .FilterFIFOAssignment = CAN_FILTER_FIFO1,
+        .FilterBank           = 14,
+        .FilterScale          = CAN_FILTERSCALE_16BIT,
+        .FilterActivation     = ENABLE,
+        .SlaveStartFilterBank = 14,
+    };
     int primary_can_id =
         can_init(&hcan1, can_primary_ntw_handler, CAN_IT_ERROR | CAN_IT_RX_FIFO0_MSG_PENDING, &primary_filter);
     if (can_manager_hal_status_retval != HAL_OK) {
@@ -167,6 +164,9 @@ int main(void) {
     if (can_manager_hal_status_retval != HAL_OK) {
         can_init_errors_handler(can_manager_error_code);
     }
+
+    ADC_vref_calibration();
+    ADC_routine_start();
     /* USER CODE END 2 */
 
     /* Infinite loop */
@@ -178,6 +178,10 @@ int main(void) {
         consume_rx_queue(secondary_can_id);
         flush_tx_queue(primary_can_id);
         flush_tx_queue(secondary_can_id);
+
+        if (start_adc_acquisition) {
+            adc_acquisition();
+        }
         /* USER CODE END WHILE */
 
         /* USER CODE BEGIN 3 */
@@ -212,11 +216,13 @@ void SystemClock_Config(void) {
     if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK) {
         Error_Handler();
     }
+
     /** Activate the Over-Drive mode
   */
     if (HAL_PWREx_EnableOverDrive() != HAL_OK) {
         Error_Handler();
     }
+
     /** Initializes the CPU, AHB and APB buses clocks
   */
     RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2;

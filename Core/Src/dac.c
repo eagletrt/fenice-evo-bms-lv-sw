@@ -50,6 +50,7 @@ void MX_DAC_Init(void) {
     if (HAL_DAC_ConfigChannel(&hdac, &sConfig, DAC_CHANNEL_1) != HAL_OK) {
         Error_Handler();
     }
+
     /** DAC channel OUT2 config
   */
     if (HAL_DAC_ConfigChannel(&hdac, &sConfig, DAC_CHANNEL_2) != HAL_OK) {
