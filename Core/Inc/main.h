@@ -117,6 +117,7 @@ void Error_Handler(void);
 #define NC_NC_GPIO_Port GPIOB
 #define STP_STEP_Pin GPIO_PIN_7
 #define STP_STEP_GPIO_Port GPIOB
+
 /* USER CODE BEGIN Private defines */
 
 /* USER CODE END Private defines */
