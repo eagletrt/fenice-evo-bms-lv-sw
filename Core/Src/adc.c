@@ -355,7 +355,7 @@ void HAL_ADC_MspDeInit(ADC_HandleTypeDef* adcHandle)
 
 /* USER CODE BEGIN 1 */
 //use the same array for all steps?
-uint16_t adc2_raw_values[ADC2_CHANNELS_N] = {0};
+uint32_t adc2_raw_values[ADC2_CHANNELS_N] = {0};
 uint8_t adc2_channels_len = sizeof(adc2_raw_values) / sizeof(adc2_raw_values[0]);
 uint32_t fb_raw_values[MUX_CHANNELS_N] = {0};
 uint32_t hall_raw_values[MUX_CHANNELS_N] = {0};
@@ -379,9 +379,9 @@ bool start_calculating_averages = false;
 bool vref_samples_acquired = false;
 
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc){
-  if (hadc == &hadc1) {
+  if (hadc == ADC_HALL_AND_FB) {
     is_adc_dma_complete = true;
-  } else if (hadc == &hadc2) {
+  } else if (hadc == ADC_VREF_CALIBRATION) {
     vref_samples_acquired = true;
   }
 }
@@ -445,38 +445,37 @@ float ADC_get_value_mV(ADC_HandleTypeDef *adcHandle, uint32_t value_from_adc) {
 
 // See Documentation/STM32_VREF.pdf for more information
 void ADC_vref_calibration() {
-    uint16_t buffer[2 * 500] = {0}; //N_ADC_CALIBRATION_CHANNELS * N_ADC_CALIBRATION_SAMPLES
-    uint32_t vdda = 0;
-    uint32_t vref_int = 0;
-    uint16_t *factory_calibration = (uint16_t *)0x1FFF7A2A;
-    HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_1); //TIMER_ADC_CALIBRATION, TIMER_ADC_CALIBRATION_CHANNEL
-    // CALIBRATION_ADC, -, N_ADC_CALIBRATION_SAMPLES, N_ADC_CALIBRATION_SAMPLES
-    if (HAL_ADC_Start_DMA(&hadc1, (uint32_t *)&buffer, 2 * 500) != HAL_OK) {
-        // error_set(ERROR_ADC_INIT, 0);
-        // TO-DO generate error
-    } else {
-        // error_reset(ERROR_ADC_INIT, 0);
-        // TO-DO generate error
-    }
+  uint16_t buffer[ADC_CALIBRATION_CHANNELS_N * ADC_CALIBRATION_SAMPLES_N] = {0};
+  uint32_t vdda = 0;
+  uint32_t vref_int = 0;
+  uint16_t *factory_calibration = (uint16_t *)0x1FFF7A2A;
+  HAL_TIM_PWM_Start(TIMER_ADC_CALIBRATION, TIMER_ADC_CALIBRATION_CHANNEL);
+  if (HAL_ADC_Start_DMA(ADC_VREF_CALIBRATION, (uint32_t *)&buffer, ADC_CALIBRATION_CHANNELS_N * ADC_CALIBRATION_SAMPLES_N) != HAL_OK) {
+      // error_set(ERROR_ADC_INIT, 0);
+      // TO-DO generate error
+  } else {
+      // error_reset(ERROR_ADC_INIT, 0);
+      // TO-DO generate error
+  }
 
-    //Wait until 500 samples has been reached
-    while (!vref_samples_acquired) {}
+  //Wait until 500 samples has been reached
+  while (!vref_samples_acquired) {}
 
-    HAL_TIM_PWM_Stop(&htim1, TIM_CHANNEL_1);
-    for (uint16_t i = 0; i < 500; i++) { //N_ADC_CALIBRATION_SAMPLES
-      vref_int += buffer[2 * i]; //N_ADC_CALIBRATION_CHANNELS
-      vdda += buffer[2 * i + 1]; //N_ADC_CALIBRATION_CHANNELS
-    }
+  HAL_TIM_PWM_Stop(&htim1, TIM_CHANNEL_1);
+  for (uint16_t i = 0; i < ADC_CALIBRATION_SAMPLES_N; i++) {
+    vref_int += buffer[ADC_CALIBRATION_CHANNELS_N * i];
+    vdda += buffer[ADC_CALIBRATION_CHANNELS_N * i + 1];
+  }
 
-    vdda /= 500;
-    vref_int /= 500;
+  vdda /= 500;
+  vref_int /= 500;
 
-    vref = ADC_get_value_mV(&hadc1, vdda) * ((float)*factory_calibration / vref_int);
-    
-    // if (vref < 3100 || vref > 3300) {
-    //     error_set(ERROR_ADC_INIT, 0);
-    // }
-    // TO-DO generate error if vref is not plausible
+  vref = ADC_get_value_mV(ADC_HALL_AND_FB, vdda) * ((float)*factory_calibration / vref_int);
+  
+  // if (vref < 3100 || vref > 3300) {
+  //     error_set(ERROR_ADC_INIT, 0);
+  // }
+  // TO-DO generate error if vref is not plausible
 }
 
 float ADC_get_calibrated_mV(ADC_HandleTypeDef *adcHandle, uint32_t value_from_adc) {
@@ -484,7 +483,7 @@ float ADC_get_calibrated_mV(ADC_HandleTypeDef *adcHandle, uint32_t value_from_ad
 }
 
 float calculate_current_mA(uint32_t value_from_adc) {
-    float adc_val_mV = ADC_get_calibrated_mV(&hadc2, value_from_adc);
+    float adc_val_mV = ADC_get_calibrated_mV(ADC_HALL_AND_FB, value_from_adc);
 
     // current [mA] = ((Vadc-Vref)[mV] / Sensibility [mV/A])*1000
     
@@ -539,7 +538,7 @@ int moving_avg(int cidx) {
 void read_adc(){
   start_dma_read = false;
 
-  HAL_ADC_Start_DMA(&hadc1, &adc2_raw_values, adc2_channels_len);
+  HAL_ADC_Start_DMA(ADC_HALL_AND_FB, adc2_raw_values, adc2_channels_len);
   while (!is_adc_dma_complete) {
     continue;
   }
@@ -564,7 +563,7 @@ void read_adc(){
     hall_raw_values[i] = adc2_raw_values[adc2_channel_mux_hall];
     fb_raw_values[i] = adc2_raw_values[adc2_channel_mux_fb];
 
-    HAL_ADC_Start_DMA(&hadc1, &adc2_raw_values, adc2_channels_len);
+    HAL_ADC_Start_DMA(ADC_HALL_AND_FB, adc2_raw_values, adc2_channels_len);
   }
 
   start_calculating_averages = true;
@@ -592,7 +591,7 @@ void convert_values(){
 
   for (uint8_t i = 0; i < MUX_CHANNELS_N; i++)
   {
-    fb_converted_values[i] = ADC_get_calibrated_mV(&hadc1, fb_average_values[i]);
+    fb_converted_values[i] = ADC_get_calibrated_mV(ADC_HALL_AND_FB, fb_average_values[i]);
 
     //S_HALL0 is currently not used
     //if (i == S_HALL0) {}
@@ -606,10 +605,10 @@ void convert_values(){
     }
   }
 
-  computer_fb = ADC_get_calibrated_mV(&hadc1, computer_fb) * ADC2_VOLTAGE_DIVIDER_MULTIPLIER;
-  relay_out = ADC_get_calibrated_mV(&hadc1, relay_out) * ADC2_VOLTAGE_DIVIDER_MULTIPLIER;
-  lvms_out = ADC_get_calibrated_mV(&hadc1, lvms_out) * ADC2_VOLTAGE_DIVIDER_MULTIPLIER;
-  batt_out = ADC_get_calibrated_mV(&hadc1, batt_out) * ADC2_VOLTAGE_DIVIDER_MULTIPLIER;
+  computer_fb = ADC_get_calibrated_mV(ADC_HALL_AND_FB, computer_fb) * ADC2_VOLTAGE_DIVIDER_MULTIPLIER;
+  relay_out = ADC_get_calibrated_mV(ADC_HALL_AND_FB, relay_out) * ADC2_VOLTAGE_DIVIDER_MULTIPLIER;
+  lvms_out = ADC_get_calibrated_mV(ADC_HALL_AND_FB, lvms_out) * ADC2_VOLTAGE_DIVIDER_MULTIPLIER;
+  batt_out = ADC_get_calibrated_mV(ADC_HALL_AND_FB, batt_out) * ADC2_VOLTAGE_DIVIDER_MULTIPLIER;
 }
 
 void send_to_can(){}

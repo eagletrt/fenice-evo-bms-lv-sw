@@ -38,9 +38,17 @@ extern ADC_HandleTypeDef hadc2;
 
 /* USER CODE BEGIN Private defines */
 
+//Hardware
+#define ADC_HALL_AND_FB                 &hadc2
+#define ADC_VREF_CALIBRATION            &hadc1
+#define TIMER_ADC_CALIBRATION           &htim1
+#define TIMER_ADC_CALIBRATION_CHANNEL   TIM_CHANNEL_1
+//Average history
 #define HISTORY_L                       25
 #define ADC2_CHANNELS_N                 6
 #define MUX_CHANNELS_N                  16
+#define ADC_CALIBRATION_CHANNELS_N      2
+#define ADC_CALIBRATION_SAMPLES_N       500
 //(multiplexer channels * 2) + 4 adc2_channels
 #define MEAN_VALUES_ARRAY_LEN           ((MUX_CHANNELS_N * 2) + 4)
 #define S_HALL0                         1
