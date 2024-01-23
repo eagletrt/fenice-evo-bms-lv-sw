@@ -40,6 +40,7 @@ extern ADC_HandleTypeDef hadc2;
 
 #define HISTORY_L         25
 #define ADC2_CHANNELS_N   6
+#define MUX_CHANNELS_N    16
 bool start_dma_read;
 bool start_value_conversion;
 bool start_calculating_averages;
@@ -81,8 +82,8 @@ void MX_ADC2_Init(void);
 
 void ADC_routine_start();
 void read_adc();
-void convert_values();
 void calculate_avarages();
+void convert_values();
 
 /* USER CODE END Prototypes */
 

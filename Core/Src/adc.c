@@ -354,23 +354,30 @@ void HAL_ADC_MspDeInit(ADC_HandleTypeDef* adcHandle)
 }
 
 /* USER CODE BEGIN 1 */
-uint16_t vref;
-uint32_t fb_raw_values[16] = {0};
-uint32_t hall_raw_values[16] = {0};
-uint32_t converted_values = {0};
-uint32_t computer_fb;
-uint32_t relay_out;
-uint32_t lvms_out;
-uint32_t batt_out;
+//uint16_t vref;
+uint32_t fb_raw_values[MUX_CHANNELS_N] = {0};
+uint32_t hall_raw_values[MUX_CHANNELS_N] = {0};
+uint32_t fb_average_values[MUX_CHANNELS_N] = {0};
+uint32_t hall_average_values[MUX_CHANNELS_N] = {0};
+uint32_t fb_converted_values[MUX_CHANNELS_N] = {0};
+uint32_t hall_converted_values[MUX_CHANNELS_N] = {0};
+uint32_t computer_fb = 0;
+uint32_t relay_out = 0;
+uint32_t lvms_out = 0;
+uint32_t batt_out = 0;
 
-/// stack overmazzucchi
 uint16_t adc2_raw_values[ADC2_CHANNELS_N] = {0};
 uint8_t adc2_channels_len = sizeof(adc2_raw_values) / sizeof(adc2_raw_values[0]);
-uint32_t converted[ADC2_CHANNELS_N] = {0};
-uint32_t mean_values[ADC2_CHANNELS_N] = {0};
-uint32_t adc2_history[ADC2_CHANNELS_N][HISTORY_L] = {0};
-uint8_t adc2_filled[ADC2_CHANNELS_N] = {0};
-uint32_t adc2_curri[ADC2_CHANNELS_N] = {0};
+
+// Stack OverMazzucchi
+
+//len = (multiplexer channels * 2) + 4 adc2_channels
+uint8_t const mean_values_len = (MUX_CHANNELS_N * 2) + 4;
+
+uint32_t mean_values[mean_values_len] = {0};
+uint32_t adc2_history[mean_values_len][HISTORY_L] = {0};
+uint8_t adc2_filled[mean_values_len] = {0};
+uint32_t adc2_curri[mean_values_len] = {0};
 
 bool is_adc_dma_complete = false;
 bool start_dma_read = false;
@@ -471,16 +478,16 @@ static float __calculate_current_mA(uint32_t adc_raw_value) {
 }
 */
 
-/// stack overmazzucchi
+// Stack OverMazzucchi
 int moving_avg(int cidx) {
   if (adc2_filled[cidx]) {
     mean_values[cidx] = mean_values[cidx] -
                         (adc2_history[cidx][adc2_curri[cidx]]) +
-                        (converted[cidx] / HISTORY_L);
-    adc2_history[cidx][adc2_curri[cidx]] = converted[cidx] / HISTORY_L;
+                        (adc2_raw_values[cidx] / HISTORY_L);
+    adc2_history[cidx][adc2_curri[cidx]] = adc2_raw_values[cidx] / HISTORY_L;
   } else {
-    mean_values[cidx] += (converted[cidx] / HISTORY_L);
-    adc2_history[cidx][adc2_curri[cidx]] = converted[cidx] / HISTORY_L;
+    mean_values[cidx] += (adc2_raw_values[cidx] / HISTORY_L);
+    adc2_history[cidx][adc2_curri[cidx]] = adc2_raw_values[cidx] / HISTORY_L;
   }
   ++adc2_curri[cidx];
   if (adc2_curri[cidx] == HISTORY_L) {
@@ -500,7 +507,21 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc){
 void read_adc(){
   start_dma_read = false;
 
-  for (uint8_t i = 0; i < 16; i++) {  
+  HAL_ADC_Start_DMA(&hadc1, &adc2_raw_values, adc2_channels_len);
+  while (!is_adc_dma_complete) {
+    continue;
+  }
+  
+  hall_raw_values[0] = adc2_raw_values[adc2_channel_mux_hall];
+  fb_raw_values[0] = adc2_raw_values[adc2_channel_mux_fb];
+  
+  //this values need to be read only once
+  computer_fb = adc2_raw_values[adc2_channel_adcs_as_computer_fb];
+  relay_out = adc2_raw_values[adc2_channel_adcs_relay_out];
+  lvms_out = adc2_raw_values[adc2_channel_adcs_lvms_out];
+  batt_out = adc2_raw_values[adc2_channel_adcs_batt_out];
+
+  for (uint8_t i = 1; i < MUX_CHANNELS_N; i++) {  
     set_address(i);
 
     while (!is_adc_dma_complete) {
@@ -510,21 +531,9 @@ void read_adc(){
 
     hall_raw_values[i] = adc2_raw_values[adc2_channel_mux_hall];
     fb_raw_values[i] = adc2_raw_values[adc2_channel_mux_fb];
-    computer_fb = adc2_raw_values[adc2_channel_adcs_as_computer_fb];
-    relay_out = adc2_raw_values[adc2_channel_adcs_relay_out];
-    lvms_out = adc2_raw_values[adc2_channel_adcs_lvms_out];
-    batt_out = adc2_raw_values[adc2_channel_adcs_batt_out];
 
     HAL_ADC_Start_DMA(&hadc1, &adc2_raw_values, adc2_channels_len);
   }
-
-  start_value_conversion = true;
-}
-
-void convert_values(){
-  start_value_conversion = false;
-
-  //code
 
   start_calculating_averages = true;
 }
@@ -532,7 +541,24 @@ void convert_values(){
 void calculate_avarages(){
   start_calculating_averages = false;
 
-  //code
+  for (uint8_t i = 0; i < MUX_CHANNELS_N; i++)
+  {
+    fb_average_values[i] = moving_avg(i);
+    hall_average_values[i] = moving_avg(MUX_CHANNELS_N + i); 
+  }
+  
+  computer_fb = moving_avg(MUX_CHANNELS_N * 2);
+  relay_out = moving_avg(MUX_CHANNELS_N * 2 + 1);
+  lvms_out = moving_avg(MUX_CHANNELS_N * 2 + 2);
+  batt_out = moving_avg(MUX_CHANNELS_N * 2 + 3);
+  
+  start_value_conversion = true;
+}
+
+void convert_values(){
+  start_value_conversion = false;
+
+  
 }
 
 void send_to_can(){}

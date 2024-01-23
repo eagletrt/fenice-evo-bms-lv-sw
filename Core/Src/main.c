@@ -191,13 +191,13 @@ int main(void)
     {
       read_adc();
     }
-    if (start_value_conversion)
-    {
-      convert_values();
-    }
     if (start_calculating_averages)
     {
       calculate_avarages();
+    }
+    if (start_value_conversion)
+    {
+      convert_values();
     }
     /* USER CODE END WHILE */
 
