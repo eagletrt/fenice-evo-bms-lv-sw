@@ -85,6 +85,10 @@ CAN_FilterTypeDef seconday_filter = {
   .FilterActivation     = ENABLE,
   .SlaveStartFilterBank = 14,
 };
+
+extern bool start_dma_read;
+extern bool start_value_conversion;
+extern bool start_calculating_averages;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -168,6 +172,8 @@ int main(void)
   {
     can_init_errors_handler(can_manager_error_code);
   }
+
+  ADC_routine_start();
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -180,6 +186,19 @@ int main(void)
     consume_rx_queue(secondary_can_id);
     flush_tx_queue(primary_can_id);
     flush_tx_queue(secondary_can_id);
+
+    if (start_dma_read)
+    {
+      read_adc();
+    }
+    if (start_value_conversion)
+    {
+      convert_values();
+    }
+    if (start_calculating_averages)
+    {
+      calculate_avarages();
+    }
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */

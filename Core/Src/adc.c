@@ -372,7 +372,10 @@ uint32_t adc2_history[ADC2_CHANNELS_N][HISTORY_L] = {0};
 uint8_t adc2_filled[ADC2_CHANNELS_N] = {0};
 uint32_t adc2_curri[ADC2_CHANNELS_N] = {0};
 
-bool is_adc_dma_complete = true;
+bool is_adc_dma_complete = false;
+bool start_dma_read = false;
+bool start_value_conversion = false;
+bool start_calculating_averages = false;
 
 /**
  * This is done to know the voltage used by the ADC as a reference
@@ -490,12 +493,13 @@ int moving_avg(int cidx) {
   return -1;
 }
 
-void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
-{
+void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc){
   is_adc_dma_complete = true;
 }
 
 void read_adc(){
+  start_dma_read = false;
+
   for (uint8_t i = 0; i < 16; i++) {  
     set_address(i);
 
@@ -513,18 +517,28 @@ void read_adc(){
 
     HAL_ADC_Start_DMA(&hadc1, &adc2_raw_values, adc2_channels_len);
   }
+
+  start_value_conversion = true;
 }
 
-void convert_values(){}
-void calculate_avarages(){}
+void convert_values(){
+  start_value_conversion = false;
+
+  //code
+
+  start_calculating_averages = true;
+}
+
+void calculate_avarages(){
+  start_calculating_averages = false;
+
+  //code
+}
 
 void send_to_can(){}
 
 void ADC_routine(TIM_HandleTypeDef *htim){
-  read_adc();
-  convert_values();
-  calculate_avarages();
-  send_to_can();
+  start_dma_read = true;
 }
 
 void ADC_routine_start() {
@@ -537,5 +551,6 @@ void ADC_routine_start() {
  * 
  * Vref calibration is missing
  * Understand and incorporate conversions
+ * send_to_can()
 */
 /* USER CODE END 1 */

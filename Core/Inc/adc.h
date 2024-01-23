@@ -29,7 +29,7 @@ extern "C" {
 #include "main.h"
 
 /* USER CODE BEGIN Includes */
-
+#include <stdbool.h>
 /* USER CODE END Includes */
 
 extern ADC_HandleTypeDef hadc1;
@@ -40,6 +40,9 @@ extern ADC_HandleTypeDef hadc2;
 
 #define HISTORY_L         25
 #define ADC2_CHANNELS_N   6
+bool start_dma_read;
+bool start_value_conversion;
+bool start_calculating_averages;
 
 enum multiplexer_channel_addresses {
   multiplexer_channel_0,
@@ -77,6 +80,9 @@ void MX_ADC2_Init(void);
 /* USER CODE BEGIN Prototypes */
 
 void ADC_routine_start();
+void read_adc();
+void convert_values();
+void calculate_avarages();
 
 /* USER CODE END Prototypes */
 
