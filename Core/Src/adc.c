@@ -391,9 +391,6 @@ void ADC_routine(TIM_HandleTypeDef *htim){
 }
 
 void ADC_routine_start() {
-  //Start timer for adc2 readings (vref)
-  HAL_TIM_Base_Start_IT(&htim10); //TIMER_ADC_MEAS
-
   HAL_TIM_RegisterCallback(&htim6, HAL_TIM_PERIOD_ELAPSED_CB_ID, &ADC_routine);
   //Start timer for ADC_routine
   HAL_TIM_Base_Start_IT(&htim6);
