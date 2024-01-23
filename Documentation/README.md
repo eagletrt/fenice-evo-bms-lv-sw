@@ -9,3 +9,7 @@ implement read to can
 copy comments describing functions from the old code
 
 write readme
+
+document the calculation for the conversion and the vref
+
+add links to stackovermazzucchi
