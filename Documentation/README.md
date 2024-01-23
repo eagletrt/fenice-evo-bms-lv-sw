@@ -6,8 +6,10 @@ TO-DO
 
 ## ADC 
 
+- Timer 10
+  - interrupt every 10ms
+  - used to start the ADC_routine()
+
 TO-DO
 
-- [ ] oversampling adc
-- [ ] fix timer for adc routine
 - [ ] send values to can
