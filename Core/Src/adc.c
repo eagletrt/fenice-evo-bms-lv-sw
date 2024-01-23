@@ -371,13 +371,6 @@ uint32_t batt_out = 0;
 //---
 float vref;
 
-// Stack OverMazzucchi
-
-uint32_t mean_values[MEAN_VALUES_ARRAY_LEN] = {0};
-uint32_t adc2_history[MEAN_VALUES_ARRAY_LEN][HISTORY_L] = {0};
-uint8_t adc2_filled[MEAN_VALUES_ARRAY_LEN] = {0};
-uint32_t adc2_curri[MEAN_VALUES_ARRAY_LEN] = {0};
-
 // routine process flags
 bool is_adc_dma_complete = false;
 bool start_dma_read = false;
@@ -398,7 +391,11 @@ void ADC_routine(TIM_HandleTypeDef *htim){
 }
 
 void ADC_routine_start() {
+  //Start timer for adc2 readings (vref)
+  HAL_TIM_Base_Start_IT(&htim10); //TIMER_ADC_MEAS
+
   HAL_TIM_RegisterCallback(&htim6, HAL_TIM_PERIOD_ELAPSED_CB_ID, &ADC_routine);
+  //Start timer for ADC_routine
   HAL_TIM_Base_Start_IT(&htim6);
 }
 
@@ -511,6 +508,13 @@ float current_transducer_get_electric_current_mA(uint32_t value_from_adc) {
 }
 
 // Stack OverMazzucchi
+// https://github.com/eagletrt/not-yet-acquisinator-sw/blob/master/Core/Src/acquisinator.c
+
+uint32_t mean_values[MEAN_VALUES_ARRAY_LEN] = {0};
+uint32_t adc2_history[MEAN_VALUES_ARRAY_LEN][HISTORY_L] = {0};
+uint8_t adc2_filled[MEAN_VALUES_ARRAY_LEN] = {0};
+uint32_t adc2_curri[MEAN_VALUES_ARRAY_LEN] = {0};
+
 int moving_avg(int cidx) {
   if (adc2_filled[cidx]) {
     mean_values[cidx] = mean_values[cidx] -
@@ -586,33 +590,26 @@ void calculate_avarages(){
 void convert_values(){
   start_value_conversion = false;
 
-  /*
-  le funzioni di conversione prendevano il valore medio
-  e poi usando ADC_get_calibrated_mV passavano da un valore come 4096
-  ad un valore in millivolt tipo 3300 mV, invece per gli hall sensor
-  c'è la funzione CT_get_electric_current_mA che usa
-  il valore di conversione fornito dal datasheet del sensore
-  */
-
-  /*
-    Software calibration
-
-            if (i != S_HALL0 && i != S_HALL1 && i != S_HALL2) {
-            *(mux_hall_converted + i) = ADC_get_calibrated_mV(&ADC_HALL_AND_FB, result / N_ADC_SAMPLES_MUX_HALL);
-        } else if (i == S_HALL1) {
-            *(mux_hall_converted + i) = CT_get_electric_current_mA(result / N_ADC_SAMPLES_MUX_HALL) -
-                                        S_HALL_1_OFFSET_mA;
-        } else if (i == S_HALL2) {
-            *(mux_hall_converted + i) = CT_get_electric_current_mA(result / N_ADC_SAMPLES_MUX_HALL) -
-                                        S_HALL_2_OFFSET_mA;
-        }
-  */
-
   for (uint8_t i = 0; i < MUX_CHANNELS_N; i++)
   {
-    fb_converted_values[i] = current_transducer_get_electric_current_mA(fb_average_values[i]);
+    fb_converted_values[i] = ADC_get_calibrated_mV(&hadc1, fb_average_values[i]);
+
+    //S_HALL0 is currently not used
+    //if (i == S_HALL0) {}
+    
+    if (i == S_HALL1) {
+      hall_converted_values[i] = current_transducer_get_electric_current_mA(hall_average_values[MUX_CHANNELS_N + 1]) - S_HALL1_OFFSET_mA;
+    } else if (i == S_HALL2) {
+      hall_converted_values[i] = current_transducer_get_electric_current_mA(hall_average_values[MUX_CHANNELS_N + 1]) - S_HALL2_OFFSET_mA;
+    } else {
+      hall_converted_values[i] = current_transducer_get_electric_current_mA(hall_average_values[MUX_CHANNELS_N + 1]);
+    }
   }
-  
+
+  computer_fb = ADC_get_calibrated_mV(&hadc1, computer_fb) * ADC2_VOLTAGE_DIVIDER_MULTIPLIER;
+  relay_out = ADC_get_calibrated_mV(&hadc1, relay_out) * ADC2_VOLTAGE_DIVIDER_MULTIPLIER;
+  lvms_out = ADC_get_calibrated_mV(&hadc1, lvms_out) * ADC2_VOLTAGE_DIVIDER_MULTIPLIER;
+  batt_out = ADC_get_calibrated_mV(&hadc1, batt_out) * ADC2_VOLTAGE_DIVIDER_MULTIPLIER;
 }
 
 void send_to_can(){}

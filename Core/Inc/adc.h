@@ -38,11 +38,18 @@ extern ADC_HandleTypeDef hadc2;
 
 /* USER CODE BEGIN Private defines */
 
-#define HISTORY_L             25
-#define ADC2_CHANNELS_N       6
-#define MUX_CHANNELS_N        16
+#define HISTORY_L                       25
+#define ADC2_CHANNELS_N                 6
+#define MUX_CHANNELS_N                  16
 //(multiplexer channels * 2) + 4 adc2_channels
-#define MEAN_VALUES_ARRAY_LEN (MUX_CHANNELS_N * 2) + 4
+#define MEAN_VALUES_ARRAY_LEN           ((MUX_CHANNELS_N * 2) + 4)
+#define S_HALL0                         1
+#define S_HALL1                         3
+#define S_HALL2                         5
+#define S_HALL1_OFFSET_mA               300.0f
+#define S_HALL2_OFFSET_mA               1500.0f
+#define ADC2_VOLTAGE_DIVIDER_MULTIPLIER 9.0f
+
 bool start_dma_read;
 bool start_value_conversion;
 bool start_calculating_averages;
