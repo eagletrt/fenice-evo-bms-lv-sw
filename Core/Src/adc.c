@@ -369,7 +369,7 @@ uint32_t relay_out = 0;
 uint32_t lvms_out = 0;
 uint32_t batt_out = 0;
 //---
-float vref;
+float vref = 0;
 
 // routine process flags
 bool is_adc_dma_complete = false;
@@ -391,9 +391,9 @@ void ADC_routine(TIM_HandleTypeDef *htim){
 }
 
 void ADC_routine_start() {
-  HAL_TIM_RegisterCallback(&htim6, HAL_TIM_PERIOD_ELAPSED_CB_ID, &ADC_routine);
+  HAL_TIM_RegisterCallback(TIMER_ADC_ROUTINE, HAL_TIM_PERIOD_ELAPSED_CB_ID, &ADC_routine);
   //Start timer for ADC_routine
-  HAL_TIM_Base_Start_IT(&htim6);
+  HAL_TIM_Base_Start_IT(TIMER_ADC_ROUTINE);
 }
 
 void set_address(uint8_t multiplexer_channel_address){

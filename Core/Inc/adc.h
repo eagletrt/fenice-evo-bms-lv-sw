@@ -42,6 +42,7 @@ extern ADC_HandleTypeDef hadc2;
 #define ADC_HALL_AND_FB                 &hadc2
 #define ADC_VREF_CALIBRATION            &hadc1
 #define TIMER_ADC_CALIBRATION           &htim1
+#define TIMER_ADC_ROUTINE               &htim6
 #define TIMER_ADC_CALIBRATION_CHANNEL   TIM_CHANNEL_1
 //Average history
 #define HISTORY_L                       25
