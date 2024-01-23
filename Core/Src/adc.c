@@ -354,74 +354,53 @@ void HAL_ADC_MspDeInit(ADC_HandleTypeDef* adcHandle)
 }
 
 /* USER CODE BEGIN 1 */
-//uint16_t vref;
+//use the same array for all steps?
+uint16_t adc2_raw_values[ADC2_CHANNELS_N] = {0};
+uint8_t adc2_channels_len = sizeof(adc2_raw_values) / sizeof(adc2_raw_values[0]);
 uint32_t fb_raw_values[MUX_CHANNELS_N] = {0};
 uint32_t hall_raw_values[MUX_CHANNELS_N] = {0};
 uint32_t fb_average_values[MUX_CHANNELS_N] = {0};
 uint32_t hall_average_values[MUX_CHANNELS_N] = {0};
-uint32_t fb_converted_values[MUX_CHANNELS_N] = {0};
-uint32_t hall_converted_values[MUX_CHANNELS_N] = {0};
+float fb_converted_values[MUX_CHANNELS_N] = {0};
+float hall_converted_values[MUX_CHANNELS_N] = {0};
+//using the same variable for all steps
 uint32_t computer_fb = 0;
 uint32_t relay_out = 0;
 uint32_t lvms_out = 0;
 uint32_t batt_out = 0;
-
-uint16_t adc2_raw_values[ADC2_CHANNELS_N] = {0};
-uint8_t adc2_channels_len = sizeof(adc2_raw_values) / sizeof(adc2_raw_values[0]);
+//---
+float vref;
 
 // Stack OverMazzucchi
 
-//len = (multiplexer channels * 2) + 4 adc2_channels
-uint8_t const mean_values_len = (MUX_CHANNELS_N * 2) + 4;
+uint32_t mean_values[MEAN_VALUES_ARRAY_LEN] = {0};
+uint32_t adc2_history[MEAN_VALUES_ARRAY_LEN][HISTORY_L] = {0};
+uint8_t adc2_filled[MEAN_VALUES_ARRAY_LEN] = {0};
+uint32_t adc2_curri[MEAN_VALUES_ARRAY_LEN] = {0};
 
-uint32_t mean_values[mean_values_len] = {0};
-uint32_t adc2_history[mean_values_len][HISTORY_L] = {0};
-uint8_t adc2_filled[mean_values_len] = {0};
-uint32_t adc2_curri[mean_values_len] = {0};
-
+// routine process flags
 bool is_adc_dma_complete = false;
 bool start_dma_read = false;
 bool start_value_conversion = false;
 bool start_calculating_averages = false;
+bool vref_samples_acquired = false;
 
-/**
- * This is done to know the voltage used by the ADC as a reference
- * to see how this formula has been found check the paper at link: http://www.efton.sk/STM32/STM32_VREF.pdf
- * or go in Doc/STM32_VREF.pdf
-*/
-/*
-void ADC_Vref_Calibration() {
-    uint16_t buffer[N_ADC_CALIBRATION_CHANNELS * N_ADC_CALIBRATION_SAMPLES] = {};
-    uint32_t vdda                                                           = 0;
-    uint32_t vref_int                                                       = 0;
-    uint16_t *factory_calibration                                           = (uint16_t *)0x1FFF7A2A;
-    HAL_TIM_PWM_Start(&TIMER_ADC_CALIBRATION, TIMER_ADC_CALIBRATION_CHANNEL);
-    if (HAL_ADC_Start_DMA(
-            &CALIBRATION_ADC, (uint32_t *)&buffer, N_ADC_CALIBRATION_CHANNELS * N_ADC_CALIBRATION_SAMPLES) != HAL_OK) {
-        error_set(ERROR_ADC_INIT, 0);
-    } else {
-        error_reset(ERROR_ADC_INIT, 0);
-    }
-
-    //Wait until 500 samples has been reached
-    while (vref_calibration) {
-    }
-
-    HAL_TIM_PWM_Stop(&TIMER_ADC_CALIBRATION, TIMER_ADC_CALIBRATION_CHANNEL);
-    for (uint16_t i = 0; i < N_ADC_CALIBRATION_SAMPLES; i++) {
-        vref_int += buffer[N_ADC_CALIBRATION_CHANNELS * i];
-        vdda += buffer[N_ADC_CALIBRATION_CHANNELS * i + 1];
-    }
-
-    vdda /= 500;
-    vref_int /= 500;
-
-    vref = ADC_get_value_mV(&hadc1, vdda) * ((float)*factory_calibration / vref_int);
-    if (vref < 3100 || vref > 3300) {
-        error_set(ERROR_ADC_INIT, 0);
-    }
+void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc){
+  if (hadc == &hadc1) {
+    is_adc_dma_complete = true;
+  } else if (hadc == &hadc2) {
+    vref_samples_acquired = true;
+  }
 }
-*/
+
+void ADC_routine(TIM_HandleTypeDef *htim){
+  start_dma_read = true;
+}
+
+void ADC_routine_start() {
+  HAL_TIM_RegisterCallback(&htim6, HAL_TIM_PERIOD_ELAPSED_CB_ID, &ADC_routine);
+  HAL_TIM_Base_Start_IT(&htim6);
+}
 
 void set_address(uint8_t multiplexer_channel_address){
   HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, (multiplexer_channel_address >> 0) & 1 ? GPIO_PIN_SET : GPIO_PIN_RESET);
@@ -430,10 +409,12 @@ void set_address(uint8_t multiplexer_channel_address){
   HAL_GPIO_WritePin(GPIOA, GPIO_PIN_12, (multiplexer_channel_address >> 3) & 1 ? GPIO_PIN_SET : GPIO_PIN_RESET);
 }
 
-/*
-uint8_t ADC_get_resolution_bits(ADC_HandleTypeDef *adcHandle) {
+uint8_t ADC_get_resolution_bits(ADC_HandleTypeDef* adcHandle) {
+    
+    // comments found in the old code:
     // To get this value look at the reference manual RM0390
     // page 385 section 13.13.2 register ADC_CR1 RES[1:0] bits
+    
     uint8_t ret = 12;
     switch (ADC_GET_RESOLUTION(adcHandle)) {
         case 0U:
@@ -452,31 +433,82 @@ uint8_t ADC_get_resolution_bits(ADC_HandleTypeDef *adcHandle) {
     return ret;
 }
 
-uint32_t ADC_get_tot_voltage_levels(ADC_HandleTypeDef *adcHandle) {
+uint32_t ADC_get_tot_voltage_levels(ADC_HandleTypeDef* adcHandle) {
     uint8_t value = ADC_get_resolution_bits(adcHandle);
     return ((uint32_t)(1U << value) - 1);  // 2^value - 1
+}
+
+float ADC_get_value_mV(ADC_HandleTypeDef *adcHandle, uint32_t value_from_adc) {
+  
+  //define in the old code
+  const uint16_t ADC_FSVR_mV = 3300U;
+
+  return value_from_adc * ((float)ADC_FSVR_mV / ADC_get_tot_voltage_levels(adcHandle));
+}
+
+// See Documentation/STM32_VREF.pdf for more information
+void ADC_vref_calibration() {
+    uint16_t buffer[2 * 500] = {0}; //N_ADC_CALIBRATION_CHANNELS * N_ADC_CALIBRATION_SAMPLES
+    uint32_t vdda = 0;
+    uint32_t vref_int = 0;
+    uint16_t *factory_calibration = (uint16_t *)0x1FFF7A2A;
+    HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_1); //TIMER_ADC_CALIBRATION, TIMER_ADC_CALIBRATION_CHANNEL
+    // CALIBRATION_ADC, -, N_ADC_CALIBRATION_SAMPLES, N_ADC_CALIBRATION_SAMPLES
+    if (HAL_ADC_Start_DMA(&hadc1, (uint32_t *)&buffer, 2 * 500) != HAL_OK) {
+        // error_set(ERROR_ADC_INIT, 0);
+        // TO-DO generate error
+    } else {
+        // error_reset(ERROR_ADC_INIT, 0);
+        // TO-DO generate error
+    }
+
+    //Wait until 500 samples has been reached
+    while (!vref_samples_acquired) {}
+
+    HAL_TIM_PWM_Stop(&htim1, TIM_CHANNEL_1);
+    for (uint16_t i = 0; i < 500; i++) { //N_ADC_CALIBRATION_SAMPLES
+      vref_int += buffer[2 * i]; //N_ADC_CALIBRATION_CHANNELS
+      vdda += buffer[2 * i + 1]; //N_ADC_CALIBRATION_CHANNELS
+    }
+
+    vdda /= 500;
+    vref_int /= 500;
+
+    vref = ADC_get_value_mV(&hadc1, vdda) * ((float)*factory_calibration / vref_int);
+    
+    // if (vref < 3100 || vref > 3300) {
+    //     error_set(ERROR_ADC_INIT, 0);
+    // }
+    // TO-DO generate error if vref is not plausible
 }
 
 float ADC_get_calibrated_mV(ADC_HandleTypeDef *adcHandle, uint32_t value_from_adc) {
     return value_from_adc * ((float)vref / ADC_get_tot_voltage_levels(adcHandle));
 }
 
-float CT_get_electric_current_mA(uint32_t adc_raw_value) {
-    float current_in_mA = __calculate_current_mA(adc_raw_value);
-    //float current_in_mA = CT_get_average_electric_current(128)
-    isOvercurrent = (current_in_mA > CT_OVERCURRENT_THRESHOLD_MA);
-    return current_in_mA;
-}
-
-static float __calculate_current_mA(uint32_t adc_raw_value) {
-    float adc_val_mV = ADC_get_calibrated_mV(&ADC_HALL_AND_FB, adc_raw_value);
+float calculate_current_mA(uint32_t value_from_adc) {
+    float adc_val_mV = ADC_get_calibrated_mV(&hadc2, value_from_adc);
 
     // current [mA] = ((Vadc-Vref)[mV] / Sensibility [mV/A])*1000
+    
+    // defines in the old code 
+    const uint16_t HO_50_SP33_1106_VREF_mV = 1645U;
+    const float HO_50_SP33_1106_THEORETICAL_SENSITIVITY = 9.2f;
 
     float current = ((adc_val_mV - HO_50_SP33_1106_VREF_mV) / HO_50_SP33_1106_THEORETICAL_SENSITIVITY) * 1000;
     return current;
 }
-*/
+
+float current_transducer_get_electric_current_mA(uint32_t value_from_adc) {
+    float current_in_mA = calculate_current_mA(value_from_adc);
+    
+    //#define CT_OVERCURRENT_THRESHOLD_MA (50000U)
+    //is_overcurrent = (current_in_ma > CT_OVERCURRENT_THRESHOLD_MA);
+    
+    //TO-DO generate error if overcurrent 
+
+    return current_in_mA;
+}
 
 // Stack OverMazzucchi
 int moving_avg(int cidx) {
@@ -498,10 +530,6 @@ int moving_avg(int cidx) {
     return mean_values[cidx];
   }
   return -1;
-}
-
-void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc){
-  is_adc_dma_complete = true;
 }
 
 void read_adc(){
@@ -558,25 +586,34 @@ void calculate_avarages(){
 void convert_values(){
   start_value_conversion = false;
 
+  /*
+  le funzioni di conversione prendevano il valore medio
+  e poi usando ADC_get_calibrated_mV passavano da un valore come 4096
+  ad un valore in millivolt tipo 3300 mV, invece per gli hall sensor
+  c'è la funzione CT_get_electric_current_mA che usa
+  il valore di conversione fornito dal datasheet del sensore
+  */
+
+  /*
+    Software calibration
+
+            if (i != S_HALL0 && i != S_HALL1 && i != S_HALL2) {
+            *(mux_hall_converted + i) = ADC_get_calibrated_mV(&ADC_HALL_AND_FB, result / N_ADC_SAMPLES_MUX_HALL);
+        } else if (i == S_HALL1) {
+            *(mux_hall_converted + i) = CT_get_electric_current_mA(result / N_ADC_SAMPLES_MUX_HALL) -
+                                        S_HALL_1_OFFSET_mA;
+        } else if (i == S_HALL2) {
+            *(mux_hall_converted + i) = CT_get_electric_current_mA(result / N_ADC_SAMPLES_MUX_HALL) -
+                                        S_HALL_2_OFFSET_mA;
+        }
+  */
+
+  for (uint8_t i = 0; i < MUX_CHANNELS_N; i++)
+  {
+    fb_converted_values[i] = current_transducer_get_electric_current_mA(fb_average_values[i]);
+  }
   
 }
 
 void send_to_can(){}
-
-void ADC_routine(TIM_HandleTypeDef *htim){
-  start_dma_read = true;
-}
-
-void ADC_routine_start() {
-  HAL_TIM_RegisterCallback(&htim6, HAL_TIM_PERIOD_ELAPSED_CB_ID, &ADC_routine);
-  HAL_TIM_Base_Start_IT(&htim6);
-}
-
-/**
- * Notes
- * 
- * Vref calibration is missing
- * Understand and incorporate conversions
- * send_to_can()
-*/
 /* USER CODE END 1 */

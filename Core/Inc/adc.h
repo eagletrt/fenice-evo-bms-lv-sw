@@ -38,9 +38,11 @@ extern ADC_HandleTypeDef hadc2;
 
 /* USER CODE BEGIN Private defines */
 
-#define HISTORY_L         25
-#define ADC2_CHANNELS_N   6
-#define MUX_CHANNELS_N    16
+#define HISTORY_L             25
+#define ADC2_CHANNELS_N       6
+#define MUX_CHANNELS_N        16
+//(multiplexer channels * 2) + 4 adc2_channels
+#define MEAN_VALUES_ARRAY_LEN (MUX_CHANNELS_N * 2) + 4
 bool start_dma_read;
 bool start_value_conversion;
 bool start_calculating_averages;
@@ -80,6 +82,7 @@ void MX_ADC2_Init(void);
 
 /* USER CODE BEGIN Prototypes */
 
+void ADC_vref_calibration();
 void ADC_routine_start();
 void read_adc();
 void calculate_avarages();

@@ -173,6 +173,7 @@ int main(void)
     can_init_errors_handler(can_manager_error_code);
   }
 
+  ADC_vref_calibration();
   ADC_routine_start();
   /* USER CODE END 2 */
 
