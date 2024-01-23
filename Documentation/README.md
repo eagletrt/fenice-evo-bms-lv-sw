@@ -1,15 +1,13 @@
-//Init ADC related stuff
-ADC_init_status_flags();
-ADC_init_mux();
-ADC_Vref_Calibration();
-ADC_start_ADC2_readings();
+# Documentation
 
-implement read to can
+TO-DO
 
-copy comments describing functions from the old code
+- [ ] document the calculation for the conversion and the vref
 
-write readme
+## ADC 
 
-document the calculation for the conversion and the vref
+TO-DO
 
-add links to stackovermazzucchi
+- [ ] oversampling adc
+- [ ] fix timer for adc routine
+- [ ] send values to can
