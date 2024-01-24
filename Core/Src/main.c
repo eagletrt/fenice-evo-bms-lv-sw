@@ -175,6 +175,11 @@ int main(void)
 
   ADC_vref_calibration();
   ADC_routine_start();
+  //maybe find a better solution than using extern
+  extern bool start_dma_read;
+  extern bool start_calculating_averages;
+  extern bool start_value_conversion;
+  extern bool start_pushing_can_queue;
   /* USER CODE END 2 */
 
   /* Infinite loop */
