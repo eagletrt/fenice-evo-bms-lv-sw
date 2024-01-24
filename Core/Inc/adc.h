@@ -40,6 +40,12 @@ extern ADC_HandleTypeDef hadc1;
 extern ADC_HandleTypeDef hadc2;
 
 /* USER CODE BEGIN Private defines */
+/**
+ * @author Enrico Dalla Croce (Kalsifer-742)
+ * @date 24/01/2024
+ * 
+ * @brief Code to read, average and convert values read from the ADC2
+*/
 
 //Hardware
 #define ADC_HALL_AND_FB                 &hadc2

@@ -352,6 +352,13 @@ void HAL_ADC_MspDeInit(ADC_HandleTypeDef* adcHandle)
 }
 
 /* USER CODE BEGIN 1 */
+/**
+ * @author Enrico Dalla Croce (Kalsifer-742)
+ * @date 24/01/2024
+ * 
+ * @brief Code to read, average and convert values read from the ADC2
+*/
+
 uint32_t adc2_raw_values[ADC2_CHANNELS_N] = {0};
 uint8_t adc2_channels_len = sizeof(adc2_raw_values) / sizeof(adc2_raw_values[0]);
 uint32_t fb_raw_values[MUX_CHANNELS_N] = {0};
@@ -509,6 +516,36 @@ float current_transducer_get_electric_current_mA(uint32_t value_from_adc) {
     return current_in_mA;
 }
 
+void read_adc_channels(){
+  HAL_ADC_Start_DMA(ADC_HALL_AND_FB, adc2_raw_values, adc2_channels_len);
+  while (!is_adc_dma_complete) {
+    continue;
+  }
+  
+  hall_raw_values[0] = adc2_raw_values[adc2_channel_mux_hall];
+  fb_raw_values[0] = adc2_raw_values[adc2_channel_mux_fb];
+  
+  // this values need to be read only once
+  raw_computer_fb = adc2_raw_values[adc2_channel_adcs_as_computer_fb];
+  raw_relay_out = adc2_raw_values[adc2_channel_adcs_relay_out];
+  raw_lvms_out = adc2_raw_values[adc2_channel_adcs_lvms_out];
+  raw_batt_out = adc2_raw_values[adc2_channel_adcs_batt_out];
+
+  for (uint8_t i = 1; i < MUX_CHANNELS_N; i++) {  
+    set_address(i);
+
+    while (!is_adc_dma_complete) {
+      continue;
+    }
+    is_adc_dma_complete = false;
+
+    hall_raw_values[i] = adc2_raw_values[adc2_channel_mux_hall];
+    fb_raw_values[i] = adc2_raw_values[adc2_channel_mux_fb];
+
+    HAL_ADC_Start_DMA(ADC_HALL_AND_FB, adc2_raw_values, adc2_channels_len);
+  }
+}
+
 // Stack OverMazzucchi
 // https://github.com/eagletrt/not-yet-acquisinator-sw/blob/master/Core/Src/acquisinator.c
 
@@ -576,35 +613,8 @@ void convert_values(){
 
 void adc_acquisition(){
   start_adc_acquisition = false;
-
-  HAL_ADC_Start_DMA(ADC_HALL_AND_FB, adc2_raw_values, adc2_channels_len);
-  while (!is_adc_dma_complete) {
-    continue;
-  }
   
-  hall_raw_values[0] = adc2_raw_values[adc2_channel_mux_hall];
-  fb_raw_values[0] = adc2_raw_values[adc2_channel_mux_fb];
-  
-  // this values need to be read only once
-  raw_computer_fb = adc2_raw_values[adc2_channel_adcs_as_computer_fb];
-  raw_relay_out = adc2_raw_values[adc2_channel_adcs_relay_out];
-  raw_lvms_out = adc2_raw_values[adc2_channel_adcs_lvms_out];
-  raw_batt_out = adc2_raw_values[adc2_channel_adcs_batt_out];
-
-  for (uint8_t i = 1; i < MUX_CHANNELS_N; i++) {  
-    set_address(i);
-
-    while (!is_adc_dma_complete) {
-      continue;
-    }
-    is_adc_dma_complete = false;
-
-    hall_raw_values[i] = adc2_raw_values[adc2_channel_mux_hall];
-    fb_raw_values[i] = adc2_raw_values[adc2_channel_mux_fb];
-
-    HAL_ADC_Start_DMA(ADC_HALL_AND_FB, adc2_raw_values, adc2_channels_len);
-  }
-
+  read_adc_channels();
   calculate_avarages();
   convert_values();
 }
