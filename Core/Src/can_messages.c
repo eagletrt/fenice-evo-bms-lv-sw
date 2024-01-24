@@ -5,6 +5,13 @@
 
 #include "can_messages.h"
 
+#define BMS_LV_MSG_HANDLER(ntw, NTW, msg_name, MSG_NAME)                       \
+  ntw##_##msg_name##_t raw;                                                    \
+  ntw##_##msg_name##_converted_t converted;                                    \
+  ntw##_##msg_name##_unpack(&raw, msg->data, NTW##_##MSG_NAME##_BYTE_SIZE);    \
+  ntw##_##msg_name##_raw_to_conversion_struct(&converted, &raw);               \
+  can##_##msg_name##_##handler(converted);                                     \
+
 void can_set_radiator_speed_handler(primary_set_radiator_speed_converted_t converted);
 void can_set_pumps_speed_handler(primary_set_pumps_speed_converted_t converted);
 void can_set_inverter_connection_status_handler(primary_set_inverter_connection_status_converted_t converted);
@@ -85,7 +92,6 @@ void can_set_radiator_speed_handler(primary_set_radiator_speed_converted_t conve
 
 void can_set_pumps_speed_handler(primary_set_pumps_speed_converted_t converted){
     //TO-DO
-
 }
 
 void can_set_inverter_connection_status_handler(primary_set_inverter_connection_status_converted_t converted){
