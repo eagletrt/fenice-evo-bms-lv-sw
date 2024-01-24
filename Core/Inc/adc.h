@@ -62,6 +62,7 @@ extern ADC_HandleTypeDef hadc2;
 bool start_dma_read;
 bool start_value_conversion;
 bool start_calculating_averages;
+bool start_pushing_can_queue;
 
 enum multiplexer_channel_addresses {
   multiplexer_channel_0,
@@ -103,6 +104,7 @@ void ADC_routine_start();
 void read_adc();
 void calculate_avarages();
 void convert_values();
+void push_msgs_to_can_queue();
 
 /* USER CODE END Prototypes */
 

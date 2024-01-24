@@ -31,6 +31,7 @@
 #include "bms_fsm.h"
 #include "can_manager.h"
 #include "can_messages.h"
+#include "adc.h"
 
 /* USER CODE END Includes */
 
@@ -198,6 +199,10 @@ int main(void)
     if (start_value_conversion)
     {
       convert_values();
+    }
+    if (start_pushing_can_queue)
+    {
+      push_msgs_to_can_queue();
     }
     /* USER CODE END WHILE */
 

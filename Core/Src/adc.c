@@ -23,6 +23,8 @@
 /* USER CODE BEGIN 0 */
 #include "tim.h"
 #include <stdbool.h>
+#include <can_manager.h>
+#include <primary_network.h>
 /* USER CODE END 0 */
 
 ADC_HandleTypeDef hadc1;
@@ -372,11 +374,12 @@ uint32_t batt_out = 0;
 float vref = 0;
 
 // routine process flags
+bool vref_samples_acquired = false;
 bool is_adc_dma_complete = false;
 bool start_dma_read = false;
 bool start_value_conversion = false;
 bool start_calculating_averages = false;
-bool vref_samples_acquired = false;
+bool start_pushing_can_queue = false;
 
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc){
   if (hadc == ADC_HALL_AND_FB) {
@@ -606,7 +609,32 @@ void convert_values(){
   relay_out = ADC_get_calibrated_mV(ADC_HALL_AND_FB, relay_out) * ADC2_VOLTAGE_DIVIDER_MULTIPLIER;
   lvms_out = ADC_get_calibrated_mV(ADC_HALL_AND_FB, lvms_out) * ADC2_VOLTAGE_DIVIDER_MULTIPLIER;
   batt_out = ADC_get_calibrated_mV(ADC_HALL_AND_FB, batt_out) * ADC2_VOLTAGE_DIVIDER_MULTIPLIER;
+
+  start_pushing_can_queue = true;
 }
 
-void send_to_can(){}
+void push_msgs_to_can_queue(){
+  start_pushing_can_queue = false;
+
+  extern int primary_can_id;
+  can_manager_message_t msg;
+
+  for (uint8_t i = 0; i < MUX_CHANNELS_N; i++)
+  {
+    msg.id = PRIMARY_LV_FEEDBACKS_FRAME_ID;
+    msg.size = PRIMARY_LV_FEEDBACKS_BYTE_SIZE;
+
+    //creato macro
+    primary_lv_feedbacks_t raw_feedback;
+    primary_lv_feedbacks_converted_t conv_feedback;
+    uint8_t buffer[8];
+    primary_lv_feedbacks_conversion_to_raw_struct(&raw_feedback, &conv_feedback);
+    primary_lv_feedbacks_pack(buffer, &raw_feedback, PRIMARY_LV_FEEDBACKS_BYTE_SIZE);
+    memcpy(msg.data, buffer, 8);
+    
+    add_to_tx_queue(primary_can_id, &msg);
+  }
+
+  //TO-DO
+}
 /* USER CODE END 1 */
