@@ -36,7 +36,7 @@ extern "C" {
 
 /* Exported types ------------------------------------------------------------*/
 /* USER CODE BEGIN ET */
-int primary_can_id;
+
 /* USER CODE END ET */
 
 /* Exported constants --------------------------------------------------------*/

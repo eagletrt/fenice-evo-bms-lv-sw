@@ -59,11 +59,6 @@ extern ADC_HandleTypeDef hadc2;
 #define S_HALL2_OFFSET_mA               1500.0f
 #define ADC2_VOLTAGE_DIVIDER_MULTIPLIER 9.0f
 
-bool start_dma_read;
-bool start_value_conversion;
-bool start_calculating_averages;
-bool start_pushing_can_queue;
-
 enum multiplexer_channel_addresses {
   multiplexer_channel_0,
   multiplexer_channel_8,
@@ -91,6 +86,25 @@ enum ADC2_channels {
   adc2_channel_adcs_lvms_out,
   adc2_channel_adcs_batt_out,
 };
+
+enum feedbacks_values {
+  feedbacks_value_sd_end,
+  feedbacks_value_bspd_fb,
+  feedbacks_value_imd_fb,
+  feedbacks_value_lvms_fb,
+  feedbacks_value_res_fb,
+  feedbacks_value_pin5_dead,
+  feedbacks_value_lv_encl,
+  feedbacks_value_pin7_dead,
+  feedbacks_value_hv_encl_1_fb,
+  feedbacks_value_hv_encl_2_fb,
+  feedbacks_value_back_plate_fb,
+  feedbacks_value_hvd_fb,
+  feedbacks_value_ams_fb,
+  feedbacks_value_asms_fb,
+  feedbacks_value_interlock_fb,
+  feedbacks_value_sd_start
+}
 
 /* USER CODE END Private defines */
 
