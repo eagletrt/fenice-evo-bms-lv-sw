@@ -613,28 +613,31 @@ void convert_values(){
   start_pushing_can_queue = true;
 }
 
+#define CAN_MANAGER_CREATE_MSG(ntw, NTW, msg_name, MSG_NAME)              \
+  msg.id = NTW##_##MSG_NAME##_FRAME_ID;                                   \
+  msg.size = NTW##_##MSG_NAME##_BYTE_SIZE;                                \
+  ntw##_##msg_name##_converted_t converted = {};                          \
+  ntw##_##msg_name##_conversion_to_raw_struct(&raw, &converted);          \
+  ntw##_##msg_name##_pack(msg.data, &raw, NTW##_##MSG_NAME##_BYTE_SIZE);  \
+
 void push_msgs_to_can_queue(){
   start_pushing_can_queue = false;
 
   extern int primary_can_id;
   can_manager_message_t msg;
 
-  for (uint8_t i = 0; i < MUX_CHANNELS_N; i++)
-  {
-    msg.id = PRIMARY_LV_FEEDBACKS_FRAME_ID;
-    msg.size = PRIMARY_LV_FEEDBACKS_BYTE_SIZE;
+  primary_lv_feedbacks_t raw = {
+    .sd_end = fb_converted_values[feedbacks_value_sd_end],
+    .feedbacks_bspd_fb = fb_converted_values[feedbacks_value_bspd_fb],
+    //ecc...
+  };
+  CAN_MANAGER_CREATE_MSG(primary, PRIMARY, lv_feedbacks, LV_FEEDBACKS);
+  add_to_tx_queue(primary_can_id, &msg);
+  
+  primary_lv_currents_t raw = {
 
-    //creato macro
-    primary_lv_feedbacks_t raw_feedback;
-    primary_lv_feedbacks_converted_t conv_feedback;
-    uint8_t buffer[8];
-    primary_lv_feedbacks_conversion_to_raw_struct(&raw_feedback, &conv_feedback);
-    primary_lv_feedbacks_pack(buffer, &raw_feedback, PRIMARY_LV_FEEDBACKS_BYTE_SIZE);
-    memcpy(msg.data, buffer, 8);
-    
-    add_to_tx_queue(primary_can_id, &msg);
-  }
-
-  //TO-DO
+  };
+  CAN_MANAGER_CREATE_MSG(primary, PRIMARY, lv_currents, LV_CURRENTS);
+  add_to_tx_queue(primary_can_id, &msg);
 }
 /* USER CODE END 1 */
