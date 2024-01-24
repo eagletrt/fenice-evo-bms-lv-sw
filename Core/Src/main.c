@@ -175,11 +175,7 @@ int main(void)
 
   ADC_vref_calibration();
   ADC_routine_start();
-  //maybe find a better solution than using extern
-  extern bool start_dma_read;
-  extern bool start_calculating_averages;
-  extern bool start_value_conversion;
-  extern bool start_pushing_can_queue;
+  extern bool start_adc_acquisition;
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -193,21 +189,9 @@ int main(void)
     flush_tx_queue(primary_can_id);
     flush_tx_queue(secondary_can_id);
 
-    if (start_dma_read)
+    if (start_adc_acquisition)
     {
-      read_adc();
-    }
-    if (start_calculating_averages)
-    {
-      calculate_avarages();
-    }
-    if (start_value_conversion)
-    {
-      convert_values();
-    }
-    if (start_pushing_can_queue)
-    {
-      push_msgs_to_can_queue();
+      adc_acquisition();
     }
     /* USER CODE END WHILE */
 

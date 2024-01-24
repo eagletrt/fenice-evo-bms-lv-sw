@@ -21,10 +21,6 @@
 #include "adc.h"
 
 /* USER CODE BEGIN 0 */
-#include "tim.h"
-#include <stdbool.h>
-#include <can_manager.h>
-#include <primary_network.h>
 /* USER CODE END 0 */
 
 ADC_HandleTypeDef hadc1;
@@ -356,30 +352,33 @@ void HAL_ADC_MspDeInit(ADC_HandleTypeDef* adcHandle)
 }
 
 /* USER CODE BEGIN 1 */
-//use the same array for all steps?
 uint32_t adc2_raw_values[ADC2_CHANNELS_N] = {0};
 uint8_t adc2_channels_len = sizeof(adc2_raw_values) / sizeof(adc2_raw_values[0]);
 uint32_t fb_raw_values[MUX_CHANNELS_N] = {0};
 uint32_t hall_raw_values[MUX_CHANNELS_N] = {0};
-uint32_t fb_average_values[MUX_CHANNELS_N] = {0};
-uint32_t hall_average_values[MUX_CHANNELS_N] = {0};
-float fb_converted_values[MUX_CHANNELS_N] = {0};
-float hall_converted_values[MUX_CHANNELS_N] = {0};
-//using the same variable for all steps
-uint32_t computer_fb = 0;
-uint32_t relay_out = 0;
-uint32_t lvms_out = 0;
-uint32_t batt_out = 0;
+uint32_t fb_avg_values[MUX_CHANNELS_N] = {0};
+uint32_t hall_avg_values[MUX_CHANNELS_N] = {0};
+float fb_final_values[MUX_CHANNELS_N] = {0};
+float hall_final_values[MUX_CHANNELS_N] = {0};
+float raw_computer_fb = 0;
+float avg_computer_fb = 0;
+float final_computer_fb = 0;
+float raw_relay_out = 0;
+float avg_relay_out = 0;
+float final_relay_out = 0;
+float raw_lvms_out = 0;
+float avg_lvms_out = 0;
+float final_lvms_out = 0;
+float raw_batt_out = 0;
+float avg_batt_out = 0;
+float final_batt_out = 0;
 //---
 float vref = 0;
 
-// routine process flags
+// flags
 bool vref_samples_acquired = false;
 bool is_adc_dma_complete = false;
-bool start_dma_read = false;
-bool start_value_conversion = false;
-bool start_calculating_averages = false;
-bool start_pushing_can_queue = false;
+bool start_adc_acquisition = false;
 
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc){
   if (hadc == ADC_HALL_AND_FB) {
@@ -390,7 +389,7 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc){
 }
 
 void ADC_routine(TIM_HandleTypeDef *htim){
-  start_dma_read = true;
+  start_adc_acquisition = true;
 }
 
 void ADC_routine_start() {
@@ -437,7 +436,7 @@ uint32_t ADC_get_tot_voltage_levels(ADC_HandleTypeDef* adcHandle) {
 
 float ADC_get_value_mV(ADC_HandleTypeDef *adcHandle, uint32_t value_from_adc) {
   
-  //define in the old code
+  // define in the old code
   const uint16_t ADC_FSVR_mV = 3300U;
 
   return value_from_adc * ((float)ADC_FSVR_mV / ADC_get_tot_voltage_levels(adcHandle));
@@ -452,13 +451,15 @@ void ADC_vref_calibration() {
   HAL_TIM_PWM_Start(TIMER_ADC_CALIBRATION, TIMER_ADC_CALIBRATION_CHANNEL);
   if (HAL_ADC_Start_DMA(ADC_VREF_CALIBRATION, (uint32_t *)&buffer, ADC_CALIBRATION_CHANNELS_N * ADC_CALIBRATION_SAMPLES_N) != HAL_OK) {
       // error_set(ERROR_ADC_INIT, 0);
+
       // TO-DO generate error
   } else {
       // error_reset(ERROR_ADC_INIT, 0);
+
       // TO-DO generate error
   }
 
-  //Wait until 500 samples has been reached
+  // Wait until 500 samples has been reached
   while (!vref_samples_acquired) {}
 
   HAL_TIM_PWM_Stop(&htim1, TIM_CHANNEL_1);
@@ -475,6 +476,7 @@ void ADC_vref_calibration() {
   // if (vref < 3100 || vref > 3300) {
   //     error_set(ERROR_ADC_INIT, 0);
   // }
+
   // TO-DO generate error if vref is not plausible
 }
 
@@ -498,10 +500,11 @@ float calculate_current_mA(uint32_t value_from_adc) {
 float current_transducer_get_electric_current_mA(uint32_t value_from_adc) {
     float current_in_mA = calculate_current_mA(value_from_adc);
     
-    //#define CT_OVERCURRENT_THRESHOLD_MA (50000U)
-    //is_overcurrent = (current_in_ma > CT_OVERCURRENT_THRESHOLD_MA);
+    // comments in the old code
+    // #define CT_OVERCURRENT_THRESHOLD_MA (50000U)
+    // is_overcurrent = (current_in_ma > CT_OVERCURRENT_THRESHOLD_MA);
     
-    //TO-DO generate error if overcurrent 
+    // TO-DO generate error if overcurrent 
 
     return current_in_mA;
 }
@@ -535,8 +538,44 @@ int moving_avg(int cidx) {
   return -1;
 }
 
-void read_adc(){
-  start_dma_read = false;
+void calculate_avarages(){
+  for (uint8_t i = 0; i < MUX_CHANNELS_N; i++)
+  {
+    fb_avg_values[i] = moving_avg(i);
+    hall_avg_values[i] = moving_avg(MUX_CHANNELS_N + i); 
+  }
+  
+  avg_computer_fb = moving_avg(MUX_CHANNELS_N * 2);
+  avg_relay_out = moving_avg(MUX_CHANNELS_N * 2 + 1);
+  avg_lvms_out = moving_avg(MUX_CHANNELS_N * 2 + 2);
+  avg_batt_out = moving_avg(MUX_CHANNELS_N * 2 + 3);
+}
+
+void convert_values(){
+  for (uint8_t i = 0; i < MUX_CHANNELS_N; i++)
+  {
+    fb_final_values[i] = ADC_get_calibrated_mV(ADC_HALL_AND_FB, fb_avg_values[i]);
+
+    // S_HALL0 is currently not used
+    // if (i == S_HALL0) {}
+    
+    if (i == S_HALL1) {
+      hall_final_values[i] = current_transducer_get_electric_current_mA(hall_avg_values[MUX_CHANNELS_N + 1]) - S_HALL1_OFFSET_mA;
+    } else if (i == S_HALL2) {
+      hall_final_values[i] = current_transducer_get_electric_current_mA(hall_avg_values[MUX_CHANNELS_N + 1]) - S_HALL2_OFFSET_mA;
+    } else {
+      hall_final_values[i] = current_transducer_get_electric_current_mA(hall_avg_values[MUX_CHANNELS_N + 1]);
+    }
+  }
+
+  final_computer_fb = ADC_get_calibrated_mV(ADC_HALL_AND_FB, avg_computer_fb) * ADC2_VOLTAGE_DIVIDER_MULTIPLIER;
+  final_relay_out = ADC_get_calibrated_mV(ADC_HALL_AND_FB, avg_relay_out) * ADC2_VOLTAGE_DIVIDER_MULTIPLIER;
+  final_lvms_out = ADC_get_calibrated_mV(ADC_HALL_AND_FB, avg_lvms_out) * ADC2_VOLTAGE_DIVIDER_MULTIPLIER;
+  final_batt_out = ADC_get_calibrated_mV(ADC_HALL_AND_FB, avg_batt_out) * ADC2_VOLTAGE_DIVIDER_MULTIPLIER;
+}
+
+void adc_acquisition(){
+  start_adc_acquisition = false;
 
   HAL_ADC_Start_DMA(ADC_HALL_AND_FB, adc2_raw_values, adc2_channels_len);
   while (!is_adc_dma_complete) {
@@ -546,11 +585,11 @@ void read_adc(){
   hall_raw_values[0] = adc2_raw_values[adc2_channel_mux_hall];
   fb_raw_values[0] = adc2_raw_values[adc2_channel_mux_fb];
   
-  //this values need to be read only once
-  computer_fb = adc2_raw_values[adc2_channel_adcs_as_computer_fb];
-  relay_out = adc2_raw_values[adc2_channel_adcs_relay_out];
-  lvms_out = adc2_raw_values[adc2_channel_adcs_lvms_out];
-  batt_out = adc2_raw_values[adc2_channel_adcs_batt_out];
+  // this values need to be read only once
+  raw_computer_fb = adc2_raw_values[adc2_channel_adcs_as_computer_fb];
+  raw_relay_out = adc2_raw_values[adc2_channel_adcs_relay_out];
+  raw_lvms_out = adc2_raw_values[adc2_channel_adcs_lvms_out];
+  raw_batt_out = adc2_raw_values[adc2_channel_adcs_batt_out];
 
   for (uint8_t i = 1; i < MUX_CHANNELS_N; i++) {  
     set_address(i);
@@ -566,78 +605,7 @@ void read_adc(){
     HAL_ADC_Start_DMA(ADC_HALL_AND_FB, adc2_raw_values, adc2_channels_len);
   }
 
-  start_calculating_averages = true;
-}
-
-void calculate_avarages(){
-  start_calculating_averages = false;
-
-  for (uint8_t i = 0; i < MUX_CHANNELS_N; i++)
-  {
-    fb_average_values[i] = moving_avg(i);
-    hall_average_values[i] = moving_avg(MUX_CHANNELS_N + i); 
-  }
-  
-  computer_fb = moving_avg(MUX_CHANNELS_N * 2);
-  relay_out = moving_avg(MUX_CHANNELS_N * 2 + 1);
-  lvms_out = moving_avg(MUX_CHANNELS_N * 2 + 2);
-  batt_out = moving_avg(MUX_CHANNELS_N * 2 + 3);
-  
-  start_value_conversion = true;
-}
-
-void convert_values(){
-  start_value_conversion = false;
-
-  for (uint8_t i = 0; i < MUX_CHANNELS_N; i++)
-  {
-    fb_converted_values[i] = ADC_get_calibrated_mV(ADC_HALL_AND_FB, fb_average_values[i]);
-
-    //S_HALL0 is currently not used
-    //if (i == S_HALL0) {}
-    
-    if (i == S_HALL1) {
-      hall_converted_values[i] = current_transducer_get_electric_current_mA(hall_average_values[MUX_CHANNELS_N + 1]) - S_HALL1_OFFSET_mA;
-    } else if (i == S_HALL2) {
-      hall_converted_values[i] = current_transducer_get_electric_current_mA(hall_average_values[MUX_CHANNELS_N + 1]) - S_HALL2_OFFSET_mA;
-    } else {
-      hall_converted_values[i] = current_transducer_get_electric_current_mA(hall_average_values[MUX_CHANNELS_N + 1]);
-    }
-  }
-
-  computer_fb = ADC_get_calibrated_mV(ADC_HALL_AND_FB, computer_fb) * ADC2_VOLTAGE_DIVIDER_MULTIPLIER;
-  relay_out = ADC_get_calibrated_mV(ADC_HALL_AND_FB, relay_out) * ADC2_VOLTAGE_DIVIDER_MULTIPLIER;
-  lvms_out = ADC_get_calibrated_mV(ADC_HALL_AND_FB, lvms_out) * ADC2_VOLTAGE_DIVIDER_MULTIPLIER;
-  batt_out = ADC_get_calibrated_mV(ADC_HALL_AND_FB, batt_out) * ADC2_VOLTAGE_DIVIDER_MULTIPLIER;
-
-  start_pushing_can_queue = true;
-}
-
-#define CAN_MANAGER_CREATE_MSG(ntw, NTW, msg_name, MSG_NAME)              \
-  msg.id = NTW##_##MSG_NAME##_FRAME_ID;                                   \
-  msg.size = NTW##_##MSG_NAME##_BYTE_SIZE;                                \
-  ntw##_##msg_name##_converted_t converted = {};                          \
-  ntw##_##msg_name##_conversion_to_raw_struct(&raw, &converted);          \
-  ntw##_##msg_name##_pack(msg.data, &raw, NTW##_##MSG_NAME##_BYTE_SIZE);  \
-
-void push_msgs_to_can_queue(){
-  start_pushing_can_queue = false;
-
-  extern int primary_can_id;
-  can_manager_message_t msg;
-
-  primary_lv_feedbacks_t raw = {
-    .sd_end = fb_converted_values[feedbacks_value_sd_end],
-    .feedbacks_bspd_fb = fb_converted_values[feedbacks_value_bspd_fb],
-    //ecc...
-  };
-  CAN_MANAGER_CREATE_MSG(primary, PRIMARY, lv_feedbacks, LV_FEEDBACKS);
-  add_to_tx_queue(primary_can_id, &msg);
-  
-  primary_lv_currents_t raw = {
-
-  };
-  CAN_MANAGER_CREATE_MSG(primary, PRIMARY, lv_currents, LV_CURRENTS);
-  add_to_tx_queue(primary_can_id, &msg);
+  calculate_avarages();
+  convert_values();
 }
 /* USER CODE END 1 */

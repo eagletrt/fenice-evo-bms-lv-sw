@@ -29,7 +29,10 @@ extern "C" {
 #include "main.h"
 
 /* USER CODE BEGIN Includes */
+#include "tim.h"
 #include <stdbool.h>
+#include <can_manager.h>
+#include <primary_network.h>
 /* USER CODE END Includes */
 
 extern ADC_HandleTypeDef hadc1;
@@ -93,9 +96,9 @@ enum feedbacks_values {
   feedbacks_value_imd_fb,
   feedbacks_value_lvms_fb,
   feedbacks_value_res_fb,
-  feedbacks_value_pin5_dead,
+  feedbacks_value_pin5_disconnected,
   feedbacks_value_lv_encl,
-  feedbacks_value_pin7_dead,
+  feedbacks_value_pin7_disconnected,
   feedbacks_value_hv_encl_1_fb,
   feedbacks_value_hv_encl_2_fb,
   feedbacks_value_back_plate_fb,
@@ -104,7 +107,26 @@ enum feedbacks_values {
   feedbacks_value_asms_fb,
   feedbacks_value_interlock_fb,
   feedbacks_value_sd_start
-}
+};
+
+enum sensors_values {
+  sensors_values_hall_0cd0,
+  sensors_values_s_hall0,
+  sensors_values_hall_0cd1,
+  sensors_values_s_hall1,
+  sensors_values_hall_0cd2,
+  sensors_values_s_hall2,
+  sensors_values_lvac_temp0,
+  sensors_values_lvac_temp1,
+  sensors_values_pin8_disconnected,
+  sensors_values_pin9_disconnected,
+  sensors_values_pin10_disconnected,
+  sensors_values_pin11_disconnected,
+  sensors_values_pin12_disconnected,
+  sensors_values_pin13_disconnected,
+  sensors_values_pin14_disconnected,
+  sensors_values_pin15_disconnected
+};
 
 /* USER CODE END Private defines */
 
@@ -115,10 +137,7 @@ void MX_ADC2_Init(void);
 
 void ADC_vref_calibration();
 void ADC_routine_start();
-void read_adc();
-void calculate_avarages();
-void convert_values();
-void push_msgs_to_can_queue();
+void adc_acquisition();
 
 /* USER CODE END Prototypes */
 
