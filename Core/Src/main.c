@@ -58,10 +58,6 @@
 
 /* USER CODE BEGIN PV */
 
-extern int primary_can_id;
-extern int secondary_can_id;
-extern bool start_adc_acquisition;
-
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/

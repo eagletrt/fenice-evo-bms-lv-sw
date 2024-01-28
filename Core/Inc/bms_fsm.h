@@ -14,6 +14,7 @@ The finite state machine has:
 
 #ifndef BMS_FSM_H
 #define BMS_FSM_H
+#include "can_messages.h"
 #include <stdlib.h>
 
 // State data object
@@ -21,7 +22,6 @@ The finite state machine has:
 // header if you need
 typedef void state_data_t;
 
-void can_routine(void);
 void adc_routine(void);
 void adc_vrefint_calibration();
 void adc_routine_start();

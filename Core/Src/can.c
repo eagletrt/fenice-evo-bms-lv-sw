@@ -23,8 +23,16 @@
 /* USER CODE BEGIN 0 */
 
 int primary_can_id = -1;
-int secondary_can_id = -1;
 extern int can_manager_error_code;
+
+void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan) {
+  CAN_RxHeaderTypeDef header = {};
+  can_manager_message_t msg = {};
+  HAL_CAN_GetRxMessage(hcan, CAN_RX_FIFO0, &header, msg.data);
+  msg.id = header.StdId;
+  msg.size = header.DLC;
+  add_to_rx_queue(primary_can_id, &msg);
+}
 
 /* USER CODE END 0 */
 
@@ -76,28 +84,9 @@ void MX_CAN1_Init(void) {
       .SlaveStartFilterBank = 14,
   };
 
-  CAN_FilterTypeDef secondary_filter = {
-      .FilterMode = CAN_FILTERMODE_IDMASK,
-      .FilterIdLow = 0 << 5,                 // Take all ids from 0
-      .FilterIdHigh = ((1U << 11) - 1) << 5, // to 2^11 - 1
-      .FilterMaskIdHigh = 0 << 5,            // Don't care on can id bits
-      .FilterMaskIdLow = 0 << 5,             // Don't care on can id bits
-      .FilterFIFOAssignment = CAN_FILTER_FIFO1,
-      .FilterBank = 14,
-      .FilterScale = CAN_FILTERSCALE_16BIT,
-      .FilterActivation = ENABLE,
-      .SlaveStartFilterBank = 14,
-  };
   primary_can_id =
       can_init(&hcan1, can_primary_ntw_handler,
                CAN_IT_ERROR | CAN_IT_RX_FIFO0_MSG_PENDING, &primary_filter);
-  if (can_manager_hal_status_retval != HAL_OK) {
-    can_init_errors_handler(can_manager_error_code);
-  }
-
-  secondary_can_id =
-      can_init(&hcan2, can_secondary_ntw_handler,
-               CAN_IT_ERROR | CAN_IT_RX_FIFO1_MSG_PENDING, &secondary_filter);
   if (can_manager_hal_status_retval != HAL_OK) {
     can_init_errors_handler(can_manager_error_code);
   }
@@ -129,6 +118,28 @@ void MX_CAN2_Init(void) {
     Error_Handler();
   }
   /* USER CODE BEGIN CAN2_Init 2 */
+
+  // TODO: consider if activate the can secondary
+  /**
+    CAN_FilterTypeDef secondary_filter = {
+        .FilterMode = CAN_FILTERMODE_IDMASK,
+        .FilterIdLow = 0 << 5,                 // Take all ids from 0
+        .FilterIdHigh = ((1U << 11) - 1) << 5, // to 2^11 - 1
+        .FilterMaskIdHigh = 0 << 5,            // Don't care on can id bits
+        .FilterMaskIdLow = 0 << 5,             // Don't care on can id bits
+        .FilterFIFOAssignment = CAN_FILTER_FIFO1,
+        .FilterBank = 14,
+        .FilterScale = CAN_FILTERSCALE_16BIT,
+        .FilterActivation = ENABLE,
+        .SlaveStartFilterBank = 14,
+    };
+      secondary_can_id =
+        can_init(&hcan2, can_secondary_ntw_handler,
+                 CAN_IT_ERROR | CAN_IT_RX_FIFO1_MSG_PENDING, &secondary_filter);
+    if (can_manager_hal_status_retval != HAL_OK) {
+      can_init_errors_handler(can_manager_error_code);
+    }
+    */
 
   /* USER CODE END CAN2_Init 2 */
 }

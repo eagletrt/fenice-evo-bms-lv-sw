@@ -63,6 +63,9 @@ state_t do_init(state_data_t *data) {
 
   /* Your Code Here */
   adc_routine_start();
+  can_messages_callbacks_init();
+  extern int primary_can_id;
+  can_start(primary_can_id);
 
   switch (next_state) {
   case STATE_IDLE:
