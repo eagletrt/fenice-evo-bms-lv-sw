@@ -18,21 +18,23 @@ The finite state machine has:
 
 // GLOBALS
 // State human-readable names
-const char *state_names[] = {"init", "idle", "error", "tson", "flashing", "run"};
+const char *state_names[] = {"init", "idle",     "error",
+                             "tson", "flashing", "run"};
 
 // List of state functions
 state_func_t *const state_table[NUM_STATES] = {
-    do_init,      // in state init
-    do_idle,      // in state idle
-    do_error,     // in state error
-    do_tson,      // in state tson
-    do_flashing,  // in state flashing
-    do_run,       // in state run
+    do_init,     // in state init
+    do_idle,     // in state idle
+    do_error,    // in state error
+    do_tson,     // in state tson
+    do_flashing, // in state flashing
+    do_run,      // in state run
 };
 
 // Table of transition functions
 transition_func_t *const transition_table[NUM_STATES][NUM_STATES] = {
-    /* states:      init            , idle            , error           , tson            , flashing        , run              */
+    /* states:      init            , idle            , error           , tson
+       , flashing        , run              */
     /* init     */ {NULL, init_to_idle, to_error, NULL, NULL, NULL},
     /* idle     */ {NULL, NULL, to_error, idle_to_tson, idle_to_flashing, NULL},
     /* error    */ {NULL, NULL, NULL, NULL, NULL, NULL},
@@ -41,14 +43,14 @@ transition_func_t *const transition_table[NUM_STATES][NUM_STATES] = {
     /* run      */ {NULL, run_to_idle, to_error, NULL, NULL, NULL},
 };
 
-/*  ____  _        _       
- * / ___|| |_ __ _| |_ ___ 
+/*  ____  _        _
+ * / ___|| |_ __ _| |_ ___
  * \___ \| __/ _` | __/ _ \
  *  ___) | || (_| | ||  __/
  * |____/ \__\__,_|\__\___|
- *                         
- *   __                  _   _                 
- *  / _|_   _ _ __   ___| |_(_) ___  _ __  ___ 
+ *
+ *   __                  _   _
+ *  / _|_   _ _ __   ___| |_(_) ___  _ __  ___
  * | |_| | | | '_ \ / __| __| |/ _ \| '_ \/ __|
  * |  _| |_| | | | | (__| |_| | (_) | | | \__ \
  * |_|  \__,_|_| |_|\___|\__|_|\___/|_| |_|___/
@@ -57,124 +59,136 @@ transition_func_t *const transition_table[NUM_STATES][NUM_STATES] = {
 // Function to be executed in state init
 // valid return states: STATE_IDLE, STATE_ERROR
 state_t do_init(state_data_t *data) {
-    state_t next_state = STATE_IDLE;
+  state_t next_state = STATE_IDLE;
 
-    /* Your Code Here */
+  /* Your Code Here */
+  adc_routine_start();
 
-    switch (next_state) {
-        case STATE_IDLE:
-        case STATE_ERROR:
-            break;
-        default:
-            next_state = NO_CHANGE;
-    }
+  switch (next_state) {
+  case STATE_IDLE:
+  case STATE_ERROR:
+    break;
+  default:
+    next_state = NO_CHANGE;
+  }
 
-    return next_state;
+  return next_state;
 }
 
 // Function to be executed in state idle
-// valid return states: NO_CHANGE, STATE_IDLE, STATE_TSON, STATE_FLASHING, STATE_ERROR
+// valid return states: NO_CHANGE, STATE_IDLE, STATE_TSON, STATE_FLASHING,
+// STATE_ERROR
 state_t do_idle(state_data_t *data) {
-    state_t next_state = NO_CHANGE;
+  state_t next_state = NO_CHANGE;
 
-    /* Your Code Here */
+  /* Your Code Here */
+  can_routine();
+  adc_routine();
 
-    switch (next_state) {
-        case NO_CHANGE:
-        case STATE_IDLE:
-        case STATE_TSON:
-        case STATE_FLASHING:
-        case STATE_ERROR:
-            break;
-        default:
-            next_state = NO_CHANGE;
-    }
+  switch (next_state) {
+  case NO_CHANGE:
+  case STATE_IDLE:
+  case STATE_TSON:
+  case STATE_FLASHING:
+  case STATE_ERROR:
+    break;
+  default:
+    next_state = NO_CHANGE;
+  }
 
-    return next_state;
+  return next_state;
 }
 
 // Function to be executed in state error
 // valid return states: NO_CHANGE
 state_t do_error(state_data_t *data) {
-    state_t next_state = NO_CHANGE;
+  state_t next_state = NO_CHANGE;
 
-    /* Your Code Here */
+  /* Your Code Here */
+  can_routine();
+  adc_routine();
 
-    switch (next_state) {
-        case NO_CHANGE:
-            break;
-        default:
-            next_state = NO_CHANGE;
-    }
+  switch (next_state) {
+  case NO_CHANGE:
+    break;
+  default:
+    next_state = NO_CHANGE;
+  }
 
-    return next_state;
+  return next_state;
 }
 
 // Function to be executed in state tson
 // valid return states: NO_CHANGE, STATE_IDLE, STATE_TSON, STATE_RUN
 state_t do_tson(state_data_t *data) {
-    state_t next_state = NO_CHANGE;
+  state_t next_state = NO_CHANGE;
 
-    /* Your Code Here */
+  /* Your Code Here */
+  can_routine();
+  adc_routine();
 
-    switch (next_state) {
-        case NO_CHANGE:
-        case STATE_IDLE:
-        case STATE_TSON:
-        case STATE_RUN:
-            break;
-        default:
-            next_state = NO_CHANGE;
-    }
+  switch (next_state) {
+  case NO_CHANGE:
+  case STATE_IDLE:
+  case STATE_TSON:
+  case STATE_RUN:
+    break;
+  default:
+    next_state = NO_CHANGE;
+  }
 
-    return next_state;
+  return next_state;
 }
 
 // Function to be executed in state flashing
 // valid return states: STATE_ERROR
 state_t do_flashing(state_data_t *data) {
-    state_t next_state = STATE_ERROR;
+  state_t next_state = STATE_ERROR;
 
-    /* Your Code Here */
+  /* Your Code Here */
+  can_routine();
+  adc_routine();
 
-    switch (next_state) {
-        case STATE_ERROR:
-            break;
-        default:
-            next_state = NO_CHANGE;
-    }
+  switch (next_state) {
+  case STATE_ERROR:
+    break;
+  default:
+    next_state = NO_CHANGE;
+  }
 
-    return next_state;
+  return next_state;
 }
 
 // Function to be executed in state run
 // valid return states: NO_CHANGE, STATE_IDLE, STATE_RUN, STATE_ERROR
 state_t do_run(state_data_t *data) {
-    state_t next_state = NO_CHANGE;
+  state_t next_state = NO_CHANGE;
 
-    /* Your Code Here */
+  /* Your Code Here */
+  can_routine();
+  adc_routine();
 
-    switch (next_state) {
-        case NO_CHANGE:
-        case STATE_IDLE:
-        case STATE_RUN:
-        case STATE_ERROR:
-            break;
-        default:
-            next_state = NO_CHANGE;
-    }
+  switch (next_state) {
+  case NO_CHANGE:
+  case STATE_IDLE:
+  case STATE_RUN:
+  case STATE_ERROR:
+    break;
+  default:
+    next_state = NO_CHANGE;
+  }
 
-    return next_state;
+  return next_state;
 }
 
-/*  _____                    _ _   _              
- * |_   _| __ __ _ _ __  ___(_) |_(_) ___  _ __   
+/*  _____                    _ _   _
+ * |_   _| __ __ _ _ __  ___(_) |_(_) ___  _ __
  *   | || '__/ _` | '_ \/ __| | __| |/ _ \| '_ \
- *   | || | | (_| | | | \__ \ | |_| | (_) | | | | 
- *   |_||_|  \__,_|_| |_|___/_|\__|_|\___/|_| |_| 
- *                                                
- *   __                  _   _                 
- *  / _|_   _ _ __   ___| |_(_) ___  _ __  ___ 
+ *   | || | | (_| | | | \__ \ | |_| | (_) | | | |
+ *   |_||_|  \__,_|_| |_|___/_|\__|_|\___/|_| |_|
+ *
+ *   __                  _   _
+ *  / _|_   _ _ __   ___| |_(_) ___  _ __  ___
  * | |_| | | | '_ \ / __| __| |/ _ \| '_ \/ __|
  * |  _| |_| | | | | (__| |_| | (_) | | | \__ \
  * |_|  \__,_|_| |_|\___|\__|_|\___/|_| |_|___/
@@ -182,8 +196,7 @@ state_t do_run(state_data_t *data) {
 
 // This function is called in 1 transition:
 // 1. from init to idle
-void init_to_idle(state_data_t *data) {
-    /* Your Code Here */
+void init_to_idle(state_data_t *data) { /* Your Code Here */
 }
 
 // This function is called in 4 transitions:
@@ -191,73 +204,67 @@ void init_to_idle(state_data_t *data) {
 // 2. from idle to error
 // 3. from run to error
 // 4. from flashing to error
-void to_error(state_data_t *data) {
-    /* Your Code Here */
+void to_error(state_data_t *data) { /* Your Code Here */
 }
 
 // This function is called in 1 transition:
 // 1. from idle to tson
-void idle_to_tson(state_data_t *data) {
-    /* Your Code Here */
+void idle_to_tson(state_data_t *data) { /* Your Code Here */
 }
 
 // This function is called in 1 transition:
 // 1. from idle to flashing
-void idle_to_flashing(state_data_t *data) {
-    /* Your Code Here */
+void idle_to_flashing(state_data_t *data) { /* Your Code Here */
 }
 
 // This function is called in 1 transition:
 // 1. from tson to idle
-void tson_to_idle(state_data_t *data) {
-    /* Your Code Here */
+void tson_to_idle(state_data_t *data) { /* Your Code Here */
 }
 
 // This function is called in 1 transition:
 // 1. from tson to run
-void tson_to_run(state_data_t *data) {
-    /* Your Code Here */
+void tson_to_run(state_data_t *data) { /* Your Code Here */
 }
 
 // This function is called in 1 transition:
 // 1. from run to idle
-void run_to_idle(state_data_t *data) {
-    /* Your Code Here */
+void run_to_idle(state_data_t *data) { /* Your Code Here */
 }
 
-/*  ____  _        _        
- * / ___|| |_ __ _| |_ ___  
+/*  ____  _        _
+ * / ___|| |_ __ _| |_ ___
  * \___ \| __/ _` | __/ _ \
- *  ___) | || (_| | ||  __/ 
- * |____/ \__\__,_|\__\___| 
- *                          
- *                                              
- *  _ __ ___   __ _ _ __   __ _  __ _  ___ _ __ 
+ *  ___) | || (_| | ||  __/
+ * |____/ \__\__,_|\__\___|
+ *
+ *
+ *  _ __ ___   __ _ _ __   __ _  __ _  ___ _ __
  * | '_ ` _ \ / _` | '_ \ / _` |/ _` |/ _ \ '__|
- * | | | | | | (_| | | | | (_| | (_| |  __/ |   
- * |_| |_| |_|\__,_|_| |_|\__,_|\__, |\___|_|   
- *                              |___/           
+ * | | | | | | (_| | | | | (_| | (_| |  __/ |
+ * |_| |_| |_|\__,_|_| |_|\__,_|\__, |\___|_|
+ *                              |___/
  */
 
 state_t run_state(state_t cur_state, state_data_t *data) {
-    state_t new_state = state_table[cur_state](data);
-    if (new_state == NO_CHANGE)
-        new_state = cur_state;
-    transition_func_t *transition = transition_table[cur_state][new_state];
-    if (transition)
-        transition(data);
-    return new_state;
+  state_t new_state = state_table[cur_state](data);
+  if (new_state == NO_CHANGE)
+    new_state = cur_state;
+  transition_func_t *transition = transition_table[cur_state][new_state];
+  if (transition)
+    transition(data);
+  return new_state;
 };
 
 #ifdef TEST_MAIN
 #include <unistd.h>
 int main() {
-    state_t cur_state = STATE_INIT;
-    do {
-        cur_state = run_state(cur_state, NULL);
-        sleep(1);
-    } while (cur_state != STATE_ERROR);
-    run_state(cur_state, NULL);
-    return 0;
+  state_t cur_state = STATE_INIT;
+  do {
+    cur_state = run_state(cur_state, NULL);
+    sleep(1);
+  } while (cur_state != STATE_ERROR);
+  run_state(cur_state, NULL);
+  return 0;
 }
 #endif

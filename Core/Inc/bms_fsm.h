@@ -21,18 +21,23 @@ The finite state machine has:
 // header if you need
 typedef void state_data_t;
 
+void can_routine(void);
+void adc_routine(void);
+void adc_vrefint_calibration();
+void adc_routine_start();
+
 // NOTHING SHALL BE CHANGED AFTER THIS LINE!
 
 // List of states
 typedef enum {
-    STATE_INIT = 0,
-    STATE_IDLE,
-    STATE_ERROR,
-    STATE_TSON,
-    STATE_FLASHING,
-    STATE_RUN,
-    NUM_STATES,
-    NO_CHANGE
+  STATE_INIT = 0,
+  STATE_IDLE,
+  STATE_ERROR,
+  STATE_TSON,
+  STATE_FLASHING,
+  STATE_RUN,
+  NUM_STATES,
+  NO_CHANGE
 } state_t;
 
 // State human-readable names
@@ -49,7 +54,8 @@ typedef void transition_func_t(state_data_t *data);
 state_t do_init(state_data_t *data);
 
 // Function to be executed in state idle
-// valid return states: NO_CHANGE, STATE_IDLE, STATE_TSON, STATE_FLASHING, STATE_ERROR
+// valid return states: NO_CHANGE, STATE_IDLE, STATE_TSON, STATE_FLASHING,
+// STATE_ERROR
 state_t do_idle(state_data_t *data);
 
 // Function to be executed in state error

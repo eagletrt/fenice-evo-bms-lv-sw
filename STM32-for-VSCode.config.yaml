@@ -57,31 +57,6 @@ libraries:
 # Library directories. Folders can be added here that contain custom libraries.
 libraryDirectories: []
 
-# Files or folders that will be excluded from compilation.
-# Glob patterns (https://www.wikiwand.com/en/Glob_(programming)) can be used.
-# Do mind that double stars are reserved in yaml
-# these should be escaped with a: \ or the name should be in double quotes e.g. "**.test.**"
-excludes: 
-  - "**/Examples/**"
-  - "**/examples/**"
-  - "**/Example/**"
-  - "**/example/**"
-  - "**_template.*"
-  - "**/micro-libs/can-fifo-queue/**"
-  - "**/micro-libs/priority-queue/priority_queue.*"
-  - "**/micro-libs/fsm/**"
-  - "**/micro-libs/fsm/**"
-  - "**/micro-libs/munit/**"
-  - "**/micro-libs/logger/**"
-  - "**/micro-libs/can-sensor-programmer/**"
-  - "**/micro-libs/candump-to-serial/**"
-  - "**/micro-libs/m95256/**"
-  - "**/micro-libs/eeprom-config/**"
-  - "**/micro-libs/bms-monitor/**"
-  - "**/test.c"
-  - "**/test/**"
-  - "**/*.pb.*"
-
 
 # Include directories (directories containing .h or .hpp files)
 # If a CubeMX makefile is present it will automatically include the include directories from that makefile.
@@ -102,7 +77,10 @@ includeDirectories:
 sourceFiles:  
   - Src/**
   - Core/Src/**
-  - Core/Lib/**
+  - Core/Lib/can/**/*_network.c
+  - Core/Lib/can/**/*_watchdog.c
+  - Core/Lib/micro-libs/can-manager/*.c
+  - Core/Lib/micro-libs/generic-queue/*.c
 
 
 # When no makefile is present it will show a warning pop-up.

@@ -1,9 +1,9 @@
 /**
  * @author Enrico Dalla Croce (Kalsifer-742)
  * @date 30/11/2023
-*/
+ */
 
-#include "can_manager.h"
+#include "can_types.h"
 #include "inverters_network.h"
 #include "primary_network.h"
 
