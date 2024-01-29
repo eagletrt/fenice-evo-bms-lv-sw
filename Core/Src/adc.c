@@ -19,17 +19,15 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "adc.h"
-#include "current_transducer.h"
 
 /* USER CODE BEGIN 0 */
+#include "current_transducer.h"
 
 #define FACTORY_CALIBRATION_ADD ((uint16_t *)0x1FFF7A2A)
 #define DEFAULT_ADC_VREF (3300U)
-#define ADC_HALL_AND_FB &hadc2
-#define ADC_VREF_CALIBRATION &hadc1
-#define S_HALL1_OFFSET_mA 300.0f
-#define S_HALL2_OFFSET_mA 1500.0f
-#define ADC2_VDM 9.0f // Voltage Divider Multiplier
+#define S_HALL1_OFFSET_mA (300.0f)
+#define S_HALL2_OFFSET_mA (1500.0f)
+#define ADC2_VDM (9.0f) // Voltage Divider Multiplier
 
 int current_mux_idx = 0, adc2_conversion_ended = 0,
     vref_calibration_conversion_ended = 0;
@@ -40,33 +38,51 @@ const uint16_t mux_ctrl_pins[directly_connected_fbs_n_values] = {
 GPIO_TypeDef *mux_ctrl_ports[directly_connected_fbs_n_values] = {
     MUX_A0_GPIO_Port, MUX_A1_GPIO_Port, MUX_A2_GPIO_Port, MUX_A3_GPIO_Port};
 uint32_t adc2_raw[adc2_ch_n_values] = {0};
-float mux_fb_mV[mux_fb_n_values]; // TODO initialize them to UNINIT in the init
-                                  // state
+float mux_fb_mV[mux_fb_n_values];
 float mux_sensors_mV[mux_sensors_n_values];
 float dc_fb_mV[directly_connected_fbs_n_values];
 float global_bms_lv_vref = DEFAULT_ADC_VREF;
 
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc) {
-  if (hadc == ADC_HALL_AND_FB) {
+  if (hadc == &hadc2) {
     adc2_conversion_ended = 1;
-  } else if (hadc == ADC_VREF_CALIBRATION) {
+  } else if (hadc == &hadc1) {
     vref_calibration_conversion_ended = 1;
   }
 }
 
-void adc_routine_start() {
-  HAL_ADC_Start_DMA(ADC_HALL_AND_FB, adc2_raw, adc2_ch_n_values);
+void set_mux_addr(void) {
+  uint8_t cmux_addr = mux_addresses[current_mux_idx];
+  for (size_t midx = 0; midx < 4; midx++) {
+    HAL_GPIO_WritePin(mux_ctrl_ports[midx], mux_ctrl_pins[midx],
+                      ((cmux_addr >> midx) & 1) ? GPIO_PIN_SET
+                                                : GPIO_PIN_RESET);
+  }
+}
+
+void adc_routine_start(void) {
+  for (size_t idx = 0; idx < mux_fb_n_values; idx++)
+    mux_fb_mV[idx] = FLOAT_UNINITIALIZED_VALUE;
+  for (size_t idx = 0; idx < mux_sensors_n_values; idx++)
+    mux_sensors_mV[idx] = FLOAT_UNINITIALIZED_VALUE;
+  for (size_t idx = 0; idx < directly_connected_fbs_n_values; idx++)
+    dc_fb_mV[idx] = FLOAT_UNINITIALIZED_VALUE;
+
+  set_mux_addr();
+  if (HAL_ADC_Start_DMA(&hadc2, adc2_raw, adc2_ch_n_values) != HAL_OK) {
+    // TODO handle error
+  };
   // TODO: start vrefint calibration
 }
 
 // TODO: first check that the acquisition works, then add vrefint calibration
-void adc_vrefint_calibration() {}
+void adc_vrefint_calibration(void) {}
 
 float to_mV(uint32_t raw_value) {
   return (float)raw_value * (global_bms_lv_vref / 4096.0f);
 }
 
-void adc_routine() {
+void adc_routine(void) {
   if (adc2_conversion_ended) {
     if (current_mux_idx < 8) {
       float mux_converted_val = to_mV(adc2_raw[adc2_ch_mux_hall_idx]);
@@ -90,14 +106,10 @@ void adc_routine() {
         to_mV(adc2_raw[adc2_ch_batt_out_idx]) * ADC2_VDM;
 
     current_mux_idx = (current_mux_idx + 1) % 16;
-    uint8_t cmux_addr = mux_addresses[current_mux_idx];
-    for (size_t midx = 0; midx < 4; midx++) {
-      HAL_GPIO_WritePin(mux_ctrl_ports[midx], mux_ctrl_pins[midx],
-                        ((cmux_addr >> midx) & 1) ? GPIO_PIN_SET
-                                                  : GPIO_PIN_RESET);
+    set_mux_addr();
+    if (HAL_ADC_Start_DMA(&hadc2, adc2_raw, adc2_ch_n_values) != HAL_OK) {
+      // TODO handle error
     }
-
-    HAL_ADC_Start_DMA(ADC_HALL_AND_FB, adc2_raw, adc2_ch_n_values);
     adc2_conversion_ended = 0;
   }
   if (vref_calibration_conversion_ended) {

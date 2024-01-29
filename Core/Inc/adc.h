@@ -29,8 +29,7 @@ extern "C" {
 #include "main.h"
 
 /* USER CODE BEGIN Includes */
-#include "bms_lv_config.h"
-#include "tim.h"
+
 /* USER CODE END Includes */
 
 extern ADC_HandleTypeDef hadc1;

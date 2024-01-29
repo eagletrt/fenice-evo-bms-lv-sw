@@ -81,6 +81,7 @@ sourceFiles:
   - Core/Lib/can/**/*_watchdog.c
   - Core/Lib/micro-libs/can-manager/*.c
   - Core/Lib/micro-libs/generic-queue/*.c
+  - Core/Lib/micro-libs/bms-monitor/src/*.c
 
 
 # When no makefile is present it will show a warning pop-up.

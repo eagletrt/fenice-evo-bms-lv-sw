@@ -7,7 +7,7 @@
 #define clamp(num, max_n, min_n)                                               \
   ((num > max_n) ? max_n : ((num < min_n) ? min_n : num))
 
-#define UNINITIALIZED_VALUE -1.0f
+#define FLOAT_UNINITIALIZED_VALUE -1.0f
 
 // Directly connected LV Feedbacks (no mux)
 enum directly_connected_feedbacks_indexes {

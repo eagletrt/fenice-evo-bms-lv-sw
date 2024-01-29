@@ -22,10 +22,6 @@ The finite state machine has:
 // header if you need
 typedef void state_data_t;
 
-void adc_routine(void);
-void adc_vrefint_calibration();
-void adc_routine_start();
-
 // NOTHING SHALL BE CHANGED AFTER THIS LINE!
 
 // List of states

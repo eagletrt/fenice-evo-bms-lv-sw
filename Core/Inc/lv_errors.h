@@ -1,7 +1,6 @@
 #ifndef LV_ERRORS_H
 #define LV_ERRORS_H
 
-/*
 #include "error_utils.h"
 
 #define LV_ERROR_BUFFER_SIZE 100
@@ -61,6 +60,5 @@ void lv_error_init();
 size_t lv_error_running_count();
 
 size_t lv_error_expire_count();
-*/
 
 #endif // LV_ERRORS_H

@@ -28,12 +28,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
-#include "adc.h"
 #include "bms_fsm.h"
-#include "can_manager.h"
-#include "can_messages.h"
-
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -107,7 +102,6 @@ int main(void) {
   MX_TIM8_Init();
   MX_TIM7_Init();
   MX_TIM4_Init();
-  MX_UART5_Init();
   MX_TIM10_Init();
   MX_TIM1_Init();
   MX_TIM5_Init();

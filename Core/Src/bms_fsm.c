@@ -14,6 +14,25 @@ The finite state machine has:
 
 #include "bms_fsm.h"
 
+void adc_routine_start(void);
+void monitor_init(void);
+void gpio_extender_init(void);
+void adc_vrefint_calibration(void);
+
+void adc_routine(void);
+void can_routine(void);
+void gpio_extender_routine(void);
+void monitor_routine(void);
+void all_measurements_check(void);
+
+void bms_lv_routine(void) {
+  adc_routine();
+  can_routine();
+  gpio_extender_routine();
+  monitor_routine();
+  all_measurements_check();
+}
+
 // SEARCH FOR Your Code Here FOR CODE INSERTION POINTS!
 
 // GLOBALS
@@ -62,7 +81,16 @@ state_t do_init(state_data_t *data) {
   state_t next_state = STATE_IDLE;
 
   /* Your Code Here */
+
+  // cooling off
+  // discharge ON
+  // rfe/frg OFF
+
+  // check error codes
   adc_routine_start();
+  adc_vrefint_calibration();
+  monitor_init();
+  gpio_extender_init();
   can_messages_callbacks_init();
   extern int primary_can_id;
   can_start(primary_can_id);
@@ -85,8 +113,9 @@ state_t do_idle(state_data_t *data) {
   state_t next_state = NO_CHANGE;
 
   /* Your Code Here */
-  can_routine();
-  adc_routine();
+  bms_lv_routine();
+
+  // if car_status = IDLE
 
   switch (next_state) {
   case NO_CHANGE:
@@ -108,8 +137,7 @@ state_t do_error(state_data_t *data) {
   state_t next_state = NO_CHANGE;
 
   /* Your Code Here */
-  can_routine();
-  adc_routine();
+  // TODO: error code check, [send it via can/write to flash], shutdown
 
   switch (next_state) {
   case NO_CHANGE:
@@ -127,8 +155,7 @@ state_t do_tson(state_data_t *data) {
   state_t next_state = NO_CHANGE;
 
   /* Your Code Here */
-  can_routine();
-  adc_routine();
+  bms_lv_routine();
 
   switch (next_state) {
   case NO_CHANGE:
@@ -149,8 +176,7 @@ state_t do_flashing(state_data_t *data) {
   state_t next_state = STATE_ERROR;
 
   /* Your Code Here */
-  can_routine();
-  adc_routine();
+  bms_lv_routine();
 
   switch (next_state) {
   case STATE_ERROR:
@@ -168,8 +194,7 @@ state_t do_run(state_data_t *data) {
   state_t next_state = NO_CHANGE;
 
   /* Your Code Here */
-  can_routine();
-  adc_routine();
+  bms_lv_routine();
 
   switch (next_state) {
   case NO_CHANGE:

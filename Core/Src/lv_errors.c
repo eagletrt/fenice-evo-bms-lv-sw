@@ -1,12 +1,11 @@
 #include "lv_errors.h"
 
-/*
 #include "lv_check_util.h"
 #include "math.h"
 #include "stm32f4xx_hal.h"
-#include "timer_utility.h"
 #include "timer_utils.h"
 
+#if 0
 ErrorUtilsHandler error_handler;
 ErrorUtilsRunningInstance lv_errors[LV_ERROR_BUFFER_SIZE];
 ErrorUtilsRunningInstance *lv_errors_ptr[LV_ERROR_BUFFER_SIZE];
@@ -64,6 +63,7 @@ void lv_error_expire_update(uint32_t timestamp, uint32_t timeout) {
 
   // Set timer capture compare register
   int32_t delta = (int32_t)(timestamp + timeout) - (int32_t)HAL_GetTick();
+  // LV errors must not be dependent with timer
   uint16_t cnt = __HAL_TIM_GET_COUNTER(&HTIM_ERR);
   __HAL_TIM_SET_COMPARE(&HTIM_ERR, TIM_CHANNEL_1,
                         cnt + TIM_MS_TO_TICKS(&HTIM_ERR, delta));
@@ -127,4 +127,4 @@ int hs_check(float chg_current, float lvms_out, float relay_voltage,
   // TODO add final check and error over hs_values
   return 0;
 }
-*/
+#endif

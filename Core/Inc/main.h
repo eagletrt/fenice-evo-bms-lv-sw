@@ -57,16 +57,8 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
-#define PC13_NC_Pin GPIO_PIN_13
-#define PC13_NC_GPIO_Port GPIOC
-#define PC14_NC_Pin GPIO_PIN_14
-#define PC14_NC_GPIO_Port GPIOC
 #define RELAY_Pin GPIO_PIN_15
 #define RELAY_GPIO_Port GPIOC
-#define CENTER_FB_Pin GPIO_PIN_0
-#define CENTER_FB_GPIO_Port GPIOC
-#define PC1_NC_Pin GPIO_PIN_1
-#define PC1_NC_GPIO_Port GPIOC
 #define AS_COMPUTER_FB_Pin GPIO_PIN_3
 #define AS_COMPUTER_FB_GPIO_Port GPIOC
 #define MUX_FB_OUT_Pin GPIO_PIN_0
@@ -99,6 +91,12 @@ void Error_Handler(void);
 #define LTC_CS_GPIO_Port GPIOB
 #define TIME_SET_Pin GPIO_PIN_12
 #define TIME_SET_GPIO_Port GPIOB
+#define LTC_CLK_Pin GPIO_PIN_13
+#define LTC_CLK_GPIO_Port GPIOB
+#define LCT_MISO_Pin GPIO_PIN_14
+#define LCT_MISO_GPIO_Port GPIOB
+#define LTC_MOSI_Pin GPIO_PIN_15
+#define LTC_MOSI_GPIO_Port GPIOB
 #define BUZZER_Pin GPIO_PIN_6
 #define BUZZER_GPIO_Port GPIOC
 #define MUX_A0_Pin GPIO_PIN_7
@@ -109,14 +107,11 @@ void Error_Handler(void);
 #define MUX_A2_GPIO_Port GPIOA
 #define MUX_A3_Pin GPIO_PIN_12
 #define MUX_A3_GPIO_Port GPIOA
-#define STP_PDN_Pin GPIO_PIN_12
-#define STP_PDN_GPIO_Port GPIOC
-#define GPIO_EXTENSION_INTERRUPT_A_Pin GPIO_PIN_2
-#define GPIO_EXTENSION_INTERRUPT_A_GPIO_Port GPIOD
-#define NC_NC_Pin GPIO_PIN_4
-#define NC_NC_GPIO_Port GPIOB
-#define STP_STEP_Pin GPIO_PIN_7
-#define STP_STEP_GPIO_Port GPIOB
+#define MCP_INT_Pin GPIO_PIN_2
+#define MCP_INT_GPIO_Port GPIOD
+#define MCP_INT_EXTI_IRQn EXTI2_IRQn
+#define PB4_NC_Pin GPIO_PIN_4
+#define PB4_NC_GPIO_Port GPIOB
 
 /* USER CODE BEGIN Private defines */
 

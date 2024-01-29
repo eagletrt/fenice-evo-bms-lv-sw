@@ -50,10 +50,6 @@ extern TIM_HandleTypeDef htim10;
 
 /* USER CODE BEGIN Private defines */
 
-#define TIMER_ADC_CALIBRATION &htim1
-#define TIMER_ADC_ROUTINE &htim10
-#define TIMER_ADC_CALIBRATION_CHANNEL TIM_CHANNEL_1
-
 /* USER CODE END Private defines */
 
 void MX_TIM1_Init(void);
