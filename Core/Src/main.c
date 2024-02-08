@@ -23,7 +23,6 @@
 #include "gpio.h"
 #include "i2c.h"
 #include "spi.h"
-#include "tim.h"
 #include "usart.h"
 
 /* Private includes ----------------------------------------------------------*/
@@ -95,16 +94,8 @@ int main(void) {
   MX_DAC_Init();
   MX_I2C3_Init();
   MX_SPI2_Init();
-  MX_TIM2_Init();
-  MX_TIM3_Init();
   MX_USART1_UART_Init();
   MX_CAN1_Init();
-  MX_TIM8_Init();
-  MX_TIM7_Init();
-  MX_TIM4_Init();
-  MX_TIM10_Init();
-  MX_TIM1_Init();
-  MX_TIM5_Init();
   /* USER CODE BEGIN 2 */
 
   state_t cur_state = STATE_INIT;

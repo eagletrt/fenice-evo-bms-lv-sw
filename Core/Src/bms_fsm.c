@@ -18,19 +18,21 @@ void adc_routine_start(void);
 void monitor_init(void);
 void gpio_extender_init(void);
 void adc_vrefint_calibration(void);
+void can_messages_callbacks_init();
+int can_start(int can_id);
 
 void adc_routine(void);
 void can_routine(void);
 void gpio_extender_routine(void);
 void monitor_routine(void);
-void all_measurements_check(void);
+// void all_measurements_check(void);
 
 void bms_lv_routine(void) {
   adc_routine();
   can_routine();
   gpio_extender_routine();
   monitor_routine();
-  all_measurements_check();
+  // all_measurements_check();
 }
 
 // SEARCH FOR Your Code Here FOR CODE INSERTION POINTS!

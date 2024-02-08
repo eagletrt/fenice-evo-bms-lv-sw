@@ -22,6 +22,150 @@
 
 /* USER CODE BEGIN 0 */
 
+#include "ltc6811.h"
+
+#define MONITOR_OK 0
+#define MONITOR_TIMEOUT_ERROR 1
+#define MONITOR_SPI_ERROR 2
+#define MONITOR_LTC_TIMEOUT 10 // ms
+#define MONITOR_SPI_TIMEOUT 10 // ms
+
+#define LTC_COUNT 1
+#define MONITORED_VOLTAGES 12
+float cell_voltages[LTC6811_CELL_COUNT * LTC_COUNT]; // in V
+// float cell_temperatures[];                           // in °C
+Ltc6811Chain chain;
+Ltc6811Cfgr config[LTC_COUNT];
+
+void monitor_init(void) {
+  for (size_t i = 0; i < LTC_COUNT; ++i) {
+    config[i].ADCOPT = 0;
+    config[i].REFON = 1;
+    config[i].GPIO = 0b00000;
+    config[i].VUV = 0;
+    config[i].VOV = 0;
+    config[i].DCC = 0;
+    config[i].DCTO = 0;
+  }
+  ltc6811_chain_init(&chain, LTC_COUNT);
+
+  HAL_GPIO_WritePin(LTC_CS_GPIO_Port, LTC_CS_Pin, GPIO_PIN_SET);
+}
+
+int monitor_update_voltages(void);
+int monitor_update_temperatures(void);
+
+void monitor_routine(void) {
+  /**
+   * TODO: check correct timings and set appropriate errors
+   */
+  if (monitor_update_voltages() != MONITOR_OK) {
+  }
+  if (monitor_update_temperatures() != MONITOR_OK) {
+  }
+}
+
+/**
+ * TODO: monitor also the return value of the HAL_SPI calls
+ */
+int monitor_update_voltages(void) {
+  uint8_t out_data[LTC6811_POLL_BUFFER_SIZE(LTC_COUNT)];
+  uint8_t rcv_data[8]; // TODO: set correct array length
+  size_t byte_count = ltc6811_adcv_encode_broadcast(
+      &chain, LTC6811_MD_27KHZ_14KHZ, LTC6811_DCP_DISABLED, LTC6811_CH_ALL,
+      out_data);
+  HAL_GPIO_WritePin(LTC_CS_GPIO_Port, LTC_CS_Pin, GPIO_PIN_RESET);
+  HAL_SPI_Transmit(&hspi2, out_data, byte_count, MONITOR_SPI_TIMEOUT);
+  HAL_GPIO_WritePin(LTC_CS_GPIO_Port, LTC_CS_Pin, GPIO_PIN_SET);
+
+  byte_count = ltc6811_pladc_encode_broadcast(&chain, out_data);
+  HAL_GPIO_WritePin(LTC_CS_GPIO_Port, LTC_CS_Pin, GPIO_PIN_RESET);
+  HAL_SPI_Transmit(&hspi2, out_data, byte_count, MONITOR_SPI_TIMEOUT);
+  uint32_t ptime = HAL_GetTick();
+  int timeout = 0;
+  do {
+    HAL_SPI_Receive(&hspi2, rcv_data, 1, MONITOR_SPI_TIMEOUT);
+    timeout = ((HAL_GetTick() - ptime) > MONITOR_LTC_TIMEOUT);
+  } while (ltc6811_pladc_check(rcv_data[0]) && timeout);
+  if (timeout) {
+    return MONITOR_TIMEOUT_ERROR;
+  }
+  HAL_GPIO_WritePin(LTC_CS_GPIO_Port, LTC_CS_Pin, GPIO_PIN_SET);
+
+  for (size_t ltc_rgs = LTC6811_CVAR; ltc_rgs <= LTC6811_CVDR; ++ltc_rgs) {
+    uint8_t rd_data[LTC6811_READ_BUFFER_SIZE(LTC_COUNT)];
+    byte_count = ltc6811_rdcv_encode_broadcast(&chain, ltc_rgs, rd_data);
+    HAL_GPIO_WritePin(LTC_CS_GPIO_Port, LTC_CS_Pin, GPIO_PIN_RESET);
+    HAL_SPI_Transmit(&hspi2, rd_data, byte_count, MONITOR_SPI_TIMEOUT);
+    HAL_SPI_Receive(&hspi2, rcv_data, 8, MONITOR_SPI_TIMEOUT);
+    HAL_GPIO_WritePin(LTC_CS_GPIO_Port, LTC_CS_Pin, GPIO_PIN_SET);
+
+    uint16_t volts[LTC6811_REG_CELL_COUNT] = {0};
+    byte_count = ltc6811_rdcv_decode_broadcast(
+        &chain, rcv_data, volts); // TODO: check on byte_count
+    for (size_t idx = 0; idx < LTC6811_REG_CELL_COUNT; idx++) {
+      cell_voltages[LTC6811_CVDR * ltc_rgs + idx] = (float)volts[idx] / 10000.f;
+    }
+  }
+  return MONITOR_OK;
+}
+
+int monitor_update_temperatures(void) {
+  uint8_t out_data[LTC6811_POLL_BUFFER_SIZE(LTC_COUNT)];
+  uint8_t rcv_data[8]; // TODO: set correct array length
+  size_t byte_count = ltc6811_adax_encode_broadcast(
+      &chain, LTC6811_MD_27KHZ_14KHZ, LTC6811_CHG_GPIO_1, out_data);
+  HAL_GPIO_WritePin(LTC_CS_GPIO_Port, LTC_CS_Pin, GPIO_PIN_RESET);
+  HAL_SPI_Transmit(&hspi2, out_data, byte_count, MONITOR_SPI_TIMEOUT);
+  HAL_GPIO_WritePin(LTC_CS_GPIO_Port, LTC_CS_Pin, GPIO_PIN_SET);
+
+  byte_count = ltc6811_pladc_encode_broadcast(&chain, out_data);
+  HAL_GPIO_WritePin(LTC_CS_GPIO_Port, LTC_CS_Pin, GPIO_PIN_RESET);
+  HAL_SPI_Transmit(&hspi2, out_data, byte_count, MONITOR_SPI_TIMEOUT);
+  int timeout = 0;
+  uint32_t itime = HAL_GetTick();
+  do {
+    HAL_SPI_Receive(&hspi2, rcv_data, 1, MONITOR_SPI_TIMEOUT);
+    timeout = ((HAL_GetTick() - itime) > MONITOR_LTC_TIMEOUT);
+  } while (ltc6811_pladc_check(rcv_data[0]) && timeout);
+  if (timeout) {
+    return MONITOR_TIMEOUT_ERROR;
+  }
+
+  byte_count = ltc6811_rdaux_encode_broadcast(&chain, LTC6811_AVAR, out_data);
+  HAL_GPIO_WritePin(LTC_CS_GPIO_Port, LTC_CS_Pin, GPIO_PIN_RESET);
+  HAL_SPI_Transmit(&hspi2, out_data, byte_count, MONITOR_SPI_TIMEOUT);
+  HAL_SPI_Receive(&hspi2, rcv_data, 8, MONITOR_SPI_TIMEOUT);
+  HAL_GPIO_WritePin(LTC_CS_GPIO_Port, LTC_CS_Pin, GPIO_PIN_SET);
+
+  // TODO: save and convert on the fly the temperatures and save in
+  // cell_temperatures (now commented)
+
+#if 0 // old code
+  cell_temps_raw[cell_row_index][cell_col_index] = raw_temp[0];
+
+  // Update col and row indexes according to NTC COUNT and
+  // CELL_TEMPS_ARRAY_SIZE
+  cell_col_index = (cell_col_index + 1) % NTC_COUNT;
+  cell_row_index = (cell_row_index + 1) % CELL_TEMPS_ARRAY_SIZE;
+
+#define MONITOR_MUX_OFFSET 2
+  uint8_t monitor_mux_index = cell_col_index + MONITOR_MUX_OFFSET;
+  monitor_handler.config->GPIO =
+      (monitor_mux_index & 1) << 4 | (monitor_mux_index & 2) << 2 |
+      (monitor_mux_index & 4) | (monitor_mux_index & 8) >> 2 | 1;
+  ltc6811_wrcfg_encode_broadcast(&chain, &config, out);
+#endif
+
+  /**
+   * TODO: chiedere a dimitri perche' bisogna far partire la conversione subito
+   * adesso
+   */
+  // ltc6811_adax_encode_broadcast
+  // ltc6811_adax(&monitor_handler, LTC6811_MD_7KHZ_3KHZ, LTC6811_CHG_GPIO_1);
+  return MONITOR_OK;
+}
+
 /* USER CODE END 0 */
 
 SPI_HandleTypeDef hspi2;
@@ -108,61 +252,5 @@ void HAL_SPI_MspDeInit(SPI_HandleTypeDef *spiHandle) {
 }
 
 /* USER CODE BEGIN 1 */
-
-#include "ltc6811.h"
-
-#define LTC_COUNT 1
-#define MONITORED_VOLTAGES                                                     \
-  (((LTC6811_CVDR + 1) * LTC6811_REG_CELL_COUNT) * LTC_COUNT)
-float cell_voltages[MONITORED_VOLTAGES];
-Ltc6811Chain chain;
-Ltc6811Cfgr config[LTC_COUNT];
-
-void monitor_init(void) {
-  for (size_t i = 0; i < LTC_COUNT; ++i) {
-    config[i].ADCOPT = 1;
-    config[i].DTEN = 1;
-    config[i].REFON = 1;
-    config[i].GPIO = 0b00000;
-    config[i].VUV = 0;
-    config[i].VOV = 0;
-    config[i].DCC = 0;
-    config[i].DCTO = 0;
-  }
-  ltc6811_chain_init(&chain, LTC_COUNT);
-
-  HAL_GPIO_WritePin(LTC_CS_GPIO_Port, LTC_CS_Pin, GPIO_PIN_SET);
-}
-
-void monitor_routine(void) {
-  uint8_t conv_data[LTC6811_POLL_BUFFER_SIZE(LTC_COUNT)];
-  size_t byte_count = ltc6811_adcv_encode_broadcast(
-      &chain, LTC6811_MD_27KHZ_14KHZ, LTC6811_DCP_DISABLED, LTC6811_CH_ALL,
-      conv_data);
-  HAL_GPIO_WritePin(LTC_CS_GPIO_Port, LTC_CS_Pin, GPIO_PIN_RESET);
-  HAL_SPI_Transmit(&hspi2, conv_data, byte_count, 10);
-  HAL_GPIO_WritePin(LTC_CS_GPIO_Port, LTC_CS_Pin, GPIO_PIN_SET);
-
-  /**
-   * TODO: replace the HAL_Delay() and use the correct polling function
-   */
-  HAL_Delay(10);
-
-  for (size_t ltc_rgs = LTC6811_CVAR; ltc_rgs <= LTC6811_CVDR; ++ltc_rgs) {
-    uint8_t rd_data[LTC6811_READ_BUFFER_SIZE(LTC_COUNT)];
-    uint8_t volt_data[8];
-    byte_count = ltc6811_rdcv_encode_broadcast(&chain, ltc_rgs, rd_data);
-    HAL_GPIO_WritePin(LTC_CS_GPIO_Port, LTC_CS_Pin, GPIO_PIN_RESET);
-    HAL_SPI_Transmit(&hspi2, rd_data, byte_count, 10);
-    HAL_SPI_Receive(&hspi2, volt_data, 8, 10);
-    HAL_GPIO_WritePin(LTC_CS_GPIO_Port, LTC_CS_Pin, GPIO_PIN_SET);
-
-    uint16_t volts[LTC6811_REG_CELL_COUNT] = {0};
-    ltc6811_rdcv_decode_broadcast(&chain, volt_data, volts);
-    for (size_t idx = 0; idx < LTC6811_REG_CELL_COUNT; idx++) {
-      cell_voltages[LTC6811_CVDR * ltc_rgs + idx] = (float)volts[idx] / 10000.f;
-    }
-  }
-}
 
 /* USER CODE END 1 */

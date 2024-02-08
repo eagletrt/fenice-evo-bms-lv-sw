@@ -6,6 +6,9 @@
 #define LV_ERROR_BUFFER_SIZE 100
 #define TIMEOUT_NEVER __UINT32_MAX__
 
+/**
+ * TODO: chiedere a dimitri il perche' di queste macro
+ */
 #define LV_ERROR_SET_INT(error, instance)                                      \
   ERROR_UTILS_SET_INT(&error_handler, error, instance)
 #define LV_ERROR_SET_STR(error, instance)                                      \
@@ -30,7 +33,7 @@
     LV_ERROR_RESET_STR(error, instance);                                       \
   }
 
-typedef enum {
+enum {
   ERROR_CELL_UNDERVOLTAGE,
   ERROR_CELL_OVERVOLTAGE,
   ERROR_OPEN_WIRE,
@@ -50,8 +53,7 @@ typedef enum {
   ERROR_ADC_MUX,
   ERRROR_LV_SUPPLY,
   ERROR_NUM_ERRORS
-
-} __attribute__((__packed__)) error_id;
+};
 
 extern ErrorUtilsHandler error_handler;
 

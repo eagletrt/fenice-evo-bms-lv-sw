@@ -9,9 +9,10 @@ void can_routine(void) {
   // TODO: check the timers to send can messages
 }
 
-/****
- * Feature request canlib: la massima lunghezza per memorizzare tutti i messaggi
- * della canlib senza fare questa bruttissima moltiplicazione
+/**
+ * TODO: Feature request canlib, the maximum length to store all the messages of
+ * the canlib without doing this very ugly multiplication
+ * TODO: incorporate all of this stuff in the can manager
  */
 uint8_t primary_messages_last_state[primary_MESSAGE_COUNT]
                                    [primary_MAX_STRUCT_SIZE_CONVERSION];

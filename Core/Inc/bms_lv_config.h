@@ -11,7 +11,7 @@
 
 // Directly connected LV Feedbacks (no mux)
 enum directly_connected_feedbacks_indexes {
-  fb_computer_fb_idx,
+  fb_computer_fb_idx = 0,
   fb_relay_out_idx,
   fb_lvms_out_idx,
   fb_batt_out_idx,
@@ -19,7 +19,7 @@ enum directly_connected_feedbacks_indexes {
 };
 
 enum adc2_channel_indexes {
-  adc2_ch_mux_hall_idx,
+  adc2_ch_mux_hall_idx = 0,
   adc2_ch_mux_fb_idx,
   adc2_ch_not_used_idx,
   adc2_ch_relay_out_idx,
@@ -29,7 +29,7 @@ enum adc2_channel_indexes {
 };
 
 enum mux_fb_indexes {
-  mux_fb_sd_end_idx,
+  mux_fb_sd_end_idx = 0,
   mux_fb_bspd_fb_idx,
   mux_fb_imd_fb_idx,
   mux_fb_lvms_fb_idx,
@@ -49,7 +49,7 @@ enum mux_fb_indexes {
 };
 
 enum mux_sensors_indexes {
-  mux_sensors_hall_0cd0_idx,
+  mux_sensors_hall_0cd0_idx = 0,
   mux_sensors_s_hall0_idx,
   mux_sensors_hall_0cd1_idx,
   mux_sensors_s_hall1_idx,
@@ -66,6 +66,30 @@ enum mux_sensors_indexes {
   mux_sensors_pin14_nc_idx,
   mux_sensors_pin15_nc_idx,
   mux_sensors_n_values
+};
+
+enum mcp_feedbacks_bank_a {
+  mcp_feedbacks_bank_a_inverters_fb = 0,
+  mcp_feedbacks_bank_a_pcbs_fb,
+  mcp_feedbacks_bank_a_pumps_fb,
+  mcp_feedbacks_bank_a_shutdown_fb,
+  mcp_feedbacks_bank_a_radiators_fb,
+  mcp_feedbacks_bank_a_fan_fb,
+  mcp_feedbacks_bank_a__unused1,
+  mcp_feedbacks_bank_a__unused2,
+  mcp_feedbacks_bank_a_n_pins
+};
+
+enum mcp_controls_bank_b {
+  mcp_controls_bank_b_led_0 = 0,
+  mcp_controls_bank_b_led_1,
+  mcp_controls_bank_b_led_2,
+  mcp_controls_bank_b_frg,
+  mcp_controls_bank_b_rfe,
+  mcp_controls_bank_b__unused1,
+  mcp_controls_bank_b_discharge,
+  mcp_controls_bank_b__unused2,
+  mcp_controls_bank_b_n_pins
 };
 
 #endif // BMS_LV_CONFIG_H

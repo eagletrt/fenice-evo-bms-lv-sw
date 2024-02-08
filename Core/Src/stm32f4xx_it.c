@@ -62,13 +62,6 @@ extern ADC_HandleTypeDef hadc2;
 extern CAN_HandleTypeDef hcan1;
 extern CAN_HandleTypeDef hcan2;
 extern DAC_HandleTypeDef hdac;
-extern TIM_HandleTypeDef htim1;
-extern TIM_HandleTypeDef htim2;
-extern TIM_HandleTypeDef htim4;
-extern TIM_HandleTypeDef htim5;
-extern TIM_HandleTypeDef htim7;
-extern TIM_HandleTypeDef htim8;
-extern TIM_HandleTypeDef htim10;
 extern UART_HandleTypeDef huart1;
 /* USER CODE BEGIN EV */
 
@@ -265,47 +258,6 @@ void CAN1_SCE_IRQHandler(void) {
 }
 
 /**
- * @brief This function handles TIM1 update interrupt and TIM10 global
- * interrupt.
- */
-void TIM1_UP_TIM10_IRQHandler(void) {
-  /* USER CODE BEGIN TIM1_UP_TIM10_IRQn 0 */
-
-  /* USER CODE END TIM1_UP_TIM10_IRQn 0 */
-  HAL_TIM_IRQHandler(&htim1);
-  HAL_TIM_IRQHandler(&htim10);
-  /* USER CODE BEGIN TIM1_UP_TIM10_IRQn 1 */
-
-  /* USER CODE END TIM1_UP_TIM10_IRQn 1 */
-}
-
-/**
- * @brief This function handles TIM2 global interrupt.
- */
-void TIM2_IRQHandler(void) {
-  /* USER CODE BEGIN TIM2_IRQn 0 */
-
-  /* USER CODE END TIM2_IRQn 0 */
-  HAL_TIM_IRQHandler(&htim2);
-  /* USER CODE BEGIN TIM2_IRQn 1 */
-
-  /* USER CODE END TIM2_IRQn 1 */
-}
-
-/**
- * @brief This function handles TIM4 global interrupt.
- */
-void TIM4_IRQHandler(void) {
-  /* USER CODE BEGIN TIM4_IRQn 0 */
-
-  /* USER CODE END TIM4_IRQn 0 */
-  HAL_TIM_IRQHandler(&htim4);
-  /* USER CODE BEGIN TIM4_IRQn 1 */
-
-  /* USER CODE END TIM4_IRQn 1 */
-}
-
-/**
  * @brief This function handles USART1 global interrupt.
  */
 void USART1_IRQHandler(void) {
@@ -316,32 +268,6 @@ void USART1_IRQHandler(void) {
   /* USER CODE BEGIN USART1_IRQn 1 */
 
   /* USER CODE END USART1_IRQn 1 */
-}
-
-/**
- * @brief This function handles TIM8 break interrupt and TIM12 global interrupt.
- */
-void TIM8_BRK_TIM12_IRQHandler(void) {
-  /* USER CODE BEGIN TIM8_BRK_TIM12_IRQn 0 */
-
-  /* USER CODE END TIM8_BRK_TIM12_IRQn 0 */
-  HAL_TIM_IRQHandler(&htim8);
-  /* USER CODE BEGIN TIM8_BRK_TIM12_IRQn 1 */
-
-  /* USER CODE END TIM8_BRK_TIM12_IRQn 1 */
-}
-
-/**
- * @brief This function handles TIM5 global interrupt.
- */
-void TIM5_IRQHandler(void) {
-  /* USER CODE BEGIN TIM5_IRQn 0 */
-
-  /* USER CODE END TIM5_IRQn 0 */
-  HAL_TIM_IRQHandler(&htim5);
-  /* USER CODE BEGIN TIM5_IRQn 1 */
-
-  /* USER CODE END TIM5_IRQn 1 */
 }
 
 /**
@@ -356,19 +282,6 @@ void TIM6_DAC_IRQHandler(void) {
   /* USER CODE BEGIN TIM6_DAC_IRQn 1 */
 
   /* USER CODE END TIM6_DAC_IRQn 1 */
-}
-
-/**
- * @brief This function handles TIM7 global interrupt.
- */
-void TIM7_IRQHandler(void) {
-  /* USER CODE BEGIN TIM7_IRQn 0 */
-
-  /* USER CODE END TIM7_IRQn 0 */
-  HAL_TIM_IRQHandler(&htim7);
-  /* USER CODE BEGIN TIM7_IRQn 1 */
-
-  /* USER CODE END TIM7_IRQn 1 */
 }
 
 /**

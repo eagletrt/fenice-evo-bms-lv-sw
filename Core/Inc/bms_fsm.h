@@ -14,7 +14,6 @@ The finite state machine has:
 
 #ifndef BMS_FSM_H
 #define BMS_FSM_H
-#include "can_messages.h"
 #include <stdlib.h>
 
 // State data object
