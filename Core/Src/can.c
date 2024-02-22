@@ -22,17 +22,13 @@
 
 /* USER CODE BEGIN 0 */
 
-int primary_can_id = -1;
-extern int can_manager_error_code;
+#include "can_manager.h"
+#include "can_messages.h"
 
-void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan) {
-  CAN_RxHeaderTypeDef header = {};
-  can_manager_message_t msg = {};
-  HAL_CAN_GetRxMessage(hcan, CAN_RX_FIFO0, &header, msg.data);
-  msg.id = header.StdId;
-  msg.size = header.DLC;
-  add_to_rx_queue(primary_can_id, &msg);
-}
+int bms_lv_primary_can_id = -1;
+
+can_mgr_msg_t can_messages_states[N_MONITORED_MESSAGES];
+uint8_t can_messages_is_new[N_MONITORED_MESSAGES];
 
 /* USER CODE END 0 */
 
@@ -66,8 +62,6 @@ void MX_CAN1_Init(void) {
   }
   /* USER CODE BEGIN CAN1_Init 2 */
 
-  HAL_StatusTypeDef can_manager_hal_status_retval = HAL_ERROR;
-
   /* HAL considers IdLow and IdHigh not as just the ID of the can message but
     as the combination of:
     STDID + RTR + IDE + 4 most significant bits of EXTID
@@ -82,14 +76,14 @@ void MX_CAN1_Init(void) {
       .FilterBank = 0,
       .FilterScale = CAN_FILTERSCALE_16BIT,
       .FilterActivation = ENABLE,
-      .SlaveStartFilterBank = 14,
+      .SlaveStartFilterBank = 14 // TODO: check this value
   };
-
-  primary_can_id =
-      can_init(&hcan1, can_primary_ntw_handler,
-               CAN_IT_ERROR | CAN_IT_RX_FIFO0_MSG_PENDING, &primary_filter);
-  if (can_manager_hal_status_retval != HAL_OK) {
-    can_init_errors_handler(can_manager_error_code);
+  bms_lv_primary_can_id = can_mgr_init(&hcan1);
+  if (can_mgr_config(bms_lv_primary_can_id, &primary_filter,
+                     CAN_IT_RX_FIFO0_MSG_PENDING, CAN_RX_FIFO0,
+                     can_messages_states, can_messages_is_new,
+                     N_MONITORED_MESSAGES < 0)) {
+    // Handle Error
   }
 
   /* USER CODE END CAN1_Init 2 */

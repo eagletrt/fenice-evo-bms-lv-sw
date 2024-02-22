@@ -30,9 +30,6 @@ extern "C" {
 
 /* USER CODE BEGIN Includes */
 
-#include "can_manager.h"
-#include "can_messages.h"
-
 /* USER CODE END Includes */
 
 extern CAN_HandleTypeDef hcan1;

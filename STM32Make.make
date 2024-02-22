@@ -38,6 +38,8 @@ BUILD_DIR = build
 C_SOURCES =  \
 Core/Lib/can/lib/bms/bms_network.c \
 Core/Lib/can/lib/bms/bms_watchdog.c \
+Core/Lib/can/lib/hv_current/hv_current_network.c \
+Core/Lib/can/lib/hv_current/hv_current_watchdog.c \
 Core/Lib/can/lib/inverters/inverters_network.c \
 Core/Lib/can/lib/inverters/inverters_watchdog.c \
 Core/Lib/can/lib/primary/primary_network.c \
@@ -48,7 +50,7 @@ Core/Lib/can/lib/simulator/simulator_network.c \
 Core/Lib/can/lib/simulator/simulator_watchdog.c \
 Core/Lib/micro-libs/bms-monitor/src/bms-monitor.c \
 Core/Lib/micro-libs/bms-monitor/src/ltc6811.c \
-Core/Lib/micro-libs/can-manager/can_manager.c \
+Core/Lib/micro-libs/can-manager/src/can_manager.c \
 Core/Lib/micro-libs/generic-queue/generic_queue.c \
 Core/Src/adc.c \
 Core/Src/bms_fsm.c \
@@ -164,11 +166,13 @@ AS_INCLUDES = \
 C_INCLUDES =  \
 -ICore/Inc \
 -ICore/Lib/can/lib/bms \
+-ICore/Lib/can/lib/hv_current \
 -ICore/Lib/can/lib/inverters \
 -ICore/Lib/can/lib/primary \
 -ICore/Lib/can/lib/secondary \
 -ICore/Lib/can/lib/simulator \
 -ICore/Lib/can/proto/bms \
+-ICore/Lib/can/proto/hv_current \
 -ICore/Lib/can/proto/inverters \
 -ICore/Lib/can/proto/primary \
 -ICore/Lib/can/proto/secondary \
@@ -195,7 +199,7 @@ C_INCLUDES =  \
 -ICore/Lib/micro-libs/Unity/test/tests \
 -ICore/Lib/micro-libs/blinky/inc \
 -ICore/Lib/micro-libs/bms-monitor/inc \
--ICore/Lib/micro-libs/can-manager \
+-ICore/Lib/micro-libs/can-manager/inc \
 -ICore/Lib/micro-libs/circ-buf \
 -ICore/Lib/micro-libs/circ-buf/test \
 -ICore/Lib/micro-libs/cli \

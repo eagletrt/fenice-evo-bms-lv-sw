@@ -1,4 +1,6 @@
 #include "lv_errors.h"
+
+#if 0
 #include <math.h>
 
 ErrorUtilsHandler error_handler;
@@ -34,7 +36,7 @@ void lv_error_expire_stop();
 void cs_enter();
 void cs_exit();
 
-#if 0
+#if 1
 
 void lv_error_init() {
   error_utils_init(&error_handler, lv_errors, lv_errors_ptr,
@@ -142,3 +144,5 @@ int hs_check(float chg_current, float lvms_out, float relay_voltage,
   }
   return fault;
 }
+
+#endif

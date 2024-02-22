@@ -18,7 +18,6 @@ void adc_routine_start(void);
 void monitor_init(void);
 void gpio_extender_init(void);
 void adc_vrefint_calibration(void);
-void can_messages_callbacks_init();
 int can_start(int can_id);
 
 void adc_routine(void);
@@ -93,9 +92,8 @@ state_t do_init(state_data_t *data) {
   adc_vrefint_calibration();
   monitor_init();
   gpio_extender_init();
-  can_messages_callbacks_init();
-  extern int primary_can_id;
-  can_start(primary_can_id);
+  extern int bms_lv_primary_can_id;
+  can_start(bms_lv_primary_can_id);
 
   switch (next_state) {
   case STATE_IDLE:

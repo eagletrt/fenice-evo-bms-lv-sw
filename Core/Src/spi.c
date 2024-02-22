@@ -131,6 +131,7 @@ int monitor_update_temperatures(void) {
   if (timeout) {
     return MONITOR_TIMEOUT_ERROR;
   }
+  HAL_GPIO_WritePin(LTC_CS_GPIO_Port, LTC_CS_Pin, GPIO_PIN_SET);
 
   byte_count = ltc6811_rdaux_encode_broadcast(&chain, LTC6811_AVAR, out_data);
   HAL_GPIO_WritePin(LTC_CS_GPIO_Port, LTC_CS_Pin, GPIO_PIN_RESET);
