@@ -129,10 +129,15 @@ void MX_GPIO_Init(void) {
 
 /* USER CODE BEGIN 2 */
 
-// #include "mcp23017.h"
-#define GPIO_EXTENDER_OK 0
 int mcp_int_fired = 0;
-uint8_t mcp_feedbacks_state[8];
+uint8_t mcp23017_feedbacks_state[8];
+uint8_t mcp23017_device_address = 0x00;
+uint8_t mcp23017_i2c_timeout = 10; //ms
+HAL_StatusTypeDef HAL_Status = HAL_ERROR;
+uint8_t gpinten_register_value = 0b00000000;
+uint8_t gpiob_register_value = 0b00000000;
+uint8_t gpioa_register_value = 0b00000000;
+uint8_t intcapa_register_value = 0b00000000;
 
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
   if (GPIO_Pin == MCP_INT_Pin) {
@@ -140,37 +145,122 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
   }
 }
 
-void gpio_extender_init(void) {
+int gpio_extender_init(void) {
+  HAL_Status = HAL_ERROR;
+
   /**
-   * TODO: init, enable interrupt
-   */
+   * This can also be done with
+   * mcp23017_set_register_bit()
+   * or
+   * mcp23017_set_it_on_pin()
+  */
+  gpinten_register_value = 0b11111111;
+
+  HAL_Status = HAL_I2C_Mem_Write(
+    &hi2c3, 
+    mcp23017_device_address, 
+    MCP23017_REGISTER_GPINTENA,
+    MCP23017_I2C_SIZE,
+    &gpinten_register_value, 
+    MCP23017_I2C_SIZE, 
+    mcp23017_i2c_timeout
+  );
+  if (HAL_Status != HAL_OK)
+  {
+    return MCP23017_ERROR;
+  }
+
+  return MCP23017_OK;
 }
 
 int set_rfe_frg(int state) {
-  /**
-   * TODO:
-   */
-  return GPIO_EXTENDER_OK;
+  HAL_Status = HAL_ERROR;
+  mcp23017_set_register_bit(&gpiob_register_value, 3, state);
+  mcp23017_set_register_bit(&gpiob_register_value, 4, state);
+
+  HAL_Status = HAL_I2C_Mem_Write(
+    &hi2c3, 
+    mcp23017_device_address, 
+    MCP23017_REGISTER_GPIOB,
+    MCP23017_I2C_SIZE,
+    &gpiob_register_value, 
+    MCP23017_I2C_SIZE, 
+    mcp23017_i2c_timeout
+  );
+  if (HAL_Status != HAL_OK)
+  {
+    return MCP23017_ERROR;
+  }
+
+  return MCP23017_OK;
 }
 
 int set_led(int led1, int led2, int led3) {
-  /**
-   * TODO:
-   */
-  return GPIO_EXTENDER_OK;
+  HAL_Status = HAL_ERROR;
+  mcp23017_set_register_bit(&gpiob_register_value, 0, led1);
+  mcp23017_set_register_bit(&gpiob_register_value, 1, led2);
+  mcp23017_set_register_bit(&gpiob_register_value, 1, led3);
+
+  HAL_Status = HAL_I2C_Mem_Write(
+    &hi2c3, 
+    mcp23017_device_address, 
+    MCP23017_REGISTER_GPIOB,
+    MCP23017_I2C_SIZE,
+    &gpiob_register_value, 
+    MCP23017_I2C_SIZE, 
+    mcp23017_i2c_timeout
+  );
+  if (HAL_Status != HAL_OK)
+  {
+    return MCP23017_ERROR;
+  }
+
+  return MCP23017_OK;
 }
 
 int set_discharge(int state) {
-  /**
-   * TODO:
-   */
-  return GPIO_EXTENDER_OK;
+  HAL_Status = HAL_ERROR;
+  mcp23017_set_register_bit(&gpiob_register_value, 6, state);
+
+  HAL_Status = HAL_I2C_Mem_Write(
+    &hi2c3, 
+    mcp23017_device_address, 
+    MCP23017_REGISTER_GPIOB,
+    MCP23017_I2C_SIZE,
+    &gpiob_register_value, 
+    MCP23017_I2C_SIZE, 
+    mcp23017_i2c_timeout
+  );
+  if (HAL_Status != HAL_OK)
+  {
+    return MCP23017_ERROR;
+  }
+
+  return MCP23017_OK;
 }
 
 void gpio_extender_routine(void) {
   if (mcp_int_fired) {
     mcp_int_fired = 0;
     // TODO: read mcp gpio and update local structures
+    HAL_Status = HAL_I2C_Mem_Read(
+      &hi2c3, 
+      mcp23017_device_address, 
+      MCP23017_REGISTER_INTCAPA,
+      MCP23017_I2C_SIZE, 
+      &intcapa_register_value, 
+      MCP23017_I2C_SIZE, 
+      mcp23017_i2c_timeout
+    );
+    if (HAL_Status != HAL_OK)
+    {
+      //TO-DO: Error
+    }
+
+    for (uint8_t i = 0; i < 8; i++)
+    {
+      mcp23017_feedbacks_state[i] = mcp23017_get_register_bit(intcapa_register_value, i);;
+    }
   }
 }
 

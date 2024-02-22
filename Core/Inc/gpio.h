@@ -30,9 +30,16 @@ extern "C" {
 
 /* USER CODE BEGIN Includes */
 
+#include <stdint.h>
+#include "i2c.h"
+#include "mcp23017.h"
+
 /* USER CODE END Includes */
 
 /* USER CODE BEGIN Private defines */
+
+#define MCP23017_OK 0
+#define MCP23017_ERROR 1
 
 /* USER CODE END Private defines */
 
