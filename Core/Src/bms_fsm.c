@@ -24,7 +24,7 @@ void adc_routine(void);
 void can_routine(void);
 void gpio_extender_routine(void);
 void monitor_routine(void);
-// void all_measurements_check(void);
+void all_measurements_check(void);
 
 void bms_lv_routine(void) {
   adc_routine();

@@ -34,7 +34,7 @@ int can_mgr_from_id_to_index(int can_id, int msg_id) {
 
 int can_start(void) {
   if (can_mgr_start(bms_lv_primary_can_id) < 0) {
-    // Handle Error
+    // TODO: Handle Error
   }
   return 0;
 }
@@ -43,6 +43,7 @@ int can_routine(void) {
   for (size_t msg_idx = 0; msg_idx < N_MONITORED_MESSAGES; ++msg_idx) {
     if (can_messages_is_new[msg_idx] &&
         (primary_message_handlers[msg_idx] != NULL)) {
+      can_messages_is_new[msg_idx] = 0;
       (*primary_message_handlers[msg_idx])(&can_messages_states[msg_idx]);
     }
   }

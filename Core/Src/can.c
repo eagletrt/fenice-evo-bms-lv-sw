@@ -79,11 +79,14 @@ void MX_CAN1_Init(void) {
       .SlaveStartFilterBank = 14 // TODO: check this value
   };
   bms_lv_primary_can_id = can_mgr_init(&hcan1);
+  if (bms_lv_primary_can_id < 0) {
+    // TODO: handle error
+  }
   if (can_mgr_config(bms_lv_primary_can_id, &primary_filter,
                      CAN_IT_RX_FIFO0_MSG_PENDING, CAN_RX_FIFO0,
                      can_messages_states, can_messages_is_new,
                      N_MONITORED_MESSAGES < 0)) {
-    // Handle Error
+    // TODO: Handle Error
   }
 
   /* USER CODE END CAN1_Init 2 */

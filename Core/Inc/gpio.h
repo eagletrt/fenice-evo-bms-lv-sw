@@ -30,9 +30,10 @@ extern "C" {
 
 /* USER CODE BEGIN Includes */
 
-#include <stdint.h>
+#include "bms_lv_config.h"
 #include "i2c.h"
 #include "mcp23017.h"
+#include <stdint.h>
 
 /* USER CODE END Includes */
 

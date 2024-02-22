@@ -52,6 +52,7 @@ Core/Lib/micro-libs/bms-monitor/src/bms-monitor.c \
 Core/Lib/micro-libs/bms-monitor/src/ltc6811.c \
 Core/Lib/micro-libs/can-manager/src/can_manager.c \
 Core/Lib/micro-libs/generic-queue/generic_queue.c \
+Core/Lib/micro-libs/mcp23017/src/mcp23017.c \
 Core/Src/adc.c \
 Core/Src/bms_fsm.c \
 Core/Src/can.c \
@@ -209,7 +210,7 @@ C_INCLUDES =  \
 -ICore/Lib/micro-libs/invlib \
 -ICore/Lib/micro-libs/logger \
 -ICore/Lib/micro-libs/m95256 \
--ICore/Lib/micro-libs/mcp23017_driver \
+-ICore/Lib/micro-libs/mcp23017/inc \
 -ICore/Lib/micro-libs/pid \
 -ICore/Lib/micro-libs/priority-queue \
 -ICore/Lib/micro-libs/priority-queue/test \

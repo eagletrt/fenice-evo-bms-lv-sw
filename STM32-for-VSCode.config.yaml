@@ -82,6 +82,7 @@ sourceFiles:
   - Core/Lib/micro-libs/can-manager/src/*.c
   - Core/Lib/micro-libs/generic-queue/*.c
   - Core/Lib/micro-libs/bms-monitor/src/*.c
+  - Core/Lib/micro-libs/mcp23017/src/*.c
 
 
 # When no makefile is present it will show a warning pop-up.
