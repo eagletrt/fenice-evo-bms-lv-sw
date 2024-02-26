@@ -92,4 +92,16 @@ enum mcp_controls_bank_b {
   mcp_controls_bank_b_n_pins
 };
 
+enum safe_statuses {
+  safe_statuses_chg_connect_only_mcu_pw = 0b000010,
+  safe_statuses_mcu_on_bat_only = 0b000100,
+  safe_statuses_car_on_chg_only = 0b001011,
+  safe_statuses_chg_batt = 0b001110,
+  safe_statuses_car_on_bat_only = 0b001111,
+  safe_statuses_relay_closed_chg_car_keep_closed = 0b011110,
+  safe_statuses_car_on_chg_and_bat = 0b011111,
+  safe_statuses_car_running = 0b110111,
+  safe_statuses_car_on_chg_and_bat_duplicated = 0b111111,
+};
+
 #endif // BMS_LV_CONFIG_H

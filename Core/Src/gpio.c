@@ -30,6 +30,14 @@
 /*----------------------------------------------------------------------------*/
 /* USER CODE BEGIN 1 */
 
+void set_relay(uint8_t status) {
+  if (status == 0) {
+    HAL_GPIO_WritePin(RELAY_GPIO_Port, GPIO_PIN_15, GPIO_PIN_RESET);
+  } else {
+    HAL_GPIO_WritePin(RELAY_GPIO_Port, GPIO_PIN_15, GPIO_PIN_SET);
+  }
+}
+
 /* USER CODE END 1 */
 
 /** Configure pins as

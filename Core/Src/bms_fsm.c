@@ -31,7 +31,7 @@ void bms_lv_routine(void) {
   can_routine();
   gpio_extender_routine();
   monitor_routine();
-  // all_measurements_check();
+  all_measurements_check();
 }
 
 // SEARCH FOR Your Code Here FOR CODE INSERTION POINTS!

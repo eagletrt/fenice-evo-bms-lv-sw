@@ -39,7 +39,7 @@ GPIO_TypeDef *mux_ctrl_ports[directly_connected_fbs_n_values] = {
     MUX_A0_GPIO_Port, MUX_A1_GPIO_Port, MUX_A2_GPIO_Port, MUX_A3_GPIO_Port};
 uint32_t adc2_raw[adc2_ch_n_values] = {0};
 float mux_fb_mV[mux_fb_n_values];
-float mux_sensors_mV[mux_sensors_n_values];
+float mux_sensors_mA[mux_sensors_n_values];
 float dc_fb_mV[directly_connected_fbs_n_values];
 float global_bms_lv_vref = DEFAULT_ADC_VREF;
 
@@ -64,7 +64,7 @@ void adc_routine_start(void) {
   for (size_t idx = 0; idx < mux_fb_n_values; idx++)
     mux_fb_mV[idx] = FLOAT_UNINITIALIZED_VALUE;
   for (size_t idx = 0; idx < mux_sensors_n_values; idx++)
-    mux_sensors_mV[idx] = FLOAT_UNINITIALIZED_VALUE;
+    mux_sensors_mA[idx] = FLOAT_UNINITIALIZED_VALUE;
   for (size_t idx = 0; idx < directly_connected_fbs_n_values; idx++)
     dc_fb_mV[idx] = FLOAT_UNINITIALIZED_VALUE;
 
@@ -93,7 +93,7 @@ void adc_routine(void) {
         mux_converted_val =
             CT_get_electric_current_mA(mux_converted_val) - S_HALL2_OFFSET_mA;
       }
-      mux_sensors_mV[current_mux_idx] = mux_converted_val;
+      mux_sensors_mA[current_mux_idx] = mux_converted_val;
     }
     mux_fb_mV[current_mux_idx] = to_mV(adc2_raw[adc2_ch_mux_fb_idx]) * ADC2_VDM;
     dc_fb_mV[fb_computer_fb_idx] =

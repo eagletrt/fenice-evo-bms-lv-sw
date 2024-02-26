@@ -62,11 +62,10 @@ libraryDirectories: []
 # If a CubeMX makefile is present it will automatically include the include directories from that makefile.
 includeDirectories: 
   - Inc/**
+  - Src/**
   - Core/Inc/**
   - Core/Lib/**
-  - Src/**
   - Core/Src/**
-  - Core/Lib/**
 
 
 # Files that should be included in the compilation.
