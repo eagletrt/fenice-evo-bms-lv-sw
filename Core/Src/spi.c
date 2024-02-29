@@ -22,6 +22,11 @@
 
 /* USER CODE BEGIN 0 */
 
+/***
+ * TODO: task per dimitri: scrivere la parte di temperature + testare le letture
+ * del bms monitor
+ */
+
 #include "ltc6811.h"
 
 #define MONITOR_OK 0

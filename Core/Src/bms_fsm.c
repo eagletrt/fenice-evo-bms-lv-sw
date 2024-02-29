@@ -83,7 +83,7 @@ state_t do_init(state_data_t *data) {
 
   /* Your Code Here */
 
-  // cooling off
+  // cooling OFF
   // discharge ON
   // rfe/frg OFF
 
@@ -112,10 +112,14 @@ state_t do_init(state_data_t *data) {
 state_t do_idle(state_data_t *data) {
   state_t next_state = NO_CHANGE;
 
+  // cooling no change
+  // discharge ON
+  // rfe/frg OFF
+
   /* Your Code Here */
   bms_lv_routine();
 
-  // if car_status = IDLE
+  // until car_status == IDLE
 
   switch (next_state) {
   case NO_CHANGE:
@@ -136,6 +140,10 @@ state_t do_idle(state_data_t *data) {
 state_t do_error(state_data_t *data) {
   state_t next_state = NO_CHANGE;
 
+  // cooling OFF
+  // discharge ON
+  // rfe/frg OFF
+
   /* Your Code Here */
   // TODO: error code check, [send it via can/write to flash], shutdown
 
@@ -154,8 +162,17 @@ state_t do_error(state_data_t *data) {
 state_t do_tson(state_data_t *data) {
   state_t next_state = NO_CHANGE;
 
+  // cooling no change
+  // set discharge OFF
+  // set rfe/frg OFF
+  // until car_status == {...}
+
   /* Your Code Here */
   bms_lv_routine();
+
+  // until car_status == {...}
+  // car_status -> drive -> run
+  // car_status -> idle -> idle
 
   switch (next_state) {
   case NO_CHANGE:
@@ -175,8 +192,12 @@ state_t do_tson(state_data_t *data) {
 state_t do_flashing(state_data_t *data) {
   state_t next_state = STATE_ERROR;
 
+  // cooling no change
+  // set discharge ON
+  // set rfe/frg OFF
+  // SET TIME_SET ON
+
   /* Your Code Here */
-  bms_lv_routine();
 
   switch (next_state) {
   case STATE_ERROR:
@@ -193,8 +214,14 @@ state_t do_flashing(state_data_t *data) {
 state_t do_run(state_data_t *data) {
   state_t next_state = NO_CHANGE;
 
+  // activate automatic cooling
+  // set discharge OFF
+  // set rfe/frg ON
+
   /* Your Code Here */
   bms_lv_routine();
+
+  // until car_status == run
 
   switch (next_state) {
   case NO_CHANGE:

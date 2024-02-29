@@ -6,7 +6,7 @@
 ErrorUtilsHandler error_handler;
 ErrorUtilsRunningInstance lv_errors[LV_ERROR_BUFFER_SIZE];
 ErrorUtilsRunningInstance *lv_errors_ptr[LV_ERROR_BUFFER_SIZE];
-uint32_t rPriMask = 0;
+// uint32_t rPriMask = 0;
 
 const uint32_t lv_error_timeout[ERROR_NUM_ERRORS] = {
     [ERROR_CELL_UNDERVOLTAGE] = 400,
@@ -31,17 +31,15 @@ const uint32_t lv_error_timeout[ERROR_NUM_ERRORS] = {
 
 uint32_t lv_get_timestamp();
 uint32_t lv_error_get_timeout(uint32_t error);
-void lv_error_expire_update(uint32_t timestamp, uint32_t timeout);
+void lv_error_set_expire(uint32_t timestamp, uint32_t timeout);
 void lv_error_expire_stop();
 void cs_enter();
 void cs_exit();
 
-#if 1
-
 void lv_error_init() {
   error_utils_init(&error_handler, lv_errors, lv_errors_ptr,
                    LV_ERROR_BUFFER_SIZE, lv_get_timestamp, lv_error_get_timeout,
-                   lv_error_expire_update, lv_error_expire_stop, cs_enter,
+                   lv_error_set_expire, lv_error_expire_stop, cs_enter,
                    cs_exit);
 }
 
@@ -51,15 +49,13 @@ uint32_t lv_error_get_timeout(uint32_t error) {
   return lv_error_timeout[error];
 }
 
-void lv_error_expire_update(uint32_t timestamp, uint32_t timeout) {
+void lv_error_set_expire(uint32_t timestamp, uint32_t timeout) {
   if (timeout == TIMEOUT_NEVER)
     return;
 
   lv_error_expire_stop();
 
-  // Set timer capture compare register
   int32_t delta = (int32_t)(timestamp + timeout) - (int32_t)HAL_GetTick();
-  // LV errors must not be dependent with timer
   uint16_t cnt = __HAL_TIM_GET_COUNTER(&HTIM_ERR);
   __HAL_TIM_SET_COMPARE(&HTIM_ERR, TIM_CHANNEL_1,
                         cnt + TIM_MS_TO_TICKS(&HTIM_ERR, delta));
@@ -68,16 +64,22 @@ void lv_error_expire_update(uint32_t timestamp, uint32_t timeout) {
 }
 
 void lv_error_expire_stop() {
+  // hai resettato l'ultimo errore che c'era -> bom puoi levare il timer
+
   HAL_TIM_OC_Stop_IT(&HTIM_ERR, TIM_CHANNEL_1);
   __HAL_TIM_CLEAR_FLAG(&HTIM_ERR, TIM_IT_CC1);
 }
 
 void cs_enter() {
-  rPriMask = __get_PRIMASK();
-  __set_PRIMASK(1);
+  // TODO: the library should not disable the interrupts
+  // rPriMask = __get_PRIMASK();
+  // __set_PRIMASK(1);
 }
 
-void cs_exit() { __set_PRIMASK(rPriMask); }
+void cs_exit() {
+  // TODO: the library should not disable the interrupts
+  // __set_PRIMASK(rPriMask);
+}
 
 size_t lv_error_running_count() {
   return error_utils_running_count(&error_handler);
@@ -86,22 +88,21 @@ size_t lv_error_running_count() {
 size_t lv_error_expire_count() {
   return error_utils_expired_count(&error_handler);
 }
-#endif
 
 // HEALTH SIGNALS
 
 #define NOT_FAULT_SCENARIOS_LENGTH 14
 // #define EDGE_CASES_LENGHT 4
-#define MIN_CHARGER_CURRENT_THRESHOLD_mA 4000.0f
-#define MIN_BATTERY_CURRENT_THRESHOLD_mA 50.0f
-#define MIN_BATTERY_VOLTAGE_mV 3300.0 * 6.0f
+#define MIN_CHARGER_CURRENT_THRESHOLD_mA (4000.0f)
+#define MIN_BATTERY_CURRENT_THRESHOLD_mA (50.0f)
+#define MIN_BATTERY_VOLTAGE_mV (3300.0 * 6.0f)
 // Min difference threshold between V Relay and V Battery
 #define MIN_RELAY_VOLTAGE_DIFF_THRESHOLD_mV                                    \
-  2000.0f // diff v relay (that could be the charger one and bat out)
+  (2000.0f) // diff v relay (that could be the charger one and bat out)
 // Min difference threshold between LVMS out V ans V Relay
 #define MIN_LVMS_VOLTAGE_DIFF_THRESHOLD_mV                                     \
-  2000.0f // diff lvms out and relay out 5%
-#define MIN_LOW_LOGIC_LEVEL_THRESHOLD_mV 500.0f // 500 mV
+  (2000.0f) // diff lvms out and relay out 5%
+#define MIN_LOW_LOGIC_LEVEL_THRESHOLD_mV (500.0f) // 500 mV
 
 // TODO: check and double check these values
 uint8_t not_fault_scenarios[NOT_FAULT_SCENARIOS_LENGTH] = {
@@ -144,5 +145,4 @@ int hs_check(float chg_current, float lvms_out, float relay_voltage,
   }
   return fault;
 }
-
 #endif

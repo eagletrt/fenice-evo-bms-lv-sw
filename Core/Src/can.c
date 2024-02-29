@@ -76,7 +76,7 @@ void MX_CAN1_Init(void) {
       .FilterBank = 0,
       .FilterScale = CAN_FILTERSCALE_16BIT,
       .FilterActivation = ENABLE,
-      .SlaveStartFilterBank = 14 // TODO: check this value
+      .SlaveStartFilterBank = 0
   };
   bms_lv_primary_can_id = can_mgr_init(&hcan1);
   if (bms_lv_primary_can_id < 0) {
@@ -85,7 +85,7 @@ void MX_CAN1_Init(void) {
   if (can_mgr_config(bms_lv_primary_can_id, &primary_filter,
                      CAN_IT_RX_FIFO0_MSG_PENDING, CAN_RX_FIFO0,
                      can_messages_states, can_messages_is_new,
-                     N_MONITORED_MESSAGES < 0)) {
+                     N_MONITORED_MESSAGES) < 0) {
     // TODO: Handle Error
   }
 

@@ -9,7 +9,7 @@ int primary_car_status_handler(can_mgr_msg_t *msg);
 int primary_set_inverter_connection_status_handler(can_mgr_msg_t *msg);
 int primary_hv_feedback_sd_voltage_handler(can_mgr_msg_t *msg);
 
-int (*primary_message_handlers[primary_MESSAGE_COUNT])(can_mgr_msg_t *) =
+int (*primary_message_handlers[N_MONITORED_MESSAGES])(can_mgr_msg_t *) =
     CAN_MESSAGES_HANDLERS;
 
 void can_init_errors_handler(int can_mgr_error_code) {
