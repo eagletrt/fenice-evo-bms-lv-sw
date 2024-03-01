@@ -2,17 +2,13 @@
 #include <stdint.h>
 #include "math.h"
 
-void set_relay(uint8_t status);
-#define CONVERT_ANG_TO_DIG(value) value < 0.0 || value > 0.0 ? 1 : 0
-#define CHECK_OK 0
-#define CHECK_ERR 1
+#define CONVERT_I_BAT_ANG_TO_DIG(value) (((value) < 0.0 || (value) > 0.0) ? 1 : 0)
+#define CONVERT_ANG_TO_DIG(value) (((value) > 0.0) ? 1 : 0)
 
 extern float mux_fb_mV[mux_fb_n_values];
 extern float mux_sensors_mA[mux_sensors_n_values];
 extern float dc_fb_mV[directly_connected_fbs_n_values];
 extern uint8_t mcp23017_feedbacks_state[8];
-
-uint8_t current_status = 0;
 
 // Index is from right to left
 void set_bit(uint8_t* value, uint8_t index, uint8_t bit_value) {
@@ -23,16 +19,16 @@ void set_bit(uint8_t* value, uint8_t index, uint8_t bit_value) {
     }
 }
 
-void update_status() {
-    set_bit(&current_status, 5, signbit(mux_sensors_mA[mux_sensors_s_hall1_idx]) ? 0 : 1); // sign of I_BAT
-    set_bit(&current_status, 4, CONVERT_ANG_TO_DIG(mux_sensors_mA[mux_sensors_s_hall1_idx])); // I_BAT
-    set_bit(&current_status, 3, CONVERT_ANG_TO_DIG(mux_sensors_mA[mux_sensors_s_hall2_idx])); // I_CHG
-    set_bit(&current_status, 2, CONVERT_ANG_TO_DIG(dc_fb_mV[fb_batt_out_idx])); // BAT_OUT
-    set_bit(&current_status, 1, CONVERT_ANG_TO_DIG(dc_fb_mV[fb_relay_out_idx])); // RELAY_OUT
-    set_bit(&current_status, 0, CONVERT_ANG_TO_DIG(dc_fb_mV[fb_lvms_out_idx])); // LVMS_OUT
+void update_status(uint8_t* current_status, float i_bat, float i_chg, float bat_out, float relay_out, float lvms_out) {  
+    set_bit(current_status, 5, CONVERT_ANG_TO_DIG(i_bat));
+    set_bit(current_status, 4, CONVERT_I_BAT_ANG_TO_DIG(i_bat));
+    set_bit(current_status, 3, CONVERT_ANG_TO_DIG(i_chg));
+    set_bit(current_status, 2, CONVERT_ANG_TO_DIG(bat_out));
+    set_bit(current_status, 1, CONVERT_ANG_TO_DIG(relay_out));
+    set_bit(current_status, 0, CONVERT_ANG_TO_DIG(lvms_out));
 }
 
-int check_status() {
+int check_status(uint8_t current_status) {
     switch (current_status)
     {
     case safe_statuses_chg_connect_only_mcu_pw:
@@ -64,18 +60,27 @@ int check_status() {
         break;
 
     default:
-        //TODO: generate error
-        return CHECK_ERR;
+        return ERR_STATUS;
         break;
     }
 
-    return CHECK_OK;
+    return SAFE_STATUS;
 }
 
+float i_bat, i_chg, bat_out, relay_out, lvms_out = 0;
+uint8_t current_status = 0b000000;
+uint8_t check_result = ERR_STATUS;
+
 void all_measurements_check(void) {
-    update_status();
-    uint8_t check_result = check_status();
-    if (check_result != CHECK_OK) {
+    i_bat = mux_sensors_mA[mux_sensors_s_hall1_idx];
+    i_chg = mux_sensors_mA[mux_sensors_s_hall2_idx];
+    bat_out = dc_fb_mV[fb_batt_out_idx];
+    relay_out = dc_fb_mV[fb_relay_out_idx];
+    lvms_out = dc_fb_mV[fb_lvms_out_idx];
+
+    update_status(&current_status, i_bat, i_chg, bat_out, relay_out, lvms_out);
+    check_result = check_status(current_status);
+    if (check_result != SAFE_STATUS) {
         // TO-DO: generate error
     }
 }

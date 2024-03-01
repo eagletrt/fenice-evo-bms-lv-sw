@@ -104,4 +104,14 @@ enum safe_statuses {
   safe_statuses_car_on_chg_and_bat_duplicated = 0b111111,
 };
 
+/**
+ * @brief Tests
+ * 
+*/
+void set_relay(uint8_t status);
+void update_status(uint8_t* current_status, float i_bat, float i_chg, float bat_out, float relay_out, float lvms_out);
+#define SAFE_STATUS 0
+#define ERR_STATUS 1
+int check_status(uint8_t current_status);
+
 #endif // BMS_LV_CONFIG_H
