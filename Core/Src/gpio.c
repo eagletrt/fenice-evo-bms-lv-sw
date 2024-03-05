@@ -113,7 +113,9 @@ uint8_t mcp23017_feedbacks_state[8];
 uint8_t mcp23017_device_address = 0x00;
 uint8_t mcp23017_i2c_timeout = 10; // ms
 HAL_StatusTypeDef HAL_Status = HAL_ERROR;
-uint8_t gpinten_register_value = 0b00000000;
+uint8_t gpintena_register_value = 0b00000000;
+uint8_t intcona_register_value = 0b00000000;
+uint8_t defvala_register_value = 0b00000000;
 uint8_t gpiob_register_value = 0b00000000;
 uint8_t gpioa_register_value = 0b00000000;
 uint8_t intcapa_register_value = 0b00000000;
@@ -127,18 +129,33 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 int gpio_extender_init(void) {
   HAL_Status = HAL_ERROR;
 
-  /**
-   * This can also be done with
-   * mcp23017_set_register_bit()
-   * or
-   * mcp23017_set_it_on_pin()
-   */
-  gpinten_register_value = 0b11111111;
+  mcp23017_set_it_on_all_pins(
+    &gpintena_register_value,
+    &intcona_register_value,
+    &defvala_register_value,
+    MCP23017_INT_ENABLED,
+    MCP23017_INT_MODE_ON_CHANGE,
+    0
+  );
 
   HAL_Status = HAL_I2C_Mem_Write(&hi2c3, mcp23017_device_address,
                                  MCP23017_REGISTER_GPINTENA, MCP23017_I2C_SIZE,
-                                 &gpinten_register_value, MCP23017_I2C_SIZE,
+                                 &gpintena_register_value, MCP23017_I2C_SIZE,
                                  mcp23017_i2c_timeout);
+  if (HAL_Status != HAL_OK) {
+    return MCP23017_ERROR;
+  }
+  HAL_Status = HAL_I2C_Mem_Write(&hi2c3, mcp23017_device_address,
+                                MCP23017_REGISTER_INTCONA, MCP23017_I2C_SIZE,
+                                &intcona_register_value, MCP23017_I2C_SIZE,
+                                mcp23017_i2c_timeout);
+  if (HAL_Status != HAL_OK) {
+    return MCP23017_ERROR;
+  }
+  HAL_Status = HAL_I2C_Mem_Write(&hi2c3, mcp23017_device_address,
+                                MCP23017_REGISTER_DEFVALA, MCP23017_I2C_SIZE,
+                                &defvala_register_value, MCP23017_I2C_SIZE,
+                                mcp23017_i2c_timeout);                 
   if (HAL_Status != HAL_OK) {
     return MCP23017_ERROR;
   }
