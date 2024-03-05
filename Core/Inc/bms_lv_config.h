@@ -8,6 +8,7 @@
   ((num > max_n) ? max_n : ((num < min_n) ? min_n : num))
 
 #define FLOAT_UNINITIALIZED_VALUE -1.0f
+#define MCP23017_INTERRUPTS_ENABLED 1
 
 // Directly connected LV Feedbacks (no mux)
 enum directly_connected_feedbacks_indexes {
