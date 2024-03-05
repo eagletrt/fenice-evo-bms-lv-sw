@@ -2,9 +2,6 @@
 #include <stdint.h>
 #include "math.h"
 
-#define CONVERT_I_BAT_ANG_TO_DIG(value) (((value) < 0.0 || (value) > 0.0) ? 1 : 0)
-#define CONVERT_ANG_TO_DIG(value) (((value) > 0.0) ? 1 : 0)
-
 extern float mux_fb_mV[mux_fb_n_values];
 extern float mux_sensors_mA[mux_sensors_n_values];
 extern float dc_fb_mV[directly_connected_fbs_n_values];
@@ -19,13 +16,47 @@ void set_bit(uint8_t* value, uint8_t index, uint8_t bit_value) {
     }
 }
 
+uint8_t convert_relay_out_ang_to_state(float relay_out, float bat_out) {
+    uint8_t state = 0;
+    float diff_voltage = relay_out - bat_out;
+
+    if (diff_voltage < 0) {
+        diff_voltage = -diff_voltage;
+    }
+
+    if (diff_voltage < MIN_RELAY_VOLTAGE_DIFF_THRESHOLD_mV && relay_out > MIN_LOW_LOGIC_LEVEL_THRESHOLD_mV && bat_out > MIN_LOW_LOGIC_LEVEL_THRESHOLD_mV) {
+        state = 1;
+    } else {
+        state = 0;
+    }
+    
+    return state;
+}
+
+uint8_t convert_lvms_out_ang_to_state(float relay_out, float lvms_out) {
+    uint8_t state = 0;
+    float diff_voltage = relay_out - lvms_out;
+
+    if (diff_voltage < 0) {
+        diff_voltage = -diff_voltage;
+    }
+
+    if (diff_voltage < MIN_LVMS_VOLTAGE_DIFF_THRESHOLD_mV && relay_out > MIN_LOW_LOGIC_LEVEL_THRESHOLD_mV && lvms_out > MIN_LOW_LOGIC_LEVEL_THRESHOLD_mV) {
+        state = 1;
+    } else {
+        state = 0;
+    }
+    
+    return state;
+}
+
 void update_status(uint8_t* current_status, float i_bat, float i_chg, float bat_out, float relay_out, float lvms_out) {  
-    set_bit(current_status, 5, CONVERT_ANG_TO_DIG(i_bat));
-    set_bit(current_status, 4, CONVERT_I_BAT_ANG_TO_DIG(i_bat));
-    set_bit(current_status, 3, CONVERT_ANG_TO_DIG(i_chg));
-    set_bit(current_status, 2, CONVERT_ANG_TO_DIG(bat_out));
-    set_bit(current_status, 1, CONVERT_ANG_TO_DIG(relay_out));
-    set_bit(current_status, 0, CONVERT_ANG_TO_DIG(lvms_out));
+    set_bit(current_status, 5, i_bat < 0 ? 0 : 1);
+    set_bit(current_status, 4, i_bat < MIN_BATTERY_CURRENT_THRESHOLD_mA ? 0 : 1);
+    set_bit(current_status, 3, i_chg < MIN_CHARGER_CURRENT_THRESHOLD_mA ? 0 : 1);
+    set_bit(current_status, 2, bat_out < MIN_BATTERY_VOLTAGE_mV ? 0 : 1);
+    set_bit(current_status, 1, convert_relay_out_ang_to_state(relay_out, bat_out));
+    set_bit(current_status, 0, convert_lvms_out_ang_to_state(relay_out, lvms_out));
 }
 
 int check_status(uint8_t current_status) {

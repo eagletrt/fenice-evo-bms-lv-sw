@@ -1,10 +1,23 @@
 .PHONY: clean
 
-build: test.c
-	@gcc -I../Inc/ -I../Lib/micro-libs/Unity/src/ ../Lib/micro-libs/Unity/src/unity.c ../Src/measure_check.c test.c -o test.out
+#Includes
+INC_DIR=../Inc/
+UNITY_DIR=../Lib/micro-libs/Unity/src/
 
-test: test.c
-	@gcc -D UNITY_OUTPUT_COLOR=1 -I../Inc/ -I../Lib/micro-libs/Unity/src/ ../Lib/micro-libs/Unity/src/unity.c ../Src/measure_check.c test.c -o test.out 2>/dev/null
+#Soruce files
+UNITY_C=../Lib/micro-libs/Unity/src/unity.c
+
+MEASURE_CHECK_C=../Src/measure_check.c
+MEASURE_CHECK_TEST_C=measure_check_test.c
+
+#Commands
+BUILD_COMMAND=gcc -Wall -I$(UNITY_DIR) -I$(INC_DIR) $(UNITY_C) $(MEASURE_CHECK_C) $(MEASURE_CHECK_TEST_C) -o test.out
+
+build:
+	$(BUILD_COMMAND)
+
+test:
+	@ $(BUILD_COMMAND) -D UNITY_OUTPUT_COLOR=1 2>/dev/null
 	@./test.out
 	@$(MAKE) -s clean
 

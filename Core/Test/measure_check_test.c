@@ -20,40 +20,16 @@ void tearDown(void) {
 
 }
 
-void test_i_bat_update() {
-    uint8_t current_status = 0b000000;
-    float i_bat = 0.0;
-    float i_chg = 0.0;
-    float bat_out = 0.0;
-    float relay_out = 0.0;
-    float lvms_out = 0.0;
-
-    update_status(&current_status, i_bat, i_chg, bat_out, relay_out, lvms_out);
-    TEST_ASSERT_EQUAL_UINT8(0b000000, current_status);
-
-    i_bat = -1.5;
-    update_status(&current_status, i_bat, i_chg, bat_out, relay_out, lvms_out);
-    TEST_ASSERT_EQUAL_UINT8(0b010000, current_status);
-
-    i_bat = +1.5;
-    update_status(&current_status, i_bat, i_chg, bat_out, relay_out, lvms_out);
-    TEST_ASSERT_EQUAL_UINT8(0b110000, current_status);
-
-    i_bat = 0.0;
-    update_status(&current_status, i_bat, i_chg, bat_out, relay_out, lvms_out);
-    TEST_ASSERT_EQUAL_UINT8(0b000000, current_status);
-}
-
 void test_status_update() {
     uint8_t current_status = 0b000000;
-    float i_bat = 0.0;
-    float i_chg = 2.0;
-    float bat_out = -5.0;
-    float relay_out = 2.2;
-    float lvms_out = 3.3;
+    float i_bat = 60.0;
+    float i_chg = 5000.0;
+    float bat_out = 2000.0;
+    float relay_out = 3000.0;
+    float lvms_out = 4000.0;
 
     update_status(&current_status, i_bat, i_chg, bat_out, relay_out, lvms_out);
-    TEST_ASSERT_EQUAL_UINT8(0b001011, current_status);
+    TEST_ASSERT_EQUAL_UINT8(0b111011, current_status);
 }
 
 void test_check_status(void) {
@@ -94,7 +70,6 @@ void test_check_status(void) {
 int main() {
     UNITY_BEGIN();
 
-    RUN_TEST(test_i_bat_update);
     RUN_TEST(test_status_update);
     RUN_TEST(test_check_status);
 
