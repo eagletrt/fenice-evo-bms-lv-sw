@@ -23,6 +23,9 @@
 /* USER CODE BEGIN 0 */
 #include "current_transducer.h"
 
+#include "usart.h"
+#include <stdio.h>
+
 #define FACTORY_CALIBRATION_ADD ((uint16_t *)0x1FFF7A2A)
 #define DEFAULT_ADC_VREF (3300U)
 #define S_HALL1_OFFSET_mA (300.0f)
@@ -115,6 +118,10 @@ void adc_routine(void) {
   if (vref_calibration_conversion_ended) {
     vref_calibration_conversion_ended = 0;
   }
+
+  char buffer[50];
+  int size = (buffer, "HALL OCD 0: %f", mux_sensors_mA[mux_sensors_hall_0cd0_idx]);
+  HAL_UART_Transmit(&huart1, buffer, size, 10);
 }
 
 /* USER CODE END 0 */
