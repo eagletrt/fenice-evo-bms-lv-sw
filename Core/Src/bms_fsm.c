@@ -13,6 +13,11 @@ The finite state machine has:
 ******************************************************************************/
 
 #include "bms_fsm.h"
+#include "dac.h"
+#include "mcp23017.h"
+#include "pwm.h"
+#include "tim.h"
+#include "usart.h"
 
 void adc_routine_start(void);
 void monitor_init(void);
@@ -84,6 +89,15 @@ state_t do_init(state_data_t *data) {
   /* Your Code Here */
 
   // cooling OFF
+  pwm_set_period(&htim3, 0.04); // Set frequency to 25kHz
+  pwm_set_duty_cicle(&htim3, TIM_CHANNEL_1, 1.0);
+  pwm_set_duty_cicle(&htim3, TIM_CHANNEL_2, 1.0);
+  pwm_start_channel(&htim3, TIM_CHANNEL_1);
+  pwm_start_channel(&htim3, TIM_CHANNEL_2);
+  HAL_DAC_Start(&hdac, DAC_CHANNEL_2);
+  HAL_DAC_Start(&hdac, DAC_CHANNEL_1);
+  HAL_DAC_SetValue(&hdac, DAC_CHANNEL_2, DAC_ALIGN_12B_R, 0);
+  HAL_DAC_SetValue(&hdac, DAC_CHANNEL_1, DAC_ALIGN_12B_R, 0);
   // discharge ON
   // rfe/frg OFF
 

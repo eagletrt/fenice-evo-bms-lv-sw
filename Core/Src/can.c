@@ -76,8 +76,7 @@ void MX_CAN1_Init(void) {
       .FilterBank = 0,
       .FilterScale = CAN_FILTERSCALE_16BIT,
       .FilterActivation = ENABLE,
-      .SlaveStartFilterBank = 0
-  };
+      .SlaveStartFilterBank = 0};
   bms_lv_primary_can_id = can_mgr_init(&hcan1);
   if (bms_lv_primary_can_id < 0) {
     // TODO: handle error

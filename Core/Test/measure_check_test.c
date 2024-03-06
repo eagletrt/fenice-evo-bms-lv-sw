@@ -7,6 +7,9 @@
 */
 void set_relay(uint8_t status) {}
 
+void update_status(uint8_t* current_status, float i_bat, float i_chg, float bat_out, float relay_out, float lvms_out);
+int check_status(uint8_t current_status);
+
 float mux_fb_mV[mux_fb_n_values];
 float mux_sensors_mA[mux_sensors_n_values];
 float dc_fb_mV[directly_connected_fbs_n_values];

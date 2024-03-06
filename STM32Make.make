@@ -36,24 +36,13 @@ BUILD_DIR = build
 ######################################
 # C sources
 C_SOURCES =  \
-Core/Lib/can/lib/bms/bms_network.c \
-Core/Lib/can/lib/bms/bms_watchdog.c \
-Core/Lib/can/lib/hv_current/hv_current_network.c \
-Core/Lib/can/lib/hv_current/hv_current_watchdog.c \
-Core/Lib/can/lib/inverters/inverters_network.c \
-Core/Lib/can/lib/inverters/inverters_watchdog.c \
-Core/Lib/can/lib/primary/primary_network.c \
-Core/Lib/can/lib/primary/primary_watchdog.c \
-Core/Lib/can/lib/secondary/secondary_network.c \
-Core/Lib/can/lib/secondary/secondary_watchdog.c \
-Core/Lib/can/lib/simulator/simulator_network.c \
-Core/Lib/can/lib/simulator/simulator_watchdog.c \
-Core/Lib/micro-libs/Unity/src/unity.c \
 Core/Lib/micro-libs/bms-monitor/src/bms-monitor.c \
 Core/Lib/micro-libs/bms-monitor/src/ltc6811.c \
 Core/Lib/micro-libs/can-manager/src/can_manager.c \
 Core/Lib/micro-libs/generic-queue/generic_queue.c \
 Core/Lib/micro-libs/mcp23017/src/mcp23017.c \
+Core/Lib/micro-libs/pwm/pwm.c \
+Core/Lib/micro-libs/timer-utils/timer_utils.c \
 Core/Src/adc.c \
 Core/Src/bms_fsm.c \
 Core/Src/can.c \
@@ -169,24 +158,39 @@ AS_INCLUDES = \
 # C includes
 C_INCLUDES =  \
 -ICore/Inc \
--ICore/Lib/can/lib/bms \
--ICore/Lib/can/lib/hv_current \
--ICore/Lib/can/lib/inverters \
--ICore/Lib/can/lib/primary \
--ICore/Lib/can/lib/secondary \
--ICore/Lib/can/lib/simulator \
--ICore/Lib/can/proto/bms \
--ICore/Lib/can/proto/hv_current \
--ICore/Lib/can/proto/inverters \
--ICore/Lib/can/proto/primary \
--ICore/Lib/can/proto/secondary \
--ICore/Lib/can/proto/simulator \
+-ICore/Lib/can-lib/lib/bms \
+-ICore/Lib/can-lib/lib/hv_current \
+-ICore/Lib/can-lib/lib/inverters \
+-ICore/Lib/can-lib/lib/primary \
+-ICore/Lib/can-lib/lib/secondary \
+-ICore/Lib/can-lib/lib/simulator \
+-ICore/Lib/can-lib/proto/bms \
+-ICore/Lib/can-lib/proto/hv_current \
+-ICore/Lib/can-lib/proto/inverters \
+-ICore/Lib/can-lib/proto/primary \
+-ICore/Lib/can-lib/proto/secondary \
+-ICore/Lib/can-lib/proto/simulator \
 -ICore/Lib/micro-libs/CMock/examples/make_example/src \
 -ICore/Lib/micro-libs/CMock/examples/temp_sensor/src \
 -ICore/Lib/micro-libs/CMock/src \
 -ICore/Lib/micro-libs/CMock/test/iar/iar_v4/incIAR \
 -ICore/Lib/micro-libs/CMock/test/iar/iar_v5/incIAR \
 -ICore/Lib/micro-libs/CMock/test/system/test_compilation \
+-ICore/Lib/micro-libs/CMock/vendor/c_exception/lib \
+-ICore/Lib/micro-libs/CMock/vendor/c_exception/test/support \
+-ICore/Lib/micro-libs/CMock/vendor/unity/examples \
+-ICore/Lib/micro-libs/CMock/vendor/unity/examples/example_1/src \
+-ICore/Lib/micro-libs/CMock/vendor/unity/examples/example_2/src \
+-ICore/Lib/micro-libs/CMock/vendor/unity/examples/example_3/helper \
+-ICore/Lib/micro-libs/CMock/vendor/unity/examples/example_3/src \
+-ICore/Lib/micro-libs/CMock/vendor/unity/examples/example_4/src \
+-ICore/Lib/micro-libs/CMock/vendor/unity/extras/fixture/src \
+-ICore/Lib/micro-libs/CMock/vendor/unity/extras/memory/src \
+-ICore/Lib/micro-libs/CMock/vendor/unity/extras/memory/test \
+-ICore/Lib/micro-libs/CMock/vendor/unity/src \
+-ICore/Lib/micro-libs/CMock/vendor/unity/test/expectdata \
+-ICore/Lib/micro-libs/CMock/vendor/unity/test/testdata \
+-ICore/Lib/micro-libs/CMock/vendor/unity/test/tests \
 -ICore/Lib/micro-libs/Unity/examples \
 -ICore/Lib/micro-libs/Unity/examples/example_1/src \
 -ICore/Lib/micro-libs/Unity/examples/example_2/src \
@@ -214,7 +218,6 @@ C_INCLUDES =  \
 -ICore/Lib/micro-libs/logger \
 -ICore/Lib/micro-libs/m95256 \
 -ICore/Lib/micro-libs/mcp23017/inc \
--ICore/Lib/micro-libs/munit \
 -ICore/Lib/micro-libs/pid \
 -ICore/Lib/micro-libs/priority-queue \
 -ICore/Lib/micro-libs/priority-queue/test \
