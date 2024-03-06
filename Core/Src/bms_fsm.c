@@ -88,7 +88,7 @@ state_t do_init(state_data_t *data) {
   /* Your Code Here */
 
   // cooling OFF
-    pwm_set_period(&htim3, 0.04); // Set frequency to 25kHz
+  pwm_set_period(&htim3, 0.04); // Set frequency to 25kHz
   pwm_set_duty_cicle(&htim3, TIM_CHANNEL_1, 1.0);
   pwm_set_duty_cicle(&htim3, TIM_CHANNEL_2, 1.0);
   pwm_start_channel(&htim3, TIM_CHANNEL_1);
