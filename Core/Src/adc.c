@@ -120,7 +120,7 @@ void adc_routine(void) {
   }
 
   char buffer[50];
-  int size = (buffer, "HALL OCD 0: %f", mux_sensors_mA[mux_sensors_hall_0cd0_idx]);
+  int size = (buffer, "HALL OCD 0: %f \r\n", mux_sensors_mA[mux_sensors_hall_0cd0_idx]);
   HAL_UART_Transmit(&huart1, buffer, size, 10);
 }
 
