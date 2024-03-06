@@ -119,9 +119,9 @@ void adc_routine(void) {
     vref_calibration_conversion_ended = 0;
   }
 
-  char buffer[50];
-  int size = (buffer, "HALL OCD 0: %f \r\n", mux_sensors_mA[mux_sensors_hall_0cd0_idx]);
-  HAL_UART_Transmit(&huart1, buffer, size, 10);
+  // char buffer[50];
+  // int size = sprintf(buffer, "HALL OCD 0: %f\r\n", mux_sensors_mA[mux_sensors_hall_0cd0_idx]);
+  // HAL_UART_Transmit(&huart1, buffer, size, 10);
 }
 
 /* USER CODE END 0 */

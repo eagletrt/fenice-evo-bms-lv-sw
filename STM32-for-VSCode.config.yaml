@@ -82,6 +82,8 @@ sourceFiles:
   - Core/Lib/micro-libs/generic-queue/*.c
   - Core/Lib/micro-libs/bms-monitor/src/*.c
   - Core/Lib/micro-libs/mcp23017/src/*.c
+  - Core/Lib/micro-libs/pwm/*.c
+  - Core/Lib/micro-libs/timer-utils/*.c
 
 # When no makefile is present it will show a warning pop-up.
 # However when compilation without the CubeMX Makefile is desired, this can be turned of.
