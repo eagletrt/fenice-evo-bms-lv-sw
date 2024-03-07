@@ -19,6 +19,9 @@
 #define FLOAT_UNINITIALIZED_VALUE -1.0f
 #define MCP23017_INTERRUPTS_ENABLED 1
 
+#define SAFE_STATUS 0
+#define ERR_STATUS 1
+
 // Directly connected LV Feedbacks (no mux)
 enum directly_connected_feedbacks_indexes {
   fb_computer_fb_idx = 0,
@@ -113,15 +116,5 @@ enum safe_statuses {
   safe_statuses_car_running = 0b110111,
   safe_statuses_car_on_chg_and_bat_duplicated = 0b111111,
 };
-
-/**
- * @brief Tests
- * 
-*/
-void set_relay(uint8_t status);
-void update_status(uint8_t* current_status, float i_bat, float i_chg, float bat_out, float relay_out, float lvms_out);
-#define SAFE_STATUS 0
-#define ERR_STATUS 1
-int check_status(uint8_t current_status);
 
 #endif // BMS_LV_CONFIG_H

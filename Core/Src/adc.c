@@ -37,10 +37,10 @@ int current_mux_idx = 0, adc2_conversion_ended = 0,
 const uint8_t mux_addresses[16] = {0, 8, 4, 12, 2, 10, 6, 14,
                                    1, 9, 5, 13, 3, 11, 7, 15};
 const uint16_t mux_ctrl_pins[directly_connected_fbs_n_values] = {
-    MUX_A0_Pin, MUX_A1_Pin, MUX_A2_Pin, MUX_A3_Pin};
+    MUX_A3_Pin, MUX_A2_Pin, MUX_A1_Pin, MUX_A0_Pin};
 GPIO_TypeDef *mux_ctrl_ports[directly_connected_fbs_n_values] = {
-    MUX_A0_GPIO_Port, MUX_A1_GPIO_Port, MUX_A2_GPIO_Port, MUX_A3_GPIO_Port};
-uint32_t adc2_raw[adc2_ch_n_values] = {0};
+    MUX_A3_GPIO_Port, MUX_A2_GPIO_Port, MUX_A1_GPIO_Port, MUX_A0_GPIO_Port};
+uint16_t adc2_raw[adc2_ch_n_values] = {0}; //it works only with uint16_t
 float mux_fb_mV[mux_fb_n_values];
 float mux_sensors_mA[mux_sensors_n_values];
 float dc_fb_mV[directly_connected_fbs_n_values];
@@ -72,9 +72,8 @@ void adc_routine_start(void) {
     dc_fb_mV[idx] = FLOAT_UNINITIALIZED_VALUE;
 
   set_mux_addr();
-  if (HAL_ADC_Start_DMA(&hadc2, adc2_raw, adc2_ch_n_values) != HAL_OK) {
+  if (HAL_ADC_Start_DMA(&hadc2, (uint32_t *) adc2_raw, adc2_ch_n_values) != HAL_OK) {
     // TODO handle error
-    __NOP();
   };
   // TODO: start vrefint calibration
 }
@@ -83,7 +82,7 @@ void adc_routine_start(void) {
 void adc_vrefint_calibration(void) {}
 
 float to_mV(uint32_t raw_value) {
-  return (float)raw_value * (global_bms_lv_vref / 4096.0f);
+  return (float)raw_value * (global_bms_lv_vref / 4095.0f);
 }
 
 void adc_routine(void) {
@@ -95,7 +94,7 @@ void adc_routine(void) {
             CT_get_electric_current_mA(mux_converted_val) - S_HALL1_OFFSET_mA;
       } else if (current_mux_idx == mux_sensors_s_hall2_idx) {
         mux_converted_val =
-            CT_get_electric_current_mA(mux_converted_val) - S_HALL2_OFFSET_mA;
+            CT_get_electric_current_mA(mux_converted_val) - S_HALL2_OFFSET_mA;  
       }
       mux_sensors_mA[current_mux_idx] = mux_converted_val;
     }
@@ -111,7 +110,7 @@ void adc_routine(void) {
 
     current_mux_idx = (current_mux_idx + 1) % 16;
     set_mux_addr();
-    if (HAL_ADC_Start_DMA(&hadc2, adc2_raw, adc2_ch_n_values) != HAL_OK) {
+    if (HAL_ADC_Start_DMA(&hadc2, (uint32_t *) adc2_raw, adc2_ch_n_values) != HAL_OK) {
       // TODO handle error
     }
     adc2_conversion_ended = 0;
@@ -119,10 +118,6 @@ void adc_routine(void) {
   if (vref_calibration_conversion_ended) {
     vref_calibration_conversion_ended = 0;
   }
-
-  char buffer[50];
-  int size = sprintf(buffer, "HALL 1: %f\r\n", mux_sensors_mA[mux_sensors_hall_0cd0_idx]);
-  HAL_UART_Transmit(&huart1, buffer, size, 10);
 }
 
 /* USER CODE END 0 */

@@ -114,11 +114,13 @@ uint8_t mcp23017_feedbacks_state[8];
 uint8_t mcp23017_device_address = 0x00;
 uint8_t mcp23017_i2c_timeout = 10; // ms
 HAL_StatusTypeDef HAL_Status = HAL_ERROR;
+uint8_t iodira_register_value = 0b00000000;
+uint8_t iodirb_register_value = 0b00000000;
+uint8_t gpiob_register_value = 0b00000000;
+uint8_t gpioa_register_value = 0b00000000;
 uint8_t gpintena_register_value = 0b00000000;
 uint8_t intcona_register_value = 0b00000000;
 uint8_t defvala_register_value = 0b00000000;
-uint8_t gpiob_register_value = 0b00000000;
-uint8_t gpioa_register_value = 0b00000000;
 uint8_t intcapa_register_value = 0b00000000;
 
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
@@ -130,14 +132,45 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 int gpio_extender_init(void) {
   HAL_Status = HAL_ERROR;
 
+  //set port_b pins as output
+  iodirb_register_value = 0b00000000;
+  //set port_a pins as input
+  iodira_register_value = 0b11111111;
+
+  HAL_I2C_Mem_Write(
+    &hi2c3,
+    mcp23017_device_address,
+    MCP23017_REGISTER_IODIRB,
+    MCP23017_I2C_SIZE,
+    &iodirb_register_value,
+    MCP23017_I2C_SIZE,
+    mcp23017_i2c_timeout
+  );
+  if (HAL_Status != HAL_OK) {
+    return MCP23017_ERROR;
+  }
+
+  HAL_I2C_Mem_Write(
+    &hi2c3,
+    mcp23017_device_address,
+    MCP23017_REGISTER_IODIRB,
+    MCP23017_I2C_SIZE,
+    &iodira_register_value,
+    MCP23017_I2C_SIZE,
+    mcp23017_i2c_timeout
+  );
+  if (HAL_Status != HAL_OK) {
+    return MCP23017_ERROR;
+  }
+
   #if MCP23017_INTERRUPTS_ENABLED
     mcp23017_set_it_on_all_pins(
       &gpintena_register_value,
       &intcona_register_value,
       &defvala_register_value,
       MCP23017_INT_ENABLED,
-      MCP23017_INT_MODE_ON_CHANGE,
-      0
+      MCP23017_INT_MODE_COMPARE,
+      1
     );
 
     HAL_Status = HAL_I2C_Mem_Write(&hi2c3, mcp23017_device_address,
@@ -221,33 +254,37 @@ int set_discharge(int state) {
 }
 
 void gpio_extender_routine(void) {
-  if (mcp_int_fired) {
-    mcp_int_fired = 0;
+  #if MCP23017_INTERRUPTS_ENABLED
+    if (mcp_int_fired) {
+      mcp_int_fired = 0;
 
-    #if MCP23017_INTERRUPTS_ENABLED
       HAL_Status = HAL_I2C_Mem_Read(&hi2c3, mcp23017_device_address,
                               MCP23017_REGISTER_INTCAPA, MCP23017_I2C_SIZE,
                               &intcapa_register_value, MCP23017_I2C_SIZE,
                               mcp23017_i2c_timeout);
-    #else
-      HAL_Status = HAL_I2C_Mem_Read(&hi2c3, mcp23017_device_address,
-                              MCP23017_REGISTER_INTCAPA, MCP23017_I2C_SIZE,
-                              &gpioa_register_value, MCP23017_I2C_SIZE,
-                              mcp23017_i2c_timeout);
-    #endif
 
-    if (HAL_Status != HAL_OK) {
-      // TO-DO: Error
+      if (HAL_Status != HAL_OK) {
+        // TO-DO: Error
+      }
+
+      for (uint8_t i = 0; i <= MCP23017_PINS_N; i++) {
+        mcp23017_feedbacks_state[i] = mcp23017_get_register_bit(intcapa_register_value, i);
+      }
     }
+  #else
+    HAL_Status = HAL_I2C_Mem_Read(&hi2c3, mcp23017_device_address,
+                        MCP23017_REGISTER_INTCAPA, MCP23017_I2C_SIZE,
+                        &gpioa_register_value, MCP23017_I2C_SIZE,
+                        mcp23017_i2c_timeout);
+
+      if (HAL_Status != HAL_OK) {
+        // TO-DO: Error
+      }
 
     for (uint8_t i = 0; i <= MCP23017_PINS_N; i++) {
-      #if MCP23017_INTERRUPTS_ENABLED
-        mcp23017_feedbacks_state[i] = mcp23017_get_register_bit(intcapa_register_value, i);
-      #else
-        mcp23017_feedbacks_state[i] = mcp23017_get_register_bit(gpioa_register_value, i);
-      #endif
+      mcp23017_feedbacks_state[i] = mcp23017_get_register_bit(gpioa_register_value, i);
     }
-  }
+  #endif
 }
 
 /* USER CODE END 2 */

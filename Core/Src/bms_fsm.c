@@ -17,6 +17,7 @@ The finite state machine has:
 #include "tim.h"
 #include "dac.h"
 #include "usart.h"
+#include "mcp23017.h"
 
 void adc_routine_start(void);
 void monitor_init(void);
@@ -82,6 +83,10 @@ transition_func_t *const transition_table[NUM_STATES][NUM_STATES] = {
 
 // Function to be executed in state init
 // valid return states: STATE_IDLE, STATE_ERROR
+
+//just for the tests
+int set_led(int led1, int led2, int led3);
+
 state_t do_init(state_data_t *data) {
   state_t next_state = STATE_IDLE;
 
@@ -107,6 +112,9 @@ state_t do_init(state_data_t *data) {
   gpio_extender_init();
   extern int bms_lv_primary_can_id;
   can_start(bms_lv_primary_can_id);
+
+  // power button led for tests
+  set_led(1, 0, 0);
 
   switch (next_state) {
   case STATE_IDLE:

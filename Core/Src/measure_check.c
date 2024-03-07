@@ -2,6 +2,8 @@
 #include <stdint.h>
 #include "math.h"
 
+void set_relay(uint8_t status);
+
 extern float mux_fb_mV[mux_fb_n_values];
 extern float mux_sensors_mA[mux_sensors_n_values];
 extern float dc_fb_mV[directly_connected_fbs_n_values];
