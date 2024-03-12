@@ -9,12 +9,14 @@
 
 #define MIN_CHARGER_CURRENT_THRESHOLD_mA 4000.0f
 #define MIN_BATTERY_CURRENT_THRESHOLD_mA 50.0f
-#define MIN_BATTERY_VOLTAGE_mV           3300.0 * 6.0f
+#define MIN_BATTERY_VOLTAGE_mV 3300.0 * 6.0f
 // Min difference threshold between V Relay and V Battery
-#define MIN_RELAY_VOLTAGE_DIFF_THRESHOLD_mV 2000.0f  // diff v relay (that could be the charger one and bat out)
+#define MIN_RELAY_VOLTAGE_DIFF_THRESHOLD_mV                                    \
+  2000.0f // diff v relay (that could be the charger one and bat out)
 // Min difference threshold between LVMS out V ans V Relay
-#define MIN_LVMS_VOLTAGE_DIFF_THRESHOLD_mV 2000.0f  // diff lvms out and relay out 5%
-#define MIN_LOW_LOGIC_LEVEL_THRESHOLD_mV   500.0f   // 500 mV
+#define MIN_LVMS_VOLTAGE_DIFF_THRESHOLD_mV                                     \
+  2000.0f // diff lvms out and relay out 5%
+#define MIN_LOW_LOGIC_LEVEL_THRESHOLD_mV 500.0f // 500 mV
 
 #define FLOAT_UNINITIALIZED_VALUE -1.0f
 #define MCP23017_INTERRUPTS_ENABLED 1

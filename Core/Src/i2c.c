@@ -27,8 +27,7 @@
 I2C_HandleTypeDef hi2c3;
 
 /* I2C3 init function */
-void MX_I2C3_Init(void)
-{
+void MX_I2C3_Init(void) {
 
   /* USER CODE BEGIN I2C3_Init 0 */
 
@@ -46,25 +45,21 @@ void MX_I2C3_Init(void)
   hi2c3.Init.OwnAddress2 = 0;
   hi2c3.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
   hi2c3.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
-  if (HAL_I2C_Init(&hi2c3) != HAL_OK)
-  {
+  if (HAL_I2C_Init(&hi2c3) != HAL_OK) {
     Error_Handler();
   }
   /* USER CODE BEGIN I2C3_Init 2 */
 
   /* USER CODE END I2C3_Init 2 */
-
 }
 
-void HAL_I2C_MspInit(I2C_HandleTypeDef* i2cHandle)
-{
+void HAL_I2C_MspInit(I2C_HandleTypeDef *i2cHandle) {
 
   GPIO_InitTypeDef GPIO_InitStruct = {0};
-  if(i2cHandle->Instance==I2C3)
-  {
-  /* USER CODE BEGIN I2C3_MspInit 0 */
+  if (i2cHandle->Instance == I2C3) {
+    /* USER CODE BEGIN I2C3_MspInit 0 */
 
-  /* USER CODE END I2C3_MspInit 0 */
+    /* USER CODE END I2C3_MspInit 0 */
 
     __HAL_RCC_GPIOC_CLK_ENABLE();
     __HAL_RCC_GPIOA_CLK_ENABLE();
@@ -88,20 +83,18 @@ void HAL_I2C_MspInit(I2C_HandleTypeDef* i2cHandle)
 
     /* I2C3 clock enable */
     __HAL_RCC_I2C3_CLK_ENABLE();
-  /* USER CODE BEGIN I2C3_MspInit 1 */
+    /* USER CODE BEGIN I2C3_MspInit 1 */
 
-  /* USER CODE END I2C3_MspInit 1 */
+    /* USER CODE END I2C3_MspInit 1 */
   }
 }
 
-void HAL_I2C_MspDeInit(I2C_HandleTypeDef* i2cHandle)
-{
+void HAL_I2C_MspDeInit(I2C_HandleTypeDef *i2cHandle) {
 
-  if(i2cHandle->Instance==I2C3)
-  {
-  /* USER CODE BEGIN I2C3_MspDeInit 0 */
+  if (i2cHandle->Instance == I2C3) {
+    /* USER CODE BEGIN I2C3_MspDeInit 0 */
 
-  /* USER CODE END I2C3_MspDeInit 0 */
+    /* USER CODE END I2C3_MspDeInit 0 */
     /* Peripheral clock disable */
     __HAL_RCC_I2C3_CLK_DISABLE();
 
@@ -113,9 +106,9 @@ void HAL_I2C_MspDeInit(I2C_HandleTypeDef* i2cHandle)
 
     HAL_GPIO_DeInit(GPIOA, GPIO_PIN_8);
 
-  /* USER CODE BEGIN I2C3_MspDeInit 1 */
+    /* USER CODE BEGIN I2C3_MspDeInit 1 */
 
-  /* USER CODE END I2C3_MspDeInit 1 */
+    /* USER CODE END I2C3_MspDeInit 1 */
   }
 }
 
