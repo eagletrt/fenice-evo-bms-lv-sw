@@ -22,11 +22,7 @@
 
 /* USER CODE BEGIN 0 */
 
-/***
- * TODO: task per dimitri: scrivere la parte di temperature + testare le letture
- * del bms monitor
- */
-
+#include "bms_lv_config.h"
 #include "ltc6811.h"
 
 #define MONITOR_OK 0
@@ -37,16 +33,21 @@
 
 #define LTC_COUNT 1
 #define MONITORED_VOLTAGES 12
+#define MONITORED_TEMPERATURES 12
+#define TEMP_SENSOR_OFFSET 2 // first sensor is in mux 2 channel
 float cell_voltages[LTC6811_CELL_COUNT * LTC_COUNT]; // in V
-// float cell_temperatures[];                           // in °C
+float cell_temperatures[MONITORED_TEMPERATURES];     // in °C
 Ltc6811Chain chain;
 Ltc6811Cfgr config[LTC_COUNT];
+
+static const uint8_t mux_addresses[16] = {0, 8, 4, 12, 2, 10, 6, 14,
+                                          1, 9, 5, 13, 3, 11, 7, 15};
 
 void monitor_init(void) {
   for (size_t i = 0; i < LTC_COUNT; ++i) {
     config[i].ADCOPT = 0;
     config[i].REFON = 1;
-    config[i].GPIO = 0b00000;
+    config[i].GPIO = (mux_addresses[TEMP_SENSOR_OFFSET] << 1) | 1;
     config[i].VUV = 0;
     config[i].VOV = 0;
     config[i].DCC = 0;
@@ -54,6 +55,16 @@ void monitor_init(void) {
   }
   ltc6811_chain_init(&chain, LTC_COUNT);
 
+  uint8_t wake = 0xFF;
+  HAL_GPIO_WritePin(LTC_CS_GPIO_Port, LTC_CS_Pin, GPIO_PIN_RESET);
+  HAL_SPI_Transmit(&hspi2, &wake, 1, MONITOR_SPI_TIMEOUT);
+  HAL_GPIO_WritePin(LTC_CS_GPIO_Port, LTC_CS_Pin, GPIO_PIN_SET);
+
+  uint8_t write_data[LTC6811_WRITE_BUFFER_SIZE(LTC_COUNT)] = {0};
+  size_t byte_count =
+      ltc6811_wrcfg_encode_broadcast(&chain, config, write_data);
+  HAL_GPIO_WritePin(LTC_CS_GPIO_Port, LTC_CS_Pin, GPIO_PIN_RESET);
+  HAL_SPI_Transmit(&hspi2, write_data, byte_count, MONITOR_SPI_TIMEOUT);
   HAL_GPIO_WritePin(LTC_CS_GPIO_Port, LTC_CS_Pin, GPIO_PIN_SET);
 }
 
@@ -116,10 +127,18 @@ int monitor_update_voltages(void) {
 }
 
 int monitor_update_temperatures(void) {
+  static uint8_t cell_index = 0;
+  uint8_t write_data[LTC6811_WRITE_BUFFER_SIZE(LTC_COUNT)] = {0};
+  size_t byte_count =
+      ltc6811_wrcfg_encode_broadcast(&chain, config, write_data);
+  HAL_GPIO_WritePin(LTC_CS_GPIO_Port, LTC_CS_Pin, GPIO_PIN_RESET);
+  HAL_SPI_Transmit(&hspi2, write_data, byte_count, MONITOR_SPI_TIMEOUT);
+  HAL_GPIO_WritePin(LTC_CS_GPIO_Port, LTC_CS_Pin, GPIO_PIN_SET);
+
   uint8_t out_data[LTC6811_POLL_BUFFER_SIZE(LTC_COUNT)];
   uint8_t rcv_data[8]; // TODO: set correct array length
-  size_t byte_count = ltc6811_adax_encode_broadcast(
-      &chain, LTC6811_MD_27KHZ_14KHZ, LTC6811_CHG_GPIO_1, out_data);
+  byte_count = ltc6811_adax_encode_broadcast(&chain, LTC6811_MD_27KHZ_14KHZ,
+                                             LTC6811_CHG_GPIO_1, out_data);
   HAL_GPIO_WritePin(LTC_CS_GPIO_Port, LTC_CS_Pin, GPIO_PIN_RESET);
   HAL_SPI_Transmit(&hspi2, out_data, byte_count, MONITOR_SPI_TIMEOUT);
   HAL_GPIO_WritePin(LTC_CS_GPIO_Port, LTC_CS_Pin, GPIO_PIN_SET);
@@ -144,31 +163,28 @@ int monitor_update_temperatures(void) {
   HAL_SPI_Receive(&hspi2, rcv_data, 8, MONITOR_SPI_TIMEOUT);
   HAL_GPIO_WritePin(LTC_CS_GPIO_Port, LTC_CS_Pin, GPIO_PIN_SET);
 
-  // TODO: save and convert on the fly the temperatures and save in
-  // cell_temperatures (now commented)
+  uint16_t aux[LTC6811_REG_AUX_COUNT] = {0};
+  byte_count = ltc6811_rdaux_decode_broadcast(&chain, rcv_data, aux);
 
-#if 0 // old code
-  cell_temps_raw[cell_row_index][cell_col_index] = raw_temp[0];
+  // LSB represents 100μV so 3.3V = 33000 diving by 10 we obtain 3300mV
+  float raw_temp = aux[LTC6811_AVAR] / 10.0 * 1.0;
+  cell_temperatures[cell_index] =
+      (float)(TEMP_CONV_CONST_a + raw_temp * TEMP_CONV_CONST_b +
+              raw_temp * raw_temp * TEMP_CONV_CONST_c +
+              raw_temp * raw_temp * raw_temp * TEMP_CONV_CONST_d +
+              raw_temp * raw_temp * raw_temp * raw_temp * TEMP_CONV_CONST_e);
 
-  // Update col and row indexes according to NTC COUNT and
-  // CELL_TEMPS_ARRAY_SIZE
-  cell_col_index = (cell_col_index + 1) % NTC_COUNT;
-  cell_row_index = (cell_row_index + 1) % CELL_TEMPS_ARRAY_SIZE;
+  cell_index = (cell_index + 1) % MONITORED_TEMPERATURES;
+  config[0].GPIO = (mux_addresses[cell_index + TEMP_SENSOR_OFFSET] << 1) | 1;
 
-#define MONITOR_MUX_OFFSET 2
-  uint8_t monitor_mux_index = cell_col_index + MONITOR_MUX_OFFSET;
-  monitor_handler.config->GPIO =
-      (monitor_mux_index & 1) << 4 | (monitor_mux_index & 2) << 2 |
-      (monitor_mux_index & 4) | (monitor_mux_index & 8) >> 2 | 1;
-  ltc6811_wrcfg_encode_broadcast(&chain, &config, out);
-#endif
+  // this bit of code makes the temperature reading works, maybe in the future
+  // check why and change it
+  byte_count = ltc6811_adax_encode_broadcast(&chain, LTC6811_MD_27KHZ_14KHZ,
+                                             LTC6811_CHG_GPIO_1, out_data);
+  HAL_GPIO_WritePin(LTC_CS_GPIO_Port, LTC_CS_Pin, GPIO_PIN_RESET);
+  HAL_SPI_Transmit(&hspi2, out_data, byte_count, MONITOR_SPI_TIMEOUT);
+  HAL_GPIO_WritePin(LTC_CS_GPIO_Port, LTC_CS_Pin, GPIO_PIN_SET);
 
-  /**
-   * TODO: chiedere a dimitri perche' bisogna far partire la conversione subito
-   * adesso
-   */
-  // ltc6811_adax_encode_broadcast
-  // ltc6811_adax(&monitor_handler, LTC6811_MD_7KHZ_3KHZ, LTC6811_CHG_GPIO_1);
   return MONITOR_OK;
 }
 
@@ -190,7 +206,7 @@ void MX_SPI2_Init(void) {
   hspi2.Init.Mode = SPI_MODE_MASTER;
   hspi2.Init.Direction = SPI_DIRECTION_2LINES;
   hspi2.Init.DataSize = SPI_DATASIZE_8BIT;
-  hspi2.Init.CLKPolarity = SPI_POLARITY_LOW;
+  hspi2.Init.CLKPolarity = SPI_POLARITY_HIGH;
   hspi2.Init.CLKPhase = SPI_PHASE_2EDGE;
   hspi2.Init.NSS = SPI_NSS_SOFT;
   hspi2.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_64;

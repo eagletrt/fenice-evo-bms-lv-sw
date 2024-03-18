@@ -119,4 +119,11 @@ enum safe_statuses {
   safe_statuses_car_on_chg_and_bat_duplicated = 0b111111,
 };
 
+// coefficient for conversion formula from voltage input to temperature
+#define TEMP_CONV_CONST_a 127.02004615145405
+#define TEMP_CONV_CONST_b -0.06979687590434158
+#define TEMP_CONV_CONST_c 2.1026948971763155e-05
+#define TEMP_CONV_CONST_d -3.3042552498294913e-09
+#define TEMP_CONV_CONST_e 1.3552262617901958e-13
+
 #endif // BMS_LV_CONFIG_H
