@@ -342,6 +342,14 @@ clean:
 #######################################
 
 
+
+
+#######################################
+# formatt
+#######################################
+formatt: 
+	clang-format -style=file -i Core/Inc/*.h && clang-format -style=file -i Core/Src/*.c
+      
 	
 #######################################
 # dependencies

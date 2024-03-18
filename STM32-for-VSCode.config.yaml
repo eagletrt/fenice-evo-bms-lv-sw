@@ -93,12 +93,15 @@ suppressMakefileWarning: false
 # Here custom makefile rules can be added to the STM32Make.make file
 # an example of how this can be used is commented out below.
 customMakefileRules:
+ - command: formatt
+   rule: clang-format -style=file -i Core/Inc/*.h && clang-format -style=file -i Core/Src/*.c
 # - command: sayhello
 #   rule: echo "hello"
 #   dependsOn: $(BUILD_DIR)/$(TARGET).elf # can be left out    
 
 # Additional flags which will be used when invoking the make command
 makeFlags:
+  - formatt
 # - -O  # use this option when the output of make is mixed up only works for make version 4.0 and upwards
 # - --silent # use this option to silence the output of the build
     
