@@ -95,6 +95,7 @@ suppressMakefileWarning: false
 customMakefileRules:
  - command: formatt
    rule: clang-format -style=file -i Core/Inc/*.h && clang-format -style=file -i Core/Src/*.c
+   dependsOn: $(BUILD_DIR)/$(TARGET).elf
 # - command: sayhello
 #   rule: echo "hello"
 #   dependsOn: $(BUILD_DIR)/$(TARGET).elf # can be left out    

@@ -349,7 +349,7 @@ clean:
 #######################################
 # formatt
 #######################################
-formatt: 
+formatt: $(BUILD_DIR)/$(TARGET).elf
 	clang-format -style=file -i Core/Inc/*.h && clang-format -style=file -i Core/Src/*.c
       
 	
