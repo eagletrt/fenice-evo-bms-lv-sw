@@ -224,6 +224,8 @@ state_t do_flashing(state_data_t *data) {
   set_rfe_frg(0);
   // SET TIME_SET ON
   set_time_set(1);
+  HAL_Delay(16); // 15.51ms has been calculeted as charge time for che condensator 
+  set_time_set(0);
 
   /* Your Code Here */
 
