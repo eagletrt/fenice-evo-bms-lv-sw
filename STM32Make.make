@@ -48,12 +48,14 @@ Core/Src/bms_fsm.c \
 Core/Src/can.c \
 Core/Src/can_messages.c \
 Core/Src/dac.c \
+Core/Src/dac_pump.c \
 Core/Src/dma.c \
 Core/Src/gpio.c \
 Core/Src/i2c.c \
 Core/Src/lv_errors.c \
 Core/Src/main.c \
 Core/Src/measure_check.c \
+Core/Src/radiator.c \
 Core/Src/spi.c \
 Core/Src/stm32f4xx_hal_msp.c \
 Core/Src/stm32f4xx_it.c \
