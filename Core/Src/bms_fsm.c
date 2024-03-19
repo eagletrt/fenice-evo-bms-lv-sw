@@ -31,6 +31,9 @@ void gpio_extender_routine(void);
 void monitor_routine(void);
 void all_measurements_check(void);
 
+int set_discharge(int state);
+int set_rfe_frg(int state);
+
 void bms_lv_routine(void) {
   adc_routine();
   can_routine();
@@ -99,7 +102,9 @@ state_t do_init(state_data_t *data) {
   HAL_DAC_SetValue(&hdac, DAC_CHANNEL_2, DAC_ALIGN_12B_R, 0);
   HAL_DAC_SetValue(&hdac, DAC_CHANNEL_1, DAC_ALIGN_12B_R, 0);
   // discharge ON
+  set_discharge(1);
   // rfe/frg OFF
+  set_rfe_frg(0);
 
   // check error codes
   adc_routine_start();
@@ -128,7 +133,9 @@ state_t do_idle(state_data_t *data) {
 
   // cooling no change
   // discharge ON
+  set_discharge(1);
   // rfe/frg OFF
+  set_rfe_frg(0);
 
   /* Your Code Here */
   bms_lv_routine();
@@ -156,7 +163,9 @@ state_t do_error(state_data_t *data) {
 
   // cooling OFF
   // discharge ON
+  set_discharge(1);
   // rfe/frg OFF
+  set_rfe_frg(0);
 
   /* Your Code Here */
   // TODO: error code check, [send it via can/write to flash], shutdown
@@ -178,7 +187,9 @@ state_t do_tson(state_data_t *data) {
 
   // cooling no change
   // set discharge OFF
+  set_discharge(0);
   // set rfe/frg OFF
+  set_rfe_frg(0);
   // until car_status == {...}
 
   /* Your Code Here */
@@ -208,8 +219,11 @@ state_t do_flashing(state_data_t *data) {
 
   // cooling no change
   // set discharge ON
+  set_discharge(1);
   // set rfe/frg OFF
+  set_rfe_frg(0);
   // SET TIME_SET ON
+  set_time_set(1);
 
   /* Your Code Here */
 
@@ -230,7 +244,9 @@ state_t do_run(state_data_t *data) {
 
   // activate automatic cooling
   // set discharge OFF
+  set_discharge(1);
   // set rfe/frg ON
+  set_rfe_frg(1);
 
   /* Your Code Here */
   bms_lv_routine();

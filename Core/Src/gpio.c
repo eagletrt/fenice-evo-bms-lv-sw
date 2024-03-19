@@ -32,13 +32,21 @@
 
 void set_relay(uint8_t status) {
   if (status == 0) {
-    HAL_GPIO_WritePin(RELAY_GPIO_Port, GPIO_PIN_15, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(RELAY_GPIO_Port, RELAY_Pin, GPIO_PIN_RESET);
   } else {
-    HAL_GPIO_WritePin(RELAY_GPIO_Port, GPIO_PIN_15, GPIO_PIN_SET);
+    HAL_GPIO_WritePin(RELAY_GPIO_Port, RELAY_Pin, GPIO_PIN_SET);
   }
 
   // Let the relay close/open
   HAL_Delay(100);
+}
+
+void set_time_set(uint8_t status) {
+  if (status == 0) {
+    HAL_GPIO_WritePin(TIME_SET_GPIO_Port, TIME_SET_Pin, GPIO_PIN_RESET);
+  } else {
+    HAL_GPIO_WritePin(TIME_SET_GPIO_Port, TIME_SET_Pin, GPIO_PIN_SET);
+  }
 }
 
 /* USER CODE END 1 */
