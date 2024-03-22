@@ -3,6 +3,7 @@
 #include "bms_lv_config.h"
 #include "pwm.h"
 #include "tim.h"
+#include <math.h>
 
 float radiator_duty_cycle;
 bool rad_auto_mode;
