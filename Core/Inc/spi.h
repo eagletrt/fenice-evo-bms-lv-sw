@@ -41,7 +41,8 @@ extern SPI_HandleTypeDef hspi2;
 void MX_SPI2_Init(void);
 
 /* USER CODE BEGIN Prototypes */
-
+void monitor_get_voltages(float *);
+void monitor_get_temperatures(float *);
 /* USER CODE END Prototypes */
 
 #ifdef __cplusplus

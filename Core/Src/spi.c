@@ -188,6 +188,19 @@ int monitor_update_temperatures(void) {
   return MONITOR_OK;
 }
 
+void monitor_get_voltages(float *voltages) {
+  uint8_t cell_voltage_index[CELL_COUNT] = {0, 1, 2, 6, 7, 8};
+  for (size_t i = 0; i < CELL_COUNT; i++) {
+    voltages[i] = cell_voltages[cell_voltage_index[i]];
+  }
+}
+
+void monitor_get_temperatures(float *temperatures) {
+  for (size_t i = 0; i < TEMP_SENSOR_COUNT; i++) {
+    temperatures[i] = cell_temperatures[i];
+  }
+}
+
 /* USER CODE END 0 */
 
 SPI_HandleTypeDef hspi2;
