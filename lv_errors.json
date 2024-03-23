@@ -1,0 +1,54 @@
+{
+    "errors": [
+        {
+            "name": "CELL_UNDERVOLTAGE",
+            "timeout": 400,
+            "instances": 6
+        },
+        {
+            "name": "CELL_OVERVOLTAGE",
+            "timeout": 400,
+            "instances": 6
+        },
+        {
+            "name": "OPEN_WIRE",
+            "timeout": 400,
+            "instances": 1
+        },
+        {
+            "name": "CAN",
+            "timeout": 500,
+            "instances": 2
+        },
+        {
+            "name": "SPI",
+            "timeout": 500,
+            "instances": 1
+        },
+        {
+            "name": "OVER_CURRENT",
+            "timeout": 400,
+            "instances": 3
+        },
+        {
+            "name": "CELL_UNDER_TEMPERATURE",
+            "timeout": 1000,
+            "instances": 12
+        },
+        {
+            "name": "CELL_OVER_TEMPERATURE",
+            "timeout": 200,
+            "instances": 12
+        },
+        {
+            "name": "MCP23017",
+            "timeout": 1000,
+            "instances": 1
+        },
+        {
+            "name": "HEALTH",
+            "timeout": 700,
+            "instances": 1
+        }
+    ]
+}

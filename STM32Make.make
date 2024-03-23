@@ -41,7 +41,9 @@ Core/Lib/micro-libs/bms-monitor/src/ltc6811.c \
 Core/Lib/micro-libs/can-manager/src/can_manager.c \
 Core/Lib/micro-libs/generic-queue/generic_queue.c \
 Core/Lib/micro-libs/mcp23017/src/mcp23017.c \
+Core/Lib/micro-libs/min-heap/src/min-heap.c \
 Core/Lib/micro-libs/pwm/pwm.c \
+Core/Lib/micro-libs/ring-buffer/src/ring-buffer.c \
 Core/Lib/micro-libs/timer-utils/timer_utils.c \
 Core/Src/adc.c \
 Core/Src/bms_fsm.c \
@@ -52,6 +54,7 @@ Core/Src/dac_pump.c \
 Core/Src/dma.c \
 Core/Src/gpio.c \
 Core/Src/i2c.c \
+Core/Src/lv_error_handler.c \
 Core/Src/lv_errors.c \
 Core/Src/main.c \
 Core/Src/measure_check.c \
@@ -220,11 +223,13 @@ C_INCLUDES =  \
 -ICore/Lib/micro-libs/logger \
 -ICore/Lib/micro-libs/m95256 \
 -ICore/Lib/micro-libs/mcp23017/inc \
+-ICore/Lib/micro-libs/min-heap/inc \
 -ICore/Lib/micro-libs/munit \
 -ICore/Lib/micro-libs/pid \
 -ICore/Lib/micro-libs/priority-queue \
 -ICore/Lib/micro-libs/priority-queue/test \
 -ICore/Lib/micro-libs/pwm \
+-ICore/Lib/micro-libs/ring-buffer/inc \
 -ICore/Lib/micro-libs/timer-utils \
 -IDrivers/CMSIS/Device/ST/STM32F4xx/Include \
 -IDrivers/CMSIS/Include \

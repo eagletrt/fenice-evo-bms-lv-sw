@@ -136,4 +136,6 @@ enum safe_statuses {
 #define RAD_L_PWM_TIM_CHNL TIM_CHANNEL_1
 #define RAD_R_PWM_TIM_CHNL TIM_CHANNEL_2
 
+#define ERROR_TIMER htim7
+
 #endif // BMS_LV_CONFIG_H
