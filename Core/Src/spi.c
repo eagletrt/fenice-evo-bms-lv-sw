@@ -24,6 +24,7 @@
 
 #include "bms_lv_config.h"
 #include "ltc6811.h"
+#include "lv_errors.h"
 
 #define MONITOR_OK 0
 #define MONITOR_TIMEOUT_ERROR 1
@@ -75,10 +76,10 @@ void monitor_routine(void) {
   /**
    * TODO: check correct timings and set appropriate errors
    */
-  if (monitor_update_voltages() != MONITOR_OK) {
-  }
-  if (monitor_update_temperatures() != MONITOR_OK) {
-  }
+  ERROR_TOGGLE_IF(monitor_update_voltages() != MONITOR_OK, SPI, 0,
+                  HAL_GetTick());
+  ERROR_TOGGLE_IF(monitor_update_temperatures() != MONITOR_OK, SPI, 0,
+                  HAL_GetTick());
 }
 
 /**

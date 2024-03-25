@@ -36,9 +36,6 @@ void set_relay(uint8_t status) {
   } else {
     HAL_GPIO_WritePin(RELAY_GPIO_Port, RELAY_Pin, GPIO_PIN_SET);
   }
-
-  // Let the relay close/open
-  HAL_Delay(100);
 }
 
 void set_time_set(uint8_t status) {

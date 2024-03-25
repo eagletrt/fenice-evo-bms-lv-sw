@@ -1,5 +1,8 @@
 #include "bms_lv_config.h"
+#include "lv_errors.h"
 #include "math.h"
+#include "spi.h"
+#include "stm32f4xx_hal.h"
 #include <stdint.h>
 
 void set_relay(uint8_t status);
@@ -68,6 +71,8 @@ void update_status(uint8_t *current_status, float i_bat, float i_chg,
           convert_lvms_out_ang_to_state(relay_out, lvms_out));
 }
 
+// TODO in case relay is already at 1 we don't need to set the relay pin every
+// time
 int check_status(uint8_t current_status) {
   switch (current_status) {
   case safe_statuses_chg_connect_only_mcu_pw:
@@ -106,11 +111,10 @@ int check_status(uint8_t current_status) {
   return SAFE_STATUS;
 }
 
-float i_bat, i_chg, bat_out, relay_out, lvms_out = 0;
-uint8_t current_status = 0b000000;
-uint8_t check_result = ERR_STATUS;
-
-void all_measurements_check(void) {
+void health_check(void) {
+  float i_bat, i_chg, bat_out, relay_out, lvms_out = 0.0;
+  uint8_t current_status = 0b000000;
+  uint8_t check_result = ERR_STATUS;
   i_bat = mux_sensors_mA[mux_sensors_s_hall1_idx];
   i_chg = mux_sensors_mA[mux_sensors_s_hall2_idx];
   bat_out = dc_fb_mV[fb_batt_out_idx];
@@ -120,6 +124,62 @@ void all_measurements_check(void) {
   update_status(&current_status, i_bat, i_chg, bat_out, relay_out, lvms_out);
   check_result = check_status(current_status);
   if (check_result != SAFE_STATUS) {
-    // TO-DO: generate error
+    error_set(HEALTH, 0, HAL_GetTick());
+  } else {
+    error_reset(HEALTH, 0);
   }
+}
+
+void cell_voltage_check(void) {
+  float voltages[CELL_COUNT] = {0};
+  monitor_get_voltages(voltages);
+
+  for (size_t i = 0; i < CELL_COUNT; i++) {
+    ERROR_TOGGLE_IF(voltages[i] < MIN_CELL_VOLTAGE_V, CELL_UNDERVOLTAGE, i,
+                    HAL_GetTick());
+    ERROR_TOGGLE_IF(voltages[i] > MAX_CELL_VOLTAGE_V, CELL_OVERVOLTAGE, i,
+                    HAL_GetTick());
+  }
+}
+
+void cell_temperature_check(void) {
+  float temperatures[TEMP_SENSOR_COUNT] = {0};
+  monitor_get_temperatures(temperatures);
+
+  for (size_t i = 0; i < TEMP_SENSOR_COUNT; i++) {
+    ERROR_TOGGLE_IF(temperatures[i] < MIN_CELL_TEMP, CELL_UNDER_TEMPERATURE, i,
+                    HAL_GetTick());
+    ERROR_TOGGLE_IF(temperatures[i] > MAX_CELL_TEMP, CELL_OVER_TEMPERATURE, i,
+                    HAL_GetTick());
+  }
+}
+
+void overcurrent_check(void) {
+  ERROR_TOGGLE_IF(mux_sensors_mA[mux_sensors_s_hall1_idx] > MAX_CURRENT_mA,
+                  OVER_CURRENT, 1, HAL_GetTick());
+  ERROR_TOGGLE_IF(mux_sensors_mA[mux_sensors_s_hall2_idx] > MAX_CURRENT_mA,
+                  OVER_CURRENT, 2, HAL_GetTick());
+}
+
+void all_measurements_check(void) {
+  cell_voltage_check();
+  cell_temperature_check();
+  overcurrent_check();
+  health_check();
+}
+
+bool check_total_voltage(void) {
+  bool close_relay = false;
+  float voltages[CELL_COUNT] = {0};
+  float total_voltage = 0.0;
+
+  monitor_get_voltages(voltages);
+  total_voltage = (voltages[0] + voltages[1] + voltages[2] + voltages[3] +
+                   voltages[4] + voltages[5]) *
+                  1000;
+  if (total_voltage >= MIN_BATTERY_VOLTAGE_mV) {
+    close_relay = true;
+  }
+
+  return close_relay;
 }

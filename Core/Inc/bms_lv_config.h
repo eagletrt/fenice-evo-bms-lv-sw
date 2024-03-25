@@ -7,9 +7,23 @@
 #define clamp(num, max_n, min_n)                                               \
   ((num > max_n) ? max_n : ((num < min_n) ? min_n : num))
 
+#define max(a, b) (a > b) ? a : b
+
 #define MIN_CHARGER_CURRENT_THRESHOLD_mA 4000.0f
 #define MIN_BATTERY_CURRENT_THRESHOLD_mA 50.0f
+
+// Number of cells present in the bms lv, the cell configuration is 6s4p
+#define CELL_COUNT 6
+// Number of ntc sensors present in the bms lv
+#define TEMP_SENSOR_COUNT 12
+#define MAX_CELL_VOLTAGE_V 4.2f
+#define MIN_CELL_VOLTAGE_V 3.3f
 #define MIN_BATTERY_VOLTAGE_mV 3300.0 * 6.0f
+#define MAX_CELL_TEMP 60.0f
+#define MIN_CELL_TEMP 0.0f
+
+// Max current output allowed
+#define MAX_CURRENT_mA 30000.0f
 // Min difference threshold between V Relay and V Battery
 #define MIN_RELAY_VOLTAGE_DIFF_THRESHOLD_mV                                    \
   2000.0f // diff v relay (that could be the charger one and bat out)

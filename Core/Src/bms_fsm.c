@@ -13,11 +13,12 @@ The finite state machine has:
 ******************************************************************************/
 
 #include "bms_fsm.h"
-#include "dac.h"
-#include "mcp23017.h"
-#include "pwm.h"
-#include "tim.h"
-#include "usart.h"
+#include "bms_lv_config.h"
+#include <stdint.h>
+
+void lv_error_init(void);
+void error_routine(void);
+bool error_get_fatal(void);
 
 void adc_routine_start(void);
 void monitor_init(void);
@@ -29,12 +30,18 @@ void adc_routine(void);
 void can_routine(void);
 void gpio_extender_routine(void);
 void monitor_routine(void);
+bool check_total_voltage(void);
 void all_measurements_check(void);
 
 int set_discharge(int state);
 int set_rfe_frg(int state);
+void set_relay(uint8_t status);
+int set_led(int led1, int led2, int led3);
+void radiator_init();
+void dac_pump_init();
 
 void bms_lv_routine(void) {
+  error_routine();
   adc_routine();
   can_routine();
   gpio_extender_routine();
@@ -92,27 +99,28 @@ state_t do_init(state_data_t *data) {
   /* Your Code Here */
 
   // cooling OFF
-  pwm_set_period(&htim3, 0.04); // Set frequency to 25kHz
-  pwm_set_duty_cicle(&htim3, TIM_CHANNEL_1, 1.0);
-  pwm_set_duty_cicle(&htim3, TIM_CHANNEL_2, 1.0);
-  pwm_start_channel(&htim3, TIM_CHANNEL_1);
-  pwm_start_channel(&htim3, TIM_CHANNEL_2);
-  HAL_DAC_Start(&hdac, DAC_CHANNEL_2);
-  HAL_DAC_Start(&hdac, DAC_CHANNEL_1);
-  HAL_DAC_SetValue(&hdac, DAC_CHANNEL_2, DAC_ALIGN_12B_R, 0);
-  HAL_DAC_SetValue(&hdac, DAC_CHANNEL_1, DAC_ALIGN_12B_R, 0);
+  radiator_init();
+  dac_pump_init();
   // discharge ON
   set_discharge(1);
   // rfe/frg OFF
   set_rfe_frg(0);
 
   // check error codes
+  lv_error_init();
   adc_routine_start();
   adc_vrefint_calibration();
   monitor_init();
   gpio_extender_init();
   extern int bms_lv_primary_can_id;
   can_start(bms_lv_primary_can_id);
+
+  monitor_routine();
+  error_routine();
+
+  if (error_get_fatal() || !check_total_voltage()) {
+    next_state = STATE_ERROR;
+  }
 
   switch (next_state) {
   case STATE_IDLE:
@@ -142,6 +150,10 @@ state_t do_idle(state_data_t *data) {
 
   // until car_status == IDLE
 
+  if (error_get_fatal()) {
+    next_state = STATE_ERROR;
+  }
+
   switch (next_state) {
   case NO_CHANGE:
   case STATE_IDLE:
@@ -169,6 +181,7 @@ state_t do_error(state_data_t *data) {
 
   /* Your Code Here */
   // TODO: error code check, [send it via can/write to flash], shutdown
+  set_relay(0);
 
   switch (next_state) {
   case NO_CHANGE:
@@ -224,7 +237,8 @@ state_t do_flashing(state_data_t *data) {
   set_rfe_frg(0);
   // SET TIME_SET ON
   set_time_set(1);
-  HAL_Delay(16); // 15.51ms has been calculeted as charge time for che condensator 
+  HAL_Delay(
+      16); // 15.51ms has been calculeted as charge time for che condensator
   set_time_set(0);
 
   /* Your Code Here */
@@ -284,6 +298,8 @@ state_t do_run(state_data_t *data) {
 // This function is called in 1 transition:
 // 1. from init to idle
 void init_to_idle(state_data_t *data) { /* Your Code Here */
+  set_relay(1);
+  set_led(1, 0, 0);
 }
 
 // This function is called in 4 transitions:
@@ -292,6 +308,7 @@ void init_to_idle(state_data_t *data) { /* Your Code Here */
 // 3. from run to error
 // 4. from flashing to error
 void to_error(state_data_t *data) { /* Your Code Here */
+  set_led(0, 0, 0);
 }
 
 // This function is called in 1 transition:
