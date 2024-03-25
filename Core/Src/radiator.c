@@ -22,9 +22,10 @@ void radiator_set_duty_cycle(float duty_cycle) {
   float inverted_dt = 1.0 - duty_cycle;
   pwm_set_duty_cicle(&RAD_HTIM, RAD_L_PWM_TIM_CHNL, inverted_dt);
   pwm_set_duty_cicle(&RAD_HTIM, RAD_R_PWM_TIM_CHNL, inverted_dt);
+  radiator_duty_cycle = duty_cycle;
 }
 
-float get_radiator_duty_cycle() { return radiator_duty_cycle; }
+float radiator_get_duty_cycle() { return radiator_duty_cycle; }
 
 void radiator_set_auto_mode(bool mode) { rad_auto_mode = mode; }
 
