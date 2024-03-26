@@ -36,6 +36,18 @@ BUILD_DIR = build
 ######################################
 # C sources
 C_SOURCES =  \
+Core/Lib/can-lib/lib/bms/bms_network.c \
+Core/Lib/can-lib/lib/bms/bms_watchdog.c \
+Core/Lib/can-lib/lib/hv_current/hv_current_network.c \
+Core/Lib/can-lib/lib/hv_current/hv_current_watchdog.c \
+Core/Lib/can-lib/lib/inverters/inverters_network.c \
+Core/Lib/can-lib/lib/inverters/inverters_watchdog.c \
+Core/Lib/can-lib/lib/primary/primary_network.c \
+Core/Lib/can-lib/lib/primary/primary_watchdog.c \
+Core/Lib/can-lib/lib/secondary/secondary_network.c \
+Core/Lib/can-lib/lib/secondary/secondary_watchdog.c \
+Core/Lib/can-lib/lib/simulator/simulator_network.c \
+Core/Lib/can-lib/lib/simulator/simulator_watchdog.c \
 Core/Lib/micro-libs/bms-monitor/src/bms-monitor.c \
 Core/Lib/micro-libs/bms-monitor/src/ltc6811.c \
 Core/Lib/micro-libs/can-manager/src/can_manager.c \

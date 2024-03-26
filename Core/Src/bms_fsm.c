@@ -24,7 +24,7 @@ void adc_routine_start(void);
 void monitor_init(void);
 void gpio_extender_init(void);
 void adc_vrefint_calibration(void);
-int can_start(int can_id);
+int can_start();
 
 void adc_routine(void);
 void can_routine(void);
@@ -48,6 +48,8 @@ void bms_lv_routine(void) {
   monitor_routine();
   all_measurements_check();
 }
+
+uint8_t inverter_state = 0;
 
 // SEARCH FOR Your Code Here FOR CODE INSERTION POINTS!
 
@@ -112,8 +114,7 @@ state_t do_init(state_data_t *data) {
   adc_vrefint_calibration();
   monitor_init();
   gpio_extender_init();
-  extern int bms_lv_primary_can_id;
-  can_start(bms_lv_primary_can_id);
+  can_start();
 
   monitor_routine();
   error_routine();

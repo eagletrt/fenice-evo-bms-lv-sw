@@ -31,6 +31,10 @@
 #define MIN_LVMS_VOLTAGE_DIFF_THRESHOLD_mV                                     \
   2000.0f // diff lvms out and relay out 5%
 #define MIN_LOW_LOGIC_LEVEL_THRESHOLD_mV 500.0f // 500 mV
+// adc voltage divider value
+#define ADC_VOLTAGE_DIVIDER_MULTIPLIER 9.0f
+// Threshold to check if an adc feedbacks is either logic high or logic low
+#define HIGH_LEVEL_THRESHOLD 1000.f * ADC_VOLTAGE_DIVIDER_MULTIPLIER
 
 #define FLOAT_UNINITIALIZED_VALUE -1.0f
 #define MCP23017_INTERRUPTS_ENABLED 1

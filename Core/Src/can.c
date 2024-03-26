@@ -30,6 +30,10 @@ int bms_lv_primary_can_id = -1;
 can_mgr_msg_t can_messages_states[N_MONITORED_MESSAGES];
 uint8_t can_messages_is_new[N_MONITORED_MESSAGES];
 
+void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan) {
+  can_mgr_it_callback(hcan, CAN_RX_FIFO0, NULL);
+}
+
 /* USER CODE END 0 */
 
 CAN_HandleTypeDef hcan1;

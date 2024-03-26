@@ -4,6 +4,7 @@
 #include "bms_lv_config.h"
 #include "can_manager_can_types.h"
 #include "can_manager_config.h"
+#include "inverters_network.h"
 #include "primary_network.h"
 #include "primary_watchdog.h"
 
@@ -24,6 +25,9 @@
   ntw##_##msg_name##_t raw = {0};                                              \
   ntw##_##msg_name##_conversion_to_raw_struct(&raw, &converted);               \
   ntw##_##msg_name##_pack(msg.data, &raw, PRIMARY_##MSG_NAME##_BYTE_SIZE);
+
+#define FEEDBACK_SET_STATE(feedback, condition)                                \
+  converted.feedbacks_##feedback##_fb = (condition) ? 1 : 0;
 
 void can_init_errors_handler(int can_mgr_error_code);
 
