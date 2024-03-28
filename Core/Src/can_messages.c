@@ -281,20 +281,105 @@ void primary_lv_status_send(void) {
   // }
 }
 
-// TODO update error_library to get errors
 void primary_lv_errors_send(void) {
-  // static uint32_t last_msg_time = 0;
-  // uint32_t current_time = HAL_GetTick();
+  static uint32_t last_msg_time = 0;
+  uint32_t current_time = HAL_GetTick();
 
-  // if ((current_time - last_msg_time) > PRIMARY_LV_ERRORS_CYCLE_TIME_MS) {
-  //   last_msg_time = current_time;
-  //   primary_lv_errors_converted_t converted;
+  if ((current_time - last_msg_time) > PRIMARY_LV_ERRORS_CYCLE_TIME_MS) {
+    last_msg_time = current_time;
+    primary_lv_errors_converted_t converted = {0};
+    size_t running_count = error_get_running();
+    size_t expired_count = error_get_expired();
 
-  //   CANLIB_PACK_MSG(primary, PRIMARY, lv_errors, LV_ERRORS);
+    if (running_count > 0) {
+      Error running_instance[running_count];
+      error_dump_running(running_instance);
+      for (size_t i = 0; i < running_count; i++) {
+        switch (running_instance[i].group) {
+        case CELL_UNDERVOLTAGE:
+          converted.warnings_cell_undervoltage = 1;
+          break;
+        case CELL_OVERVOLTAGE:
+          converted.warnings_cell_overvoltage = 1;
+          break;
+        case OPEN_WIRE:
+          converted.warnings_battery_open_wire = 1;
+          break;
+        case CAN:
+          converted.warnings_can = 1;
+          break;
+        case SPI:
+          converted.warnings_spi = 1;
+          break;
+        case OVER_CURRENT:
+          converted.warnings_over_current = 1;
+          break;
+        case CELL_UNDER_TEMPERATURE:
+          converted.warnings_cell_under_temperature = 1;
+          break;
+        case CELL_OVER_TEMPERATURE:
+          converted.warnings_cell_over_temperature = 1;
+          break;
+        case MCP23017:
+          converted.warnings_mcp23017 = 1;
+          break;
+        case HEALTH:
+          converted.warnings_mux = 1;
+          break;
+        default:
+          break;
+        }
+      }
+    }
 
-  //   ERROR_TOGGLE_IF(can_mgr_send(bms_lv_primary_can_id, &msg) != 0, CAN, 0,
-  //                   HAL_GetTick());
-  // }
+    if (expired_count > 0) {
+      Error expired_instance[expired_count];
+      error_dump_expired(expired_instance);
+      for (size_t i = 0; i < expired_count; i++) {
+        switch (expired_instance[i].group) {
+        case CELL_UNDERVOLTAGE:
+          converted.errors_cell_undervoltage = 1;
+          break;
+        case CELL_OVERVOLTAGE:
+          converted.errors_cell_overvoltage = 1;
+          break;
+        case OPEN_WIRE:
+          converted.errors_battery_open_wire = 1;
+          break;
+        case CAN:
+          converted.errors_can = 1;
+          break;
+        case SPI:
+          converted.errors_spi = 1;
+          break;
+        case OVER_CURRENT:
+          converted.errors_over_current = 1;
+          break;
+        case CELL_UNDER_TEMPERATURE:
+          converted.errors_cell_under_temperature = 1;
+          break;
+        case CELL_OVER_TEMPERATURE:
+          converted.errors_cell_over_temperature = 1;
+          break;
+        case MCP23017:
+          converted.errors_mcp23017 = 1;
+          break;
+        case HEALTH:
+          converted.errors_mux = 1;
+          break;
+        default:
+          break;
+        }
+      }
+    }
+    // converted.errors_bms_monitor = 1;
+    // converted.warnings_can = 1;
+    // converted.errors_mcp23017 = 1;
+    CANLIB_PACK_MSG(primary, PRIMARY, lv_errors, LV_ERRORS);
+
+    ERROR_TOGGLE_IF(can_mgr_send(bms_lv_primary_can_id, &msg) != 0, CAN, 0,
+                    HAL_GetTick());
+  }
 }
 
 // TODO implement saving of health_signals
