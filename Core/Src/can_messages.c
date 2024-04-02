@@ -532,7 +532,7 @@ void primary_lv_version_send(void) {
     last_msg_time = current_time;
     primary_lv_version_converted_t converted;
     converted.component_build_time = 0x1;
-    converted.component_build_time = CANLIB_BUILD_TIME;
+    converted.canlib_build_time = CANLIB_BUILD_TIME;
     CANLIB_PACK_MSG(primary, PRIMARY, lv_version, LV_VERSION);
 
     ERROR_TOGGLE_IF(can_mgr_send(bms_lv_primary_can_id, &msg) != 0, CAN, 0,
