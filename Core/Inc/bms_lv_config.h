@@ -9,7 +9,7 @@
 
 #define max(a, b) (a > b) ? a : b
 
-#define MIN_CHARGER_CURRENT_THRESHOLD_mA 4000.0f
+#define MIN_CHARGER_CURRENT_THRESHOLD_mA 2000.0f
 #define MIN_BATTERY_CURRENT_THRESHOLD_mA 50.0f
 
 // Number of cells present in the bms lv, the cell configuration is 6s4p

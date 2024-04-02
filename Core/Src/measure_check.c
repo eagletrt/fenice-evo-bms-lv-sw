@@ -12,6 +12,8 @@ extern float mux_sensors_mA[mux_sensors_n_values];
 extern float dc_fb_mV[directly_connected_fbs_n_values];
 extern uint8_t mcp23017_feedbacks_state[8];
 
+static bool disable_overvoltage = false;
+
 // Index is from right to left
 void set_bit(uint8_t *value, uint8_t index, uint8_t bit_value) {
   if (bit_value == 0) {
@@ -121,6 +123,9 @@ void health_check(void) {
   relay_out = dc_fb_mV[fb_relay_out_idx];
   lvms_out = dc_fb_mV[fb_lvms_out_idx];
 
+  disable_overvoltage =
+      (i_chg > MIN_CHARGER_CURRENT_THRESHOLD_mA) ? true : false;
+
   update_status(&current_status, i_bat, i_chg, bat_out, relay_out, lvms_out);
   check_result = check_status(current_status);
   if (check_result != SAFE_STATUS) {
@@ -134,11 +139,18 @@ void cell_voltage_check(void) {
   float voltages[CELL_COUNT] = {0};
   monitor_get_voltages(voltages);
 
-  for (size_t i = 0; i < CELL_COUNT; i++) {
-    ERROR_TOGGLE_IF(voltages[i] < MIN_CELL_VOLTAGE_V, CELL_UNDERVOLTAGE, i,
-                    HAL_GetTick());
-    ERROR_TOGGLE_IF(voltages[i] > MAX_CELL_VOLTAGE_V, CELL_OVERVOLTAGE, i,
-                    HAL_GetTick());
+  if (!disable_overvoltage) {
+    for (size_t i = 0; i < CELL_COUNT; i++) {
+      ERROR_TOGGLE_IF(voltages[i] < MIN_CELL_VOLTAGE_V, CELL_UNDERVOLTAGE, i,
+                      HAL_GetTick());
+      ERROR_TOGGLE_IF(voltages[i] > MAX_CELL_VOLTAGE_V, CELL_OVERVOLTAGE, i,
+                      HAL_GetTick());
+    }
+  } else {
+    for (size_t i = 0; i < CELL_COUNT; i++) {
+      error_reset(CELL_UNDERVOLTAGE, i);
+      error_reset(CELL_OVERVOLTAGE, i);
+    }
   }
 }
 
@@ -162,10 +174,10 @@ void overcurrent_check(void) {
 }
 
 void all_measurements_check(void) {
+  health_check();
   cell_voltage_check();
   cell_temperature_check();
   overcurrent_check();
-  health_check();
 }
 
 bool check_total_voltage(void) {
