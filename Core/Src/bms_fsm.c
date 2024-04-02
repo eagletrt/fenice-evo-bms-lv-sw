@@ -50,6 +50,7 @@ void bms_lv_routine(void) {
 }
 
 uint8_t inverter_state = 0;
+bool flash_requested;
 
 // SEARCH FOR Your Code Here FOR CODE INSERTION POINTS!
 
@@ -308,34 +309,27 @@ void init_to_idle(state_data_t *data) { /* Your Code Here */
 // 2. from idle to error
 // 3. from run to error
 // 4. from flashing to error
-void to_error(state_data_t *data) { /* Your Code Here */
-  set_led(0, 0, 0);
-}
+void to_error(state_data_t *data) { /* Your Code Here */ set_led(0, 0, 0); }
 
 // This function is called in 1 transition:
 // 1. from idle to tson
-void idle_to_tson(state_data_t *data) { /* Your Code Here */
-}
+void idle_to_tson(state_data_t *data) { /* Your Code Here */ }
 
 // This function is called in 1 transition:
 // 1. from idle to flashing
-void idle_to_flashing(state_data_t *data) { /* Your Code Here */
-}
+void idle_to_flashing(state_data_t *data) { /* Your Code Here */ }
 
 // This function is called in 1 transition:
 // 1. from tson to idle
-void tson_to_idle(state_data_t *data) { /* Your Code Here */
-}
+void tson_to_idle(state_data_t *data) { /* Your Code Here */ }
 
 // This function is called in 1 transition:
 // 1. from tson to run
-void tson_to_run(state_data_t *data) { /* Your Code Here */
-}
+void tson_to_run(state_data_t *data) { /* Your Code Here */ }
 
 // This function is called in 1 transition:
 // 1. from run to idle
-void run_to_idle(state_data_t *data) { /* Your Code Here */
-}
+void run_to_idle(state_data_t *data) { /* Your Code Here */ }
 
 /*  ____  _        _
  * / ___|| |_ __ _| |_ ___

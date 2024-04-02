@@ -23,6 +23,7 @@ int primary_set_pumps_speed_handler(can_mgr_msg_t *msg);
 int primary_ts_status_handler(can_mgr_msg_t *msg);
 int inverters_l_handler(can_mgr_msg_t *msg);
 int inverters_r_handler(can_mgr_msg_t *msg);
+int primary_flash_request_handler(can_mgr_msg_t *msg);
 
 void primary_lv_cells_voltage_send(void);
 void primary_lv_cells_temp_send(void);
@@ -64,6 +65,8 @@ int can_mgr_from_id_to_index(int can_id, int msg_id) {
     return 4;
   case INVERTERS_INV_R_RCV_FRAME_ID:
     return 5;
+  case PRIMARY_LV_CAN_FLASH_REQ_STEERING_WHEEL_FRAME_ID:
+    return 6;
   default:
     return -1;
   }
@@ -209,6 +212,13 @@ int inverters_r_handler(can_mgr_msg_t *msg) {
   //     dac_pump_auto_mode(max);
   //   }
   // }
+
+  return 0;
+}
+
+int primary_flash_request_handler(can_mgr_msg_t *msg) {
+  extern bool flash_requested;
+  flash_requested = true;
 
   return 0;
 }
