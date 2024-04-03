@@ -1,5 +1,6 @@
 #include "can_messages.h"
 
+#include "bms_fsm.h"
 #include "dac_pump.h"
 #include "lv_errors.h"
 #include "radiator.h"
@@ -287,20 +288,43 @@ void primary_lv_total_voltage_send(void) {
   }
 }
 
-// TODO get lv status from fsm and add new statuses to can-lib
 void primary_lv_status_send(void) {
-  // static uint32_t last_msg_time = 0;
-  // uint32_t current_time = HAL_GetTick();
+  static uint32_t last_msg_time = 0;
+  uint32_t current_time = HAL_GetTick();
 
-  // if ((current_time - last_msg_time) > PRIMARY_LV_STATUS_CYCLE_TIME_MS) {
-  //   last_msg_time = current_time;
-  //   primary_lv_status_converted_t converted;
+  if ((current_time - last_msg_time) > PRIMARY_LV_STATUS_CYCLE_TIME_MS) {
+    last_msg_time = current_time;
+    primary_lv_status_converted_t converted;
+    extern state_t cur_state;
 
-  //   CANLIB_PACK_MSG(primary, PRIMARY, lv_status, LV_STATUS);
+    switch (cur_state) {
+    case STATE_INIT:
+      converted.status = primary_lv_status_status_init;
+      break;
+    case STATE_IDLE:
+      converted.status = primary_lv_status_status_idle;
+      break;
+    case STATE_TSON:
+      converted.status = primary_lv_status_status_tson;
+      break;
+    case STATE_RUN:
+      converted.status = primary_lv_status_status_run;
+      break;
+    case STATE_FLASHING:
+      converted.status = primary_lv_status_status_flashing;
+      break;
+    case STATE_ERROR:
+      converted.status = primary_lv_status_status_error;
+      break;
+    default:
+      break;
+    }
 
-  //   ERROR_TOGGLE_IF(can_mgr_send(bms_lv_primary_can_id, &msg) != 0, CAN, 0,
-  //                   HAL_GetTick());
-  // }
+    CANLIB_PACK_MSG(primary, PRIMARY, lv_status, LV_STATUS);
+
+    ERROR_TOGGLE_IF(can_mgr_send(bms_lv_primary_can_id, &msg) != 0, CAN, 0,
+                    HAL_GetTick());
+  }
 }
 
 void primary_lv_errors_send(void) {

@@ -63,6 +63,8 @@ void SystemClock_Config(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
+state_t cur_state = STATE_INIT;
+
 /* USER CODE END 0 */
 
 /**
@@ -107,8 +109,6 @@ int main(void) {
   MX_TIM8_Init();
   MX_TIM7_Init();
   /* USER CODE BEGIN 2 */
-
-  state_t cur_state = STATE_INIT;
 
   /* USER CODE END 2 */
 
