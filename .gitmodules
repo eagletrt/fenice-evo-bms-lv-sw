@@ -3,6 +3,6 @@
 	url = git@github.com:eagletrt/micro-libs.git
 	branch = master
 [submodule "Core/Lib/can-lib"]
-	path = Core/Lib/can-lib
+	path = Core/Lib/can
 	url = git@github.com:eagletrt/can.git
 	branch = build-evo
