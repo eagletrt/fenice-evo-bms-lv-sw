@@ -66,6 +66,7 @@ int can_mgr_from_id_to_index(int can_id, int msg_id) {
   case INVERTERS_INV_R_RCV_FRAME_ID:
     return 5;
   case PRIMARY_LV_CAN_FLASH_REQ_STEERING_WHEEL_FRAME_ID:
+  case PRIMARY_LV_CAN_FLASH_REQ_TLM_FRAME_ID:
     return 6;
   default:
     return -1;
