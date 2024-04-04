@@ -105,7 +105,7 @@ state_t do_init(state_data_t *data) {
   radiator_init();
   dac_pump_init();
   // discharge ON
-  set_discharge(1);
+  set_discharge(0);
   // rfe/frg OFF
   set_rfe_frg(0);
 
@@ -143,9 +143,7 @@ state_t do_idle(state_data_t *data) {
 
   // cooling no change
   // discharge ON
-  set_discharge(1);
   // rfe/frg OFF
-  set_rfe_frg(0);
 
   /* Your Code Here */
   bms_lv_routine();
@@ -202,9 +200,7 @@ state_t do_tson(state_data_t *data) {
 
   // cooling no change
   // set discharge OFF
-  set_discharge(0);
   // set rfe/frg OFF
-  set_rfe_frg(0);
   // until car_status == {...}
 
   /* Your Code Here */
@@ -234,9 +230,7 @@ state_t do_flashing(state_data_t *data) {
 
   // cooling no change
   // set discharge ON
-  set_discharge(1);
   // set rfe/frg OFF
-  set_rfe_frg(0);
   // SET TIME_SET ON
   set_time_set(1);
   HAL_Delay(
@@ -262,9 +256,7 @@ state_t do_run(state_data_t *data) {
 
   // activate automatic cooling
   // set discharge OFF
-  set_discharge(1);
   // set rfe/frg ON
-  set_rfe_frg(1);
 
   /* Your Code Here */
   bms_lv_routine();
@@ -309,33 +301,32 @@ void init_to_idle(state_data_t *data) { /* Your Code Here */
 // 2. from idle to error
 // 3. from run to error
 // 4. from flashing to error
-void to_error(state_data_t *data) { /* Your Code Here */
-  set_led(0, 0, 0);
-}
+void to_error(state_data_t *data) { /* Your Code Here */ set_led(0, 0, 0); }
 
 // This function is called in 1 transition:
 // 1. from idle to tson
-void idle_to_tson(state_data_t *data) { /* Your Code Here */
-}
+void idle_to_tson(state_data_t *data) { /* Your Code Here */ set_discharge(1); }
 
 // This function is called in 1 transition:
 // 1. from idle to flashing
-void idle_to_flashing(state_data_t *data) { /* Your Code Here */
-}
+void idle_to_flashing(state_data_t *data) { /* Your Code Here */ }
 
 // This function is called in 1 transition:
 // 1. from tson to idle
-void tson_to_idle(state_data_t *data) { /* Your Code Here */
-}
+void tson_to_idle(state_data_t *data) { /* Your Code Here */ set_discharge(0); }
 
 // This function is called in 1 transition:
 // 1. from tson to run
 void tson_to_run(state_data_t *data) { /* Your Code Here */
+  set_discharge(1);
+  set_rfe_frg(1);
 }
 
 // This function is called in 1 transition:
 // 1. from run to idle
 void run_to_idle(state_data_t *data) { /* Your Code Here */
+  set_discharge(0);
+  set_rfe_frg(0);
 }
 
 /*  ____  _        _
