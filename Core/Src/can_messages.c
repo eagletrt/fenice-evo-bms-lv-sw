@@ -33,7 +33,6 @@ void primary_lv_cells_temp_send(void);
 void primary_lv_total_voltage_send(void);
 void primary_lv_status_send(void);
 void primary_lv_errors_send(void);
-void primary_lv_health_signals_send(void);
 void primary_lv_current_charger_send(void);
 void primary_lv_current_battery_send(void);
 void primary_lv_feedback_sd_send(void);
@@ -93,7 +92,6 @@ void can_send_messages() {
   primary_lv_total_voltage_send();
   primary_lv_status_send();
   primary_lv_errors_send();
-  primary_lv_health_signals_send();
   primary_lv_current_battery_send();
   primary_lv_current_charger_send();
   primary_lv_feedback_ts_send();
@@ -391,27 +389,19 @@ void primary_lv_errors_send(void) {
       }
     }
 
+    extern uint8_t health_status;
+    converted.health_signals_sign_battery_current = (health_status >> 5) % 2;
+    converted.health_signals_battery_current = (health_status >> 4) % 2;
+    converted.health_signals_charger_current = (health_status >> 3) % 2;
+    converted.health_signals_battery_voltage_out = (health_status >> 2) % 2;
+    converted.health_signals_relay_out = (health_status >> 1) % 2;
+    converted.health_signals_lvms_out = health_status % 2;
+
     CANLIB_PACK_MSG(primary, PRIMARY, lv_errors, LV_ERRORS);
 
     ERROR_TOGGLE_IF(can_mgr_send(bms_lv_primary_can_id, &msg) != 0, CAN, 0,
                     HAL_GetTick());
   }
-}
-
-// TODO implement saving of health_signals
-void primary_lv_health_signals_send(void) {
-  // static uint32_t last_msg_time = 0;
-  // uint32_t current_time = HAL_GetTick();
-
-  // if ((current_time - last_msg_time) >
-  // PRIMARY_LV_HEALTH_SIGNALS_CYCLE_TIME_MS) {
-  //   last_msg_time = current_time;
-  //   primary_lv_health_signals_converted_t converted;
-  //   CANLIB_PACK_MSG(primary, PRIMARY, lv_health_signals, LV_HEALTH_SIGNALS);
-
-  //   ERROR_TOGGLE_IF(can_mgr_send(bms_lv_primary_can_id, &msg) != 0, CAN, 0,
-  //                   HAL_GetTick());
-  // }
 }
 
 void primary_lv_current_charger_send(void) {

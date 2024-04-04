@@ -11,6 +11,7 @@ extern float mux_fb_mV[mux_fb_n_values];
 extern float mux_sensors_mA[mux_sensors_n_values];
 extern float dc_fb_mV[directly_connected_fbs_n_values];
 extern uint8_t mcp23017_feedbacks_state[8];
+uint8_t health_status = 0b000000;
 
 static bool disable_overvoltage = false;
 
@@ -115,8 +116,8 @@ int check_status(uint8_t current_status) {
 
 void health_check(void) {
   float i_bat, i_chg, bat_out, relay_out, lvms_out = 0.0;
-  uint8_t current_status = 0b000000;
   uint8_t check_result = ERR_STATUS;
+  health_status = 0b000000;
   i_bat = mux_sensors_mA[mux_sensors_s_hall1_idx];
   i_chg = mux_sensors_mA[mux_sensors_s_hall2_idx];
   bat_out = dc_fb_mV[fb_batt_out_idx];
@@ -126,8 +127,8 @@ void health_check(void) {
   disable_overvoltage =
       (i_chg > MIN_CHARGER_CURRENT_THRESHOLD_mA) ? true : false;
 
-  update_status(&current_status, i_bat, i_chg, bat_out, relay_out, lvms_out);
-  check_result = check_status(current_status);
+  update_status(&health_status, i_bat, i_chg, bat_out, relay_out, lvms_out);
+  check_result = check_status(health_status);
   if (check_result != SAFE_STATUS) {
     error_set(HEALTH, 0, HAL_GetTick());
   } else {
