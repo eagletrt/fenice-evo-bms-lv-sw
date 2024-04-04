@@ -14,6 +14,7 @@ The finite state machine has:
 
 #include "bms_fsm.h"
 #include "bms_lv_config.h"
+#include "primary_network.h"
 #include <stdint.h>
 
 void lv_error_init(void);
@@ -51,6 +52,7 @@ void bms_lv_routine(void) {
 
 uint8_t inverter_state = 0;
 bool flash_requested;
+extern primary_ecu_status_converted_t ecu_status;
 
 // SEARCH FOR Your Code Here FOR CODE INSERTION POINTS!
 
@@ -148,9 +150,9 @@ state_t do_idle(state_data_t *data) {
   /* Your Code Here */
   bms_lv_routine();
 
-  // until car_status == IDLE
-
-  if (error_get_fatal()) {
+  if (ecu_status.status == primary_ecu_status_status_start_ts_precharge) {
+    next_state = STATE_TSON;
+  } else if (error_get_fatal()) {
     next_state = STATE_ERROR;
   }
 
@@ -208,6 +210,13 @@ state_t do_tson(state_data_t *data) {
 
   // until car_status == {...}
   // car_status -> drive -> run
+  if (ecu_status.status == primary_ecu_status_status_enable_inv_drive) {
+    next_state = STATE_RUN;
+  } else if (ecu_status.status == primary_ecu_status_status_idle) {
+    next_state = STATE_IDLE;
+  } else if (error_get_fatal()) {
+    next_state = STATE_ERROR;
+  }
   // car_status -> idle -> idle
 
   switch (next_state) {
