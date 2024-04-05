@@ -4,7 +4,7 @@
 #define CAN_MGR_STM32_APPLICATION
 #define CAN_MGR_N_CAN 2
 #define CAN_MGR_TOTAL_CAN_RX_FIFOS 2
-#define CAN_MGR_CAN_WAIT_ENABLED 0
+#define CAN_MGR_CAN_WAIT_ENABLED 1
 
 #define N_MONITORED_MESSAGES 8
 #define CAN_MESSAGES_MAPPING                                                   \
