@@ -16,6 +16,7 @@ The finite state machine has:
 #include "bms_lv_config.h"
 #include "can_messages.h"
 #include "primary_network.h"
+#include "stm32f4xx_hal.h"
 #include <stdint.h>
 
 void lv_error_init(void);
@@ -185,7 +186,8 @@ state_t do_error(state_data_t *data) {
   set_discharge(1);
   // rfe/frg OFF
   set_rfe_frg(0);
-
+  primary_lv_errors_send();
+  HAL_Delay(1000);
   /* Your Code Here */
   // TODO: error code check, [send it via can/write to flash], shutdown
   set_relay(0);
