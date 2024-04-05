@@ -276,6 +276,11 @@ state_t do_run(state_data_t *data) {
   bms_lv_routine();
 
   // until car_status == run
+  if (ecu_status.status == primary_ecu_status_status_disable_inv_drive) {
+    next_state = STATE_IDLE;
+  } else if (error_get_fatal()) {
+    next_state = STATE_ERROR;
+  }
 
   switch (next_state) {
   case NO_CHANGE:
