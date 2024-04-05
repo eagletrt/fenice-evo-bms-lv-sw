@@ -6,7 +6,7 @@
 #include <math.h>
 
 float radiator_duty_cycle;
-bool rad_auto_mode;
+primary_lv_radiator_speed_status rad_status;
 
 void radiator_init() {
   pwm_set_period(&RAD_HTIM, 0.04); // Set frequency to 25kHz
@@ -15,7 +15,7 @@ void radiator_init() {
   pwm_start_channel(&RAD_HTIM, RAD_L_PWM_TIM_CHNL);
   pwm_start_channel(&RAD_HTIM, RAD_R_PWM_TIM_CHNL);
   radiator_duty_cycle = 0.0;
-  rad_auto_mode = false;
+  rad_status = primary_lv_radiator_speed_status_off;
 }
 
 void radiator_set_duty_cycle(float duty_cycle) {
@@ -27,9 +27,15 @@ void radiator_set_duty_cycle(float duty_cycle) {
 
 float radiator_get_duty_cycle() { return radiator_duty_cycle; }
 
-void radiator_set_auto_mode(bool mode) { rad_auto_mode = mode; }
+void radiator_set_status(primary_lv_radiator_speed_status status) {
+  rad_status = status;
+}
 
-bool radiator_get_auto_mode() { return rad_auto_mode; }
+bool radiator_is_auto() {
+  return rad_status == primary_lv_radiator_speed_status_auto;
+}
+
+primary_lv_radiator_speed_status radiator_get_status() { return rad_status; }
 
 // TODO change duty cycles and temperature ranges
 void radiator_auto_mode(float temp) {
@@ -37,20 +43,20 @@ void radiator_auto_mode(float temp) {
   float duty_cycle = 1.0;
   switch (temp_rounded) {
   case INT8_MIN ... 30:
-    duty_cycle = 1.0;
+    duty_cycle = 0.0;
     break;
   case 31 ... 45:
-    /* code */
-    duty_cycle = 0.5;
-    break;
-
-  case 46 ... 60:
     /* code */
     duty_cycle = 0.25;
     break;
 
+  case 46 ... 60:
+    /* code */
+    duty_cycle = 0.75;
+    break;
+
   case 61 ... INT8_MAX:
-    duty_cycle = 0.0;
+    duty_cycle = 1.0;
     break;
 
   default:

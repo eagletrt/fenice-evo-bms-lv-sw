@@ -2,6 +2,7 @@
 
 #include "bms_fsm.h"
 #include "dac_pump.h"
+#include "inverter_conversions.h"
 #include "lv_errors.h"
 #include "mcp23017.h"
 #include "radiator.h"
@@ -13,7 +14,7 @@
 extern int bms_lv_primary_can_id;
 extern can_mgr_msg_t can_messages_states[N_MONITORED_MESSAGES];
 extern uint8_t can_messages_is_new[N_MONITORED_MESSAGES];
-// static float inv_temps[2];
+static float inv_temps[2] = {0};
 primary_hv_status_converted_t ts_status_converted;
 primary_ecu_status_converted_t ecu_status;
 // primary_set_inverter_connection_status_converted_t set_inv_connection_status
@@ -159,11 +160,13 @@ int primary_set_radiator_speed_handler(can_mgr_msg_t *msg) {
                                                          &radiator_raw);
   radiator_converted.radiator_speed =
       round(radiator_converted.radiator_speed * 10) / 10;
-  if (radiator_converted.radiator_speed >= 0) {
-    radiator_set_auto_mode(false);
+
+  if (radiator_converted.status == primary_lv_set_radiator_speed_status_auto) {
+    radiator_set_status(primary_lv_radiator_speed_status_auto);
+  } else if (radiator_converted.status ==
+             primary_lv_set_radiator_speed_status_manual) {
+    radiator_set_status(primary_lv_radiator_speed_status_manual);
     radiator_set_duty_cycle(radiator_converted.radiator_speed);
-  } else {
-    // radiator_set_auto_mode(true);
   }
 
   return 0;
@@ -177,12 +180,15 @@ int primary_set_pumps_speed_handler(can_mgr_msg_t *msg) {
   primary_lv_set_pumps_speed_raw_to_conversion_struct(&pumps_converted,
                                                       &pumps_raw);
   pumps_converted.pumps_speed = round(pumps_converted.pumps_speed * 10) / 10;
-  if (pumps_converted.pumps_speed >= 0) {
-    dac_pump_set_auto_mode(false);
+
+  if (pumps_converted.status == primary_lv_set_pumps_speed_status_auto) {
+    dac_pump_set_status(primary_lv_pumps_speed_status_auto);
+  } else if (pumps_converted.status ==
+             primary_lv_set_pumps_speed_status_manual) {
+    dac_pump_set_status(primary_lv_pumps_speed_status_manual);
     dac_pump_set_duty_cycle(pumps_converted.pumps_speed);
-  } else {
-    // dac_pump_set_auto_mode(true);
   }
+
   return 0;
 }
 
@@ -202,19 +208,18 @@ int inverters_l_handler(can_mgr_msg_t *msg) {
                              INVERTERS_INV_L_RCV_BYTE_SIZE);
   inverters_inv_l_rcv_raw_to_conversion_struct(&inv_converted, &inv_raw);
 
-  // TODO add conversion of inverter temperature
-  //  if (inv_converted.rcv_mux == inverters_inv_l_rcv_rcv_mux_ID_4A_T_Igbt) {
-  //    inv_temps[0] = inv_converted.t_igbt;
-  //    float max = max(inv_temps[0], inv_temps[1]);
+  if (inv_converted.rcv_mux == inverters_inv_l_rcv_rcv_mux_ID_4A_T_Igbt) {
+    inv_temps[0] = convert_t_igbt(inv_converted.t_igbt);
+    float max = max(inv_temps[0], inv_temps[1]);
 
-  //   if (radiator_get_auto_mode()) {
-  //     radiator_auto_mode(max);
-  //   }
+    if (radiator_is_auto()) {
+      radiator_auto_mode(max);
+    }
 
-  //   if (dac_pump_get_auto_mode()) {
-  //     dac_pump_auto_mode(max);
-  //   }
-  // }
+    if (dac_pump_is_auto()) {
+      dac_pump_auto_mode(max);
+    }
+  }
 
   return 0;
 }
@@ -226,19 +231,18 @@ int inverters_r_handler(can_mgr_msg_t *msg) {
                              INVERTERS_INV_R_RCV_BYTE_SIZE);
   inverters_inv_r_rcv_raw_to_conversion_struct(&inv_converted, &inv_raw);
 
-  // TODO add conversion of inverter temperature
-  //  if (inv_converted.rcv_mux == inverters_inv_r_rcv_rcv_mux_ID_4A_T_Igbt) {
-  //    inv_temps[1] = inv_converted.t_igbt;
-  //    float max = max(inv_temps[0], inv_temps[1]);
+  if (inv_converted.rcv_mux == inverters_inv_r_rcv_rcv_mux_ID_4A_T_Igbt) {
+    inv_temps[1] = convert_t_igbt(inv_converted.t_igbt);
+    float max = max(inv_temps[0], inv_temps[1]);
 
-  //   if (radiator_get_auto_mode()) {
-  //     radiator_auto_mode(max);
-  //   }
+    if (radiator_is_auto()) {
+      radiator_auto_mode(max);
+    }
 
-  //   if (dac_pump_get_auto_mode()) {
-  //     dac_pump_auto_mode(max);
-  //   }
-  // }
+    if (dac_pump_is_auto()) {
+      dac_pump_auto_mode(max);
+    }
+  }
 
   return 0;
 }
@@ -527,6 +531,7 @@ void primary_lv_version_send(void) {
 
 void primary_lv_pump_speed_send(void) {
   primary_lv_pumps_speed_converted_t converted;
+  converted.status = dac_pump_get_status();
   converted.pumps_speed = dac_pump_get_duty_cycle();
   CANLIB_PACK_MSG(primary, PRIMARY, lv_pumps_speed, LV_PUMPS_SPEED);
 
@@ -536,6 +541,7 @@ void primary_lv_pump_speed_send(void) {
 
 void primary_lv_radiator_speed_send(void) {
   primary_lv_radiator_speed_converted_t converted;
+  converted.status = radiator_get_status();
   converted.radiator_speed = radiator_get_duty_cycle();
   CANLIB_PACK_MSG(primary, PRIMARY, lv_radiator_speed, LV_RADIATOR_SPEED);
 

@@ -86,6 +86,7 @@ sourceFiles:
   - Core/Lib/micro-libs/timer-utils/*.c
   - Core/Lib/micro-libs/min-heap/src/*.c
   - Core/Lib/micro-libs/ring-buffer/src/*.c
+  - Core/lib/invlib/inverter_conversions.c
 
 # When no makefile is present it will show a warning pop-up.
 # However when compilation without the CubeMX Makefile is desired, this can be turned of.

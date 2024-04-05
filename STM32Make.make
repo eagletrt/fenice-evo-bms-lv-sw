@@ -77,6 +77,7 @@ Core/Src/stm32f4xx_it.c \
 Core/Src/system_stm32f4xx.c \
 Core/Src/tim.c \
 Core/Src/usart.c \
+Core/lib/invlib/inverter_conversions.c \
 Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal.c \
 Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_adc.c \
 Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_adc_ex.c \
@@ -187,6 +188,19 @@ C_INCLUDES =  \
 -ICore/Lib/can/proto/primary \
 -ICore/Lib/can/proto/secondary \
 -ICore/Lib/can/proto/simulator \
+-ICore/Lib/invlib \
+-ICore/Lib/invlib/can/lib/bms \
+-ICore/Lib/invlib/can/lib/inverters \
+-ICore/Lib/invlib/can/lib/ivts \
+-ICore/Lib/invlib/can/lib/primary \
+-ICore/Lib/invlib/can/lib/secondary \
+-ICore/Lib/invlib/can/lib/simulator \
+-ICore/Lib/invlib/can/proto/bms \
+-ICore/Lib/invlib/can/proto/inverters \
+-ICore/Lib/invlib/can/proto/ivts \
+-ICore/Lib/invlib/can/proto/primary \
+-ICore/Lib/invlib/can/proto/secondary \
+-ICore/Lib/invlib/can/proto/simulator \
 -ICore/Lib/micro-libs/CMock/examples/make_example/src \
 -ICore/Lib/micro-libs/CMock/examples/temp_sensor/src \
 -ICore/Lib/micro-libs/CMock/src \

@@ -6,11 +6,11 @@
 #include <stdint.h>
 
 float pump_duty_cycle;
-bool pump_auto_mode;
+bool pump_status;
 
 void dac_pump_init() {
   pump_duty_cycle = 0.0;
-  pump_auto_mode = false;
+  pump_status = primary_lv_pumps_speed_status_off;
 }
 
 void dac_pump_set_duty_cycle(float duty_cycle) {
@@ -31,9 +31,15 @@ void dac_pump_set_duty_cycle(float duty_cycle) {
 
 float dac_pump_get_duty_cycle() { return pump_duty_cycle; }
 
-void dac_pump_set_auto_mode(bool mode) { pump_auto_mode = mode; }
+void dac_pump_set_status(primary_lv_pumps_speed_status status) {
+  pump_status = status;
+}
 
-bool dac_pump_get_auto_mode() { return pump_auto_mode; }
+primary_lv_pumps_speed_status dac_pump_get_status() { return pump_status; }
+
+bool dac_pump_is_auto() {
+  return pump_status == primary_lv_pumps_speed_status_auto;
+}
 
 // TODO change duty cycles and temperature ranges
 void dac_pump_auto_mode(float temp) {

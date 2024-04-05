@@ -6,3 +6,6 @@
 	path = Core/Lib/can
 	url = git@github.com:eagletrt/can.git
 	branch = build-evo
+[submodule "Core/Lib/invlib"]
+	path = Core/Lib/invlib
+	url = git@github.com:eagletrt/invlib.git

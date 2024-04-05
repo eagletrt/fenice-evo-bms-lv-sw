@@ -14,6 +14,7 @@ The finite state machine has:
 
 #include "bms_fsm.h"
 #include "bms_lv_config.h"
+#include "can_messages.h"
 #include "primary_network.h"
 #include <stdint.h>
 
@@ -34,12 +35,16 @@ void monitor_routine(void);
 bool check_total_voltage(void);
 void all_measurements_check(void);
 
+void primary_lv_errors_send(void);
+
 int set_discharge(int state);
 int set_rfe_frg(int state);
 void set_relay(uint8_t status);
 int set_led(int led1, int led2, int led3);
 void radiator_init();
 void dac_pump_init();
+void dac_pump_set_status(primary_lv_pumps_speed_status mode);
+void radiator_set_status(primary_lv_radiator_speed_status status);
 
 void bms_lv_routine(void) {
   error_routine();
@@ -329,6 +334,8 @@ void tson_to_idle(state_data_t *data) { /* Your Code Here */ set_discharge(0); }
 void tson_to_run(state_data_t *data) { /* Your Code Here */
   set_discharge(1);
   set_rfe_frg(1);
+  radiator_set_status(primary_lv_radiator_speed_status_auto);
+  dac_pump_set_status(primary_lv_pumps_speed_status_auto);
 }
 
 // This function is called in 1 transition:
