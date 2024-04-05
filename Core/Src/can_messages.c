@@ -3,6 +3,7 @@
 #include "bms_fsm.h"
 #include "dac_pump.h"
 #include "lv_errors.h"
+#include "mcp23017.h"
 #include "radiator.h"
 #include "spi.h"
 #include "stm32f4xx_hal.h"
@@ -496,9 +497,17 @@ void primary_lv_feedback_gpio_send(void) {
 
 void primary_inverter_connection_status_send(void) {
   primary_lv_inverter_connection_status_converted_t converted;
-  extern uint8_t inverter_state;
+  extern uint8_t gpiob_register_value;
+  converted.status =
+      mcp23017_get_register_bit(gpiob_register_value, mcp_controls_bank_b_rfe);
 
-  converted.status = inverter_state;
+  if (mcp23017_get_register_bit(gpiob_register_value,
+                                mcp_controls_bank_b_rfe) !=
+      mcp23017_get_register_bit(gpiob_register_value,
+                                mcp_controls_bank_b_frg)) {
+    converted.status = 0;
+  }
+
   CANLIB_PACK_MSG(primary, PRIMARY, lv_inverter_connection_status,
                   LV_INVERTER_CONNECTION_STATUS);
 
