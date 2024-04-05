@@ -27,7 +27,7 @@
   ntw##_##msg_name##_pack(msg.data, &raw, PRIMARY_##MSG_NAME##_BYTE_SIZE);
 
 #define FEEDBACK_SET_STATE(feedback)                                           \
-  converted.feedback = mux_fb_mV[mux_fb_##feedback##_fb_idx];
+  converted.feedback = mux_fb_mV[mux_fb_##feedback##_fb_idx] / 1000.0;
 
 void can_init_errors_handler(int can_mgr_error_code);
 

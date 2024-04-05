@@ -430,8 +430,8 @@ void primary_lv_feedback_sd_send(void) {
 
   FEEDBACK_SET_STATE(interlock);
   FEEDBACK_SET_STATE(lvms);
-  converted.sd_end = mux_fb_mV[mux_fb_sd_end_idx];
-  converted.sd_start = mux_fb_mV[mux_fb_sd_start_idx];
+  converted.sd_end = mux_fb_mV[mux_fb_sd_end_idx] / 1000.0;
+  converted.sd_start = mux_fb_mV[mux_fb_sd_start_idx] / 1000.0;
 
   CANLIB_PACK_MSG(primary, PRIMARY, lv_feedback_sd_voltage,
                   LV_FEEDBACK_SD_VOLTAGE);
