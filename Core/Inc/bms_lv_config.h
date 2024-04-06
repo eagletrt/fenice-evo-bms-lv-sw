@@ -16,9 +16,9 @@
 #define CELL_COUNT 6
 // Number of ntc sensors present in the bms lv
 #define TEMP_SENSOR_COUNT 12
-#define MAX_CELL_VOLTAGE_V 4.2f
-#define MIN_CELL_VOLTAGE_V 3.3f
-#define MIN_BATTERY_VOLTAGE_mV 3300.0 * 6.0f
+#define MAX_CELL_VOLTAGE_V (4.2f)
+#define MIN_CELL_VOLTAGE_V (2.8f)
+#define MIN_BATTERY_VOLTAGE_mV ((MIN_CELL_VOLTAGE_V * 1000.0f) * 6.0f)
 #define MAX_CELL_TEMP 60.0f
 #define MIN_CELL_TEMP 0.0f
 

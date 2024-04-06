@@ -6,7 +6,7 @@
 #include <stdint.h>
 
 float pump_duty_cycle;
-bool pump_status;
+primary_lv_pumps_speed_status pump_status;
 
 void dac_pump_init() {
   pump_duty_cycle = 0.0;

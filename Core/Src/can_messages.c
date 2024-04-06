@@ -179,13 +179,11 @@ int primary_set_pumps_speed_handler(can_mgr_msg_t *msg) {
                                     PRIMARY_LV_SET_PUMPS_SPEED_BYTE_SIZE);
   primary_lv_set_pumps_speed_raw_to_conversion_struct(&pumps_converted,
                                                       &pumps_raw);
-  pumps_converted.pumps_speed = round(pumps_converted.pumps_speed * 10) / 10;
+  pumps_converted.pumps_speed =
+      (float)((float)((int)(pumps_converted.pumps_speed * 10.0f)) / 10.0f);
 
-  if (pumps_converted.status == primary_lv_set_pumps_speed_status_auto) {
-    dac_pump_set_status(primary_lv_pumps_speed_status_auto);
-  } else if (pumps_converted.status ==
-             primary_lv_set_pumps_speed_status_manual) {
-    dac_pump_set_status(primary_lv_pumps_speed_status_manual);
+  dac_pump_set_status(pumps_converted.status);
+  if (pumps_converted.status == primary_lv_set_pumps_speed_status_manual) {
     dac_pump_set_duty_cycle(pumps_converted.pumps_speed);
   }
 

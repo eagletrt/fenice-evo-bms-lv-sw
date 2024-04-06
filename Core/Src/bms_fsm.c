@@ -278,7 +278,8 @@ state_t do_run(state_data_t *data) {
   bms_lv_routine();
 
   // until car_status == run
-  if (ecu_status.status == primary_ecu_status_status_disable_inv_drive) {
+  if (ecu_status.status != primary_ecu_status_status_drive &&
+      ecu_status.status != primary_ecu_status_status_enable_inv_drive) {
     next_state = STATE_IDLE;
   } else if (error_get_fatal()) {
     next_state = STATE_ERROR;
@@ -322,27 +323,34 @@ void init_to_idle(state_data_t *data) { /* Your Code Here */
 // 2. from idle to error
 // 3. from run to error
 // 4. from flashing to error
-void to_error(state_data_t *data) { /* Your Code Here */ set_led(0, 0, 0); }
+void to_error(state_data_t *data) { /* Your Code Here */
+  set_led(0, 0, 0);
+}
 
 // This function is called in 1 transition:
 // 1. from idle to tson
-void idle_to_tson(state_data_t *data) { /* Your Code Here */ set_discharge(1); }
+void idle_to_tson(state_data_t *data) { /* Your Code Here */
+  set_discharge(1);
+}
 
 // This function is called in 1 transition:
 // 1. from idle to flashing
-void idle_to_flashing(state_data_t *data) { /* Your Code Here */ }
+void idle_to_flashing(state_data_t *data) { /* Your Code Here */
+}
 
 // This function is called in 1 transition:
 // 1. from tson to idle
-void tson_to_idle(state_data_t *data) { /* Your Code Here */ set_discharge(0); }
+void tson_to_idle(state_data_t *data) { /* Your Code Here */
+  set_discharge(0);
+}
 
 // This function is called in 1 transition:
 // 1. from tson to run
 void tson_to_run(state_data_t *data) { /* Your Code Here */
   set_discharge(1);
   set_rfe_frg(1);
-  radiator_set_status(primary_lv_radiator_speed_status_auto);
-  dac_pump_set_status(primary_lv_pumps_speed_status_auto);
+  // radiator_set_status(primary_lv_radiator_speed_status_auto);
+  // dac_pump_set_status(primary_lv_pumps_speed_status_auto);
 }
 
 // This function is called in 1 transition:
