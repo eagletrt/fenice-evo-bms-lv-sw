@@ -1,32 +1,5 @@
 # Documentation
 
-## TO-DO
-
-- [ ] scs signals
-- [ ] timers
-- [ ] errors
-- [ ] cli
-- [ ] document the calculation for the conversion and the vref
-- [ ] ADC send values to can
-
-## Notes
-
-### Can manager
-
-- copy default_can_manager_config.h to can_manager_config.h
-- aggiungere CAN_MGR_STM32_APPLICATION se serve
-
-### Timer
-
-- slave mode
-- differenze tra internal clock division e clock prescaler.
-- output compare vs periodic elapsed callback*
-
-### Errors
-
-- setti errore e finche' hai un errore.
-- te vuoi far scattare l'interrupt esattamente quando l'errore scade
-
 ### FSG2024 Rules
 
 This are all the rules related do the LV system:
