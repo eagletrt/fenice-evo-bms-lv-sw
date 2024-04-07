@@ -9,8 +9,8 @@
 
 #define max(a, b) (a > b) ? a : b
 
-#define MIN_CHARGER_CURRENT_THRESHOLD_mA 2000.0f
-#define MIN_BATTERY_CURRENT_THRESHOLD_mA 50.0f
+#define MIN_CHARGER_CURRENT_THRESHOLD_mA (2000.0f)
+#define MIN_BATTERY_CURRENT_THRESHOLD_mA (50.0f)
 
 // Number of cells present in the bms lv, the cell configuration is 6s4p
 #define CELL_COUNT 6
@@ -19,11 +19,11 @@
 #define MAX_CELL_VOLTAGE_V (4.2f)
 #define MIN_CELL_VOLTAGE_V (2.8f)
 #define MIN_BATTERY_VOLTAGE_mV ((MIN_CELL_VOLTAGE_V * 1000.0f) * 6.0f)
-#define MAX_CELL_TEMP 60.0f
-#define MIN_CELL_TEMP 0.0f
+#define MAX_CELL_TEMP (60.0f)
+#define MIN_CELL_TEMP (0.0f)
 
 // Max current output allowed
-#define MAX_CURRENT_mA 30000.0f
+#define MAX_CURRENT_mA (18000.0f)
 // Min difference threshold between V Relay and V Battery
 #define MIN_RELAY_VOLTAGE_DIFF_THRESHOLD_mV                                    \
   2000.0f // diff v relay (that could be the charger one and bat out)
@@ -34,7 +34,7 @@
 // adc voltage divider value
 #define ADC_VOLTAGE_DIVIDER_MULTIPLIER 9.0f
 // Threshold to check if an adc feedbacks is either logic high or logic low
-#define HIGH_LEVEL_THRESHOLD 1000.f * ADC_VOLTAGE_DIVIDER_MULTIPLIER
+#define HIGH_LEVEL_THRESHOLD (1000.f) * ADC_VOLTAGE_DIVIDER_MULTIPLIER
 
 #define FLOAT_UNINITIALIZED_VALUE -1.0f
 #define MCP23017_INTERRUPTS_ENABLED 1

@@ -8,6 +8,7 @@
 #include "radiator.h"
 #include "spi.h"
 #include "stm32f4xx_hal.h"
+#include <assert.h>
 #include <math.h>
 #include <string.h>
 
@@ -15,18 +16,15 @@ extern int bms_lv_primary_can_id;
 extern can_mgr_msg_t can_messages_states[N_MONITORED_MESSAGES];
 extern uint8_t can_messages_is_new[N_MONITORED_MESSAGES];
 static float inv_temps[2] = {0};
-primary_hv_status_converted_t ts_status_converted;
+primary_hv_status_converted_t hv_status;
 primary_ecu_status_converted_t ecu_status;
-// primary_set_inverter_connection_status_converted_t set_inv_connection_status
-// = {
-//     0};
 
-int primary_set_inverter_connection_status_handler(can_mgr_msg_t *msg);
-int primary_set_radiator_speed_handler(can_mgr_msg_t *msg);
-int primary_set_pumps_speed_handler(can_mgr_msg_t *msg);
-int primary_ts_status_handler(can_mgr_msg_t *msg);
-int inverters_l_handler(can_mgr_msg_t *msg);
-int inverters_r_handler(can_mgr_msg_t *msg);
+int primary_lv_set_inverter_connection_status_handler(can_mgr_msg_t *msg);
+int primary_lv_set_radiator_speed_handler(can_mgr_msg_t *msg);
+int primary_lv_set_pumps_speed_handler(can_mgr_msg_t *msg);
+int primary_hv_status_handler(can_mgr_msg_t *msg);
+int inverters_inv_l_rcv_handler(can_mgr_msg_t *msg);
+int inverters_inv_r_rcv_handler(can_mgr_msg_t *msg);
 int primary_flash_request_handler(can_mgr_msg_t *msg);
 int primary_ecu_status_handler(can_mgr_msg_t *msg);
 
@@ -70,10 +68,11 @@ int can_mgr_from_id_to_index(int can_id, int msg_id) {
   case INVERTERS_INV_R_RCV_FRAME_ID:
     return 5;
   case PRIMARY_LV_CAN_FLASH_REQ_STEERING_WHEEL_FRAME_ID:
-  case PRIMARY_LV_CAN_FLASH_REQ_TLM_FRAME_ID:
     return 6;
-  case PRIMARY_ECU_STATUS_FRAME_ID:
+  case PRIMARY_LV_CAN_FLASH_REQ_TLM_FRAME_ID:
     return 7;
+  case PRIMARY_ECU_STATUS_FRAME_ID:
+    return 8;
   default:
     return -1;
   }
@@ -141,7 +140,7 @@ int can_routine(void) {
   return 0;
 }
 
-int primary_set_inverter_connection_status_handler(can_mgr_msg_t *msg) {
+int primary_lv_set_inverter_connection_status_handler(can_mgr_msg_t *msg) {
   // primary_set_inverter_connection_status_t set_inv_connection_raw;
   // primary_set_inverter_connection_status_unpack(
   //     &set_inv_connection_raw, msg->data,
@@ -151,7 +150,7 @@ int primary_set_inverter_connection_status_handler(can_mgr_msg_t *msg) {
   return 0;
 }
 
-int primary_set_radiator_speed_handler(can_mgr_msg_t *msg) {
+int primary_lv_set_radiator_speed_handler(can_mgr_msg_t *msg) {
   primary_lv_set_radiator_speed_t radiator_raw;
   primary_lv_set_radiator_speed_converted_t radiator_converted;
   primary_lv_set_radiator_speed_unpack(&radiator_raw, msg->data,
@@ -172,7 +171,7 @@ int primary_set_radiator_speed_handler(can_mgr_msg_t *msg) {
   return 0;
 }
 
-int primary_set_pumps_speed_handler(can_mgr_msg_t *msg) {
+int primary_lv_set_pumps_speed_handler(can_mgr_msg_t *msg) {
   primary_lv_set_pumps_speed_t pumps_raw;
   primary_lv_set_pumps_speed_converted_t pumps_converted;
   primary_lv_set_pumps_speed_unpack(&pumps_raw, msg->data,
@@ -190,16 +189,15 @@ int primary_set_pumps_speed_handler(can_mgr_msg_t *msg) {
   return 0;
 }
 
-int primary_ts_status_handler(can_mgr_msg_t *msg) {
+int primary_hv_status_handler(can_mgr_msg_t *msg) {
   primary_hv_status_t ts_status_raw;
   primary_hv_status_unpack(&ts_status_raw, msg->data,
                            PRIMARY_HV_STATUS_BYTE_SIZE);
-  primary_hv_status_raw_to_conversion_struct(&ts_status_converted,
-                                             &ts_status_raw);
+  primary_hv_status_raw_to_conversion_struct(&hv_status, &ts_status_raw);
   return 0;
 }
 
-int inverters_l_handler(can_mgr_msg_t *msg) {
+int inverters_inv_l_rcv_handler(can_mgr_msg_t *msg) {
   inverters_inv_l_rcv_t inv_raw;
   inverters_inv_l_rcv_converted_t inv_converted;
   inverters_inv_l_rcv_unpack(&inv_raw, msg->data,
@@ -222,7 +220,7 @@ int inverters_l_handler(can_mgr_msg_t *msg) {
   return 0;
 }
 
-int inverters_r_handler(can_mgr_msg_t *msg) {
+int inverters_inv_r_rcv_handler(can_mgr_msg_t *msg) {
   inverters_inv_r_rcv_t inv_raw;
   inverters_inv_r_rcv_converted_t inv_converted;
   inverters_inv_r_rcv_unpack(&inv_raw, msg->data,

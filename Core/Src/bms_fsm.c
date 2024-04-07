@@ -42,6 +42,7 @@ int set_discharge(int state);
 int set_rfe_frg(int state);
 void set_relay(uint8_t status);
 int set_led(int led1, int led2, int led3);
+void set_time_set(uint8_t status);
 void radiator_init();
 void dac_pump_init();
 void dac_pump_set_status(primary_lv_pumps_speed_status mode);
@@ -59,6 +60,7 @@ void bms_lv_routine(void) {
 uint8_t inverter_state = 0;
 bool flash_requested;
 extern primary_ecu_status_converted_t ecu_status;
+extern primary_hv_status_converted_t hv_status;
 
 // SEARCH FOR Your Code Here FOR CODE INSERTION POINTS!
 
@@ -156,7 +158,7 @@ state_t do_idle(state_data_t *data) {
   /* Your Code Here */
   bms_lv_routine();
 
-  if (ecu_status.status == primary_ecu_status_status_start_ts_precharge) {
+  if (hv_status.status == primary_hv_status_status_airn_close) {
     next_state = STATE_TSON;
   } else if (error_get_fatal()) {
     next_state = STATE_ERROR;
@@ -183,7 +185,7 @@ state_t do_error(state_data_t *data) {
 
   // cooling OFF
   // discharge ON
-  set_discharge(1);
+  set_discharge(0);
   // rfe/frg OFF
   set_rfe_frg(0);
   primary_lv_errors_send();
@@ -219,7 +221,10 @@ state_t do_tson(state_data_t *data) {
   // car_status -> drive -> run
   if (ecu_status.status == primary_ecu_status_status_enable_inv_drive) {
     next_state = STATE_RUN;
-  } else if (ecu_status.status == primary_ecu_status_status_idle) {
+  } else if (hv_status.status != primary_hv_status_status_airn_close &&
+             hv_status.status != primary_hv_status_status_precharge &&
+             hv_status.status != primary_hv_status_status_airp_close &&
+             hv_status.status != primary_hv_status_status_ts_on) {
     next_state = STATE_IDLE;
   } else if (error_get_fatal()) {
     next_state = STATE_ERROR;
@@ -278,8 +283,9 @@ state_t do_run(state_data_t *data) {
   bms_lv_routine();
 
   // until car_status == run
-  if (ecu_status.status != primary_ecu_status_status_drive &&
-      ecu_status.status != primary_ecu_status_status_enable_inv_drive) {
+  if (!(ecu_status.status == primary_ecu_status_status_drive ||
+        ecu_status.status == primary_ecu_status_status_enable_inv_drive) ||
+      hv_status.status != primary_hv_status_status_ts_on) {
     next_state = STATE_IDLE;
   } else if (error_get_fatal()) {
     next_state = STATE_ERROR;

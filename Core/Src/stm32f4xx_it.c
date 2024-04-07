@@ -90,7 +90,9 @@ void NMI_Handler(void) {
  */
 void HardFault_Handler(void) {
   /* USER CODE BEGIN HardFault_IRQn 0 */
-
+  set_discharge(0);
+  set_rfe_frg(0);
+  set_relay(0);
   /* USER CODE END HardFault_IRQn 0 */
   while (1) {
     /* USER CODE BEGIN W1_HardFault_IRQn 0 */
