@@ -121,7 +121,7 @@ PREFIX = arm-none-eabi-
 POSTFIX = "
 # The gcc compiler bin path can be either defined in make command via GCC_PATH variable (> make GCC_PATH=xxx)
 # either it can be added to the PATH environment variable.
-GCC_PATH="/home/gmazzucchi/.config/Code/User/globalStorage/bmd.stm32-for-vscode/@xpack-dev-tools/arm-none-eabi-gcc/13.2.1-1.1.1/.content/bin
+GCC_PATH="/Users/dimitri/Library/Application Support/Code/User/globalStorage/bmd.stm32-for-vscode/@xpack-dev-tools/arm-none-eabi-gcc/11.3.1-1.1.2/.content/bin
 ifdef GCC_PATH
 CXX = $(GCC_PATH)/$(PREFIX)g++$(POSTFIX)
 CC = $(GCC_PATH)/$(PREFIX)gcc$(POSTFIX)
@@ -189,12 +189,39 @@ C_INCLUDES =  \
 -ICore/Lib/can/proto/secondary \
 -ICore/Lib/can/proto/simulator \
 -ICore/Lib/invlib \
+-ICore/Lib/invlib/can/lib/bms \
+-ICore/Lib/invlib/can/lib/inverters \
+-ICore/Lib/invlib/can/lib/ivts \
+-ICore/Lib/invlib/can/lib/primary \
+-ICore/Lib/invlib/can/lib/secondary \
+-ICore/Lib/invlib/can/lib/simulator \
+-ICore/Lib/invlib/can/proto/bms \
+-ICore/Lib/invlib/can/proto/inverters \
+-ICore/Lib/invlib/can/proto/ivts \
+-ICore/Lib/invlib/can/proto/primary \
+-ICore/Lib/invlib/can/proto/secondary \
+-ICore/Lib/invlib/can/proto/simulator \
 -ICore/Lib/micro-libs/CMock/examples/make_example/src \
 -ICore/Lib/micro-libs/CMock/examples/temp_sensor/src \
 -ICore/Lib/micro-libs/CMock/src \
 -ICore/Lib/micro-libs/CMock/test/iar/iar_v4/incIAR \
 -ICore/Lib/micro-libs/CMock/test/iar/iar_v5/incIAR \
 -ICore/Lib/micro-libs/CMock/test/system/test_compilation \
+-ICore/Lib/micro-libs/CMock/vendor/c_exception/lib \
+-ICore/Lib/micro-libs/CMock/vendor/c_exception/test/support \
+-ICore/Lib/micro-libs/CMock/vendor/unity/examples \
+-ICore/Lib/micro-libs/CMock/vendor/unity/examples/example_1/src \
+-ICore/Lib/micro-libs/CMock/vendor/unity/examples/example_2/src \
+-ICore/Lib/micro-libs/CMock/vendor/unity/examples/example_3/helper \
+-ICore/Lib/micro-libs/CMock/vendor/unity/examples/example_3/src \
+-ICore/Lib/micro-libs/CMock/vendor/unity/examples/example_4/src \
+-ICore/Lib/micro-libs/CMock/vendor/unity/extras/fixture/src \
+-ICore/Lib/micro-libs/CMock/vendor/unity/extras/memory/src \
+-ICore/Lib/micro-libs/CMock/vendor/unity/extras/memory/test \
+-ICore/Lib/micro-libs/CMock/vendor/unity/src \
+-ICore/Lib/micro-libs/CMock/vendor/unity/test/expectdata \
+-ICore/Lib/micro-libs/CMock/vendor/unity/test/testdata \
+-ICore/Lib/micro-libs/CMock/vendor/unity/test/tests \
 -ICore/Lib/micro-libs/Unity/examples \
 -ICore/Lib/micro-libs/Unity/examples/example_1/src \
 -ICore/Lib/micro-libs/Unity/examples/example_2/src \
@@ -223,6 +250,7 @@ C_INCLUDES =  \
 -ICore/Lib/micro-libs/m95256 \
 -ICore/Lib/micro-libs/mcp23017/inc \
 -ICore/Lib/micro-libs/min-heap/inc \
+-ICore/Lib/micro-libs/munit \
 -ICore/Lib/micro-libs/pid \
 -ICore/Lib/micro-libs/priority-queue \
 -ICore/Lib/micro-libs/priority-queue/test \
@@ -328,13 +356,13 @@ $(BUILD_DIR):
 # flash
 #######################################
 flash: $(BUILD_DIR)/$(TARGET).elf
-	"/home/gmazzucchi/.config/Code/User/globalStorage/bmd.stm32-for-vscode/@xpack-dev-tools/openocd/0.12.0-2.1/.content/bin/openocd" -f ./openocd.cfg -c "program $(BUILD_DIR)/$(TARGET).elf verify reset exit"
+	"/Users/dimitri/Library/Application Support/Code/User/globalStorage/bmd.stm32-for-vscode/@xpack-dev-tools/openocd/0.11.0-5.1/.content/bin/openocd" -f ./openocd.cfg -c "program $(BUILD_DIR)/$(TARGET).elf verify reset exit"
 
 #######################################
 # erase
 #######################################
 erase: $(BUILD_DIR)/$(TARGET).elf
-	"/home/gmazzucchi/.config/Code/User/globalStorage/bmd.stm32-for-vscode/@xpack-dev-tools/openocd/0.12.0-2.1/.content/bin/openocd" -f ./openocd.cfg -c "init; reset halt; stm32f4x mass_erase 0; exit"
+	"/Users/dimitri/Library/Application Support/Code/User/globalStorage/bmd.stm32-for-vscode/@xpack-dev-tools/openocd/0.11.0-5.1/.content/bin/openocd" -f ./openocd.cfg -c "init; reset halt; stm32f4x mass_erase 0; exit"
 
 #######################################
 # clean up
