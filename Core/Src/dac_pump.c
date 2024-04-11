@@ -47,21 +47,21 @@ void dac_pump_auto_mode(float temp) {
   float duty_cycle = 0.0;
 
   switch (temp_rounded) {
-  case INT8_MIN ... 30:
+  case INT8_MIN ... 39:
     duty_cycle = 0.0;
     break;
-  case 31 ... 45:
+  case 40 ... 54:
+    /* code */
+    duty_cycle = 0.2;
+    break;
+
+  case 55 ... 69:
     /* code */
     duty_cycle = 0.5;
     break;
 
-  case 46 ... 60:
-    /* code */
-    duty_cycle = 0.75;
-    break;
-
-  case 61 ... INT8_MAX:
-    duty_cycle = 1.0;
+  case 70 ... INT8_MAX:
+    duty_cycle = 1;
     break;
 
   default:

@@ -47,6 +47,8 @@ void radiator_init();
 void dac_pump_init();
 void dac_pump_set_status(primary_lv_pumps_speed_status mode);
 void radiator_set_status(primary_lv_radiator_speed_status status);
+primary_lv_pumps_speed_status dac_pump_get_status();
+primary_lv_radiator_speed_status radiator_get_status();
 
 void bms_lv_routine(void) {
   error_routine();
@@ -355,8 +357,13 @@ void tson_to_idle(state_data_t *data) { /* Your Code Here */
 void tson_to_run(state_data_t *data) { /* Your Code Here */
   set_discharge(1);
   set_rfe_frg(1);
-  // radiator_set_status(primary_lv_radiator_speed_status_auto);
-  // dac_pump_set_status(primary_lv_pumps_speed_status_auto);
+  if (radiator_get_status() == primary_lv_radiator_speed_status_off) {
+    radiator_set_status(primary_lv_radiator_speed_status_auto);
+  }
+
+  if (dac_pump_get_status() == primary_lv_pumps_speed_status_off) {
+    dac_pump_set_status(primary_lv_pumps_speed_status_auto);
+  }
 }
 
 // This function is called in 1 transition:

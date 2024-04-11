@@ -42,20 +42,20 @@ void radiator_auto_mode(float temp) {
   int8_t temp_rounded = (int8_t)round(temp);
   float duty_cycle = 1.0;
   switch (temp_rounded) {
-  case INT8_MIN ... 30:
+  case INT8_MIN ... 49:
     duty_cycle = 0.0;
     break;
-  case 31 ... 45:
+  case 50 ... 64:
     /* code */
-    duty_cycle = 0.25;
+    duty_cycle = 0.2;
     break;
 
-  case 46 ... 60:
+  case 65 ... 74:
     /* code */
-    duty_cycle = 0.75;
+    duty_cycle = 0.5;
     break;
 
-  case 61 ... INT8_MAX:
+  case 75 ... INT8_MAX:
     duty_cycle = 1.0;
     break;
 
