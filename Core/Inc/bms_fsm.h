@@ -24,16 +24,7 @@ typedef void state_data_t;
 // NOTHING SHALL BE CHANGED AFTER THIS LINE!
 
 // List of states
-typedef enum {
-  STATE_INIT = 0,
-  STATE_IDLE,
-  STATE_ERROR,
-  STATE_TSON,
-  STATE_FLASHING,
-  STATE_RUN,
-  NUM_STATES,
-  NO_CHANGE
-} state_t;
+typedef enum { STATE_INIT = 0, STATE_IDLE, STATE_ERROR, STATE_TSON, STATE_FLASHING, STATE_RUN, NUM_STATES, NO_CHANGE } state_t;
 
 // State human-readable names
 extern const char *state_names[];

@@ -30,23 +30,22 @@
  * @param instance The instance of the error
  * @param The current time (in ms)
  */
-#define ERROR_TOGGLE_IF(condition, group, instance, timestamp)                 \
-  ((condition) ? error_set(group, instance, timestamp)                         \
-               : error_reset(group, instance))
+#define ERROR_TOGGLE_IF(condition, group, instance, timestamp) \
+    ((condition) ? error_set(group, instance, timestamp) : error_reset(group, instance))
 
 /** @brief Type of the error that categorize a group of instances */
 typedef enum {
-  CELL_UNDERVOLTAGE,
-  CELL_OVERVOLTAGE,
-  OPEN_WIRE,
-  CAN,
-  SPI,
-  OVER_CURRENT,
-  CELL_UNDER_TEMPERATURE,
-  CELL_OVER_TEMPERATURE,
-  MCP23017,
-  HEALTH,
-  ERROR_COUNT
+    CELL_UNDERVOLTAGE,
+    CELL_OVERVOLTAGE,
+    OPEN_WIRE,
+    CAN,
+    SPI,
+    OVER_CURRENT,
+    CELL_UNDER_TEMPERATURE,
+    CELL_OVER_TEMPERATURE,
+    MCP23017,
+    HEALTH,
+    ERROR_COUNT
 } ErrorGroup;
 
 // Single error instance type definition
@@ -61,10 +60,10 @@ typedef uint16_t ErrorInstance;
  * @param is_expired True if the error has expired, false otherwise
  */
 typedef struct {
-  ErrorGroup group;
-  uint32_t timestamp;
-  bool is_running;
-  bool is_expired;
+    ErrorGroup group;
+    uint32_t timestamp;
+    bool is_running;
+    bool is_expired;
 } Error;
 
 /**
@@ -198,4 +197,4 @@ void error_update_timer_callback(uint32_t timestamp, uint16_t timeout);
  */
 void error_stop_timer_callback(void);
 
-#endif // LV_ERRORS_H
+#endif  // LV_ERRORS_H

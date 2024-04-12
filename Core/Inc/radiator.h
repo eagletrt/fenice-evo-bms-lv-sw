@@ -2,6 +2,7 @@
 #define RADIATOR_H
 
 #include "primary_network.h"
+
 #include <stdbool.h>
 
 void radiator_init();
@@ -12,4 +13,4 @@ primary_lv_radiator_speed_status radiator_get_status();
 bool radiator_is_auto();
 void radiator_auto_mode(float temp);
 
-#endif // RADIATOR_H
+#endif  // RADIATOR_H

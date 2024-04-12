@@ -13,10 +13,12 @@ The finite state machine has:
 ******************************************************************************/
 
 #include "bms_fsm.h"
+
 #include "bms_lv_config.h"
 #include "can_messages.h"
 #include "primary_network.h"
 #include "stm32f4xx_hal.h"
+
 #include <stdint.h>
 
 void lv_error_init(void);
@@ -51,14 +53,14 @@ primary_lv_pumps_speed_status dac_pump_get_status();
 primary_lv_radiator_speed_status radiator_get_status();
 
 void bms_lv_routine(bool checks_enabled) {
-  error_routine();
-  adc_routine();
-  can_routine();
-  gpio_extender_routine();
-  monitor_routine();
-  if (checks_enabled) {
-    all_measurements_check();
-  }
+    error_routine();
+    adc_routine();
+    can_routine();
+    gpio_extender_routine();
+    monitor_routine();
+    if (checks_enabled) {
+        all_measurements_check();
+    }
 }
 
 uint8_t inverter_state = 0;
@@ -70,17 +72,16 @@ extern primary_hv_status_converted_t hv_status;
 
 // GLOBALS
 // State human-readable names
-const char *state_names[] = {"init", "idle",     "error",
-                             "tson", "flashing", "run"};
+const char *state_names[] = {"init", "idle", "error", "tson", "flashing", "run"};
 
 // List of state functions
 state_func_t *const state_table[NUM_STATES] = {
-    do_init,     // in state init
-    do_idle,     // in state idle
-    do_error,    // in state error
-    do_tson,     // in state tson
-    do_flashing, // in state flashing
-    do_run,      // in state run
+    do_init,      // in state init
+    do_idle,      // in state idle
+    do_error,     // in state error
+    do_tson,      // in state tson
+    do_flashing,  // in state flashing
+    do_run,       // in state run
 };
 
 // Table of transition functions
@@ -111,206 +112,203 @@ transition_func_t *const transition_table[NUM_STATES][NUM_STATES] = {
 // Function to be executed in state init
 // valid return states: STATE_IDLE, STATE_ERROR
 state_t do_init(state_data_t *data) {
-  state_t next_state = STATE_IDLE;
+    state_t next_state = STATE_IDLE;
 
-  /* Your Code Here */
+    /* Your Code Here */
 
-  // cooling OFF
-  radiator_init();
-  dac_pump_init();
-  // discharge ON
-  set_discharge(0);
-  // rfe/frg OFF
-  set_rfe_frg(0);
+    // cooling OFF
+    radiator_init();
+    dac_pump_init();
+    // discharge ON
+    set_discharge(0);
+    // rfe/frg OFF
+    set_rfe_frg(0);
 
-  // check error codes
-  lv_error_init();
-  adc_routine_start();
-  adc_vrefint_calibration();
-  monitor_init();
-  gpio_extender_init();
-  can_start();
+    // check error codes
+    lv_error_init();
+    adc_routine_start();
+    adc_vrefint_calibration();
+    monitor_init();
+    gpio_extender_init();
+    can_start();
 
-  monitor_routine();
-  error_routine();
+    monitor_routine();
+    error_routine();
 
-  uint32_t prevtime = HAL_GetTick();
-  while ((HAL_GetTick() - prevtime) < 50) {
-    bms_lv_routine(false);
-  }
+    uint32_t prevtime = HAL_GetTick();
+    while ((HAL_GetTick() - prevtime) < 50) {
+        bms_lv_routine(false);
+    }
 
-  if (error_get_fatal() || !check_total_voltage()) {
-    next_state = STATE_ERROR;
-  }
+    if (error_get_fatal() || !check_total_voltage()) {
+        next_state = STATE_ERROR;
+    }
 
-  switch (next_state) {
-  case STATE_IDLE:
-  case STATE_ERROR:
-    break;
-  default:
-    next_state = NO_CHANGE;
-  }
+    switch (next_state) {
+        case STATE_IDLE:
+        case STATE_ERROR:
+            break;
+        default:
+            next_state = NO_CHANGE;
+    }
 
-  return next_state;
+    return next_state;
 }
 
 // Function to be executed in state idle
 // valid return states: NO_CHANGE, STATE_IDLE, STATE_TSON, STATE_FLASHING,
 // STATE_ERROR
 state_t do_idle(state_data_t *data) {
-  state_t next_state = NO_CHANGE;
+    state_t next_state = NO_CHANGE;
 
-  // cooling no change
-  // discharge ON
-  // rfe/frg OFF
+    // cooling no change
+    // discharge ON
+    // rfe/frg OFF
 
-  /* Your Code Here */
-  bms_lv_routine(true);
+    /* Your Code Here */
+    bms_lv_routine(true);
 
-  if (hv_status.status == primary_hv_status_status_airn_close) {
-    next_state = STATE_TSON;
-  } else if (error_get_fatal()) {
-    next_state = STATE_ERROR;
-  }
+    if (hv_status.status == primary_hv_status_status_airn_close) {
+        next_state = STATE_TSON;
+    } else if (error_get_fatal()) {
+        next_state = STATE_ERROR;
+    }
 
-  switch (next_state) {
-  case NO_CHANGE:
-  case STATE_IDLE:
-  case STATE_TSON:
-  case STATE_FLASHING:
-  case STATE_ERROR:
-    break;
-  default:
-    next_state = NO_CHANGE;
-  }
+    switch (next_state) {
+        case NO_CHANGE:
+        case STATE_IDLE:
+        case STATE_TSON:
+        case STATE_FLASHING:
+        case STATE_ERROR:
+            break;
+        default:
+            next_state = NO_CHANGE;
+    }
 
-  return next_state;
+    return next_state;
 }
 
 // Function to be executed in state error
 // valid return states: NO_CHANGE
 state_t do_error(state_data_t *data) {
-  state_t next_state = NO_CHANGE;
+    state_t next_state = NO_CHANGE;
 
-  // cooling OFF
-  // discharge ON
-  set_discharge(0);
-  // rfe/frg OFF
-  set_rfe_frg(0);
-  primary_lv_errors_send();
-  HAL_Delay(1000);
-  /* Your Code Here */
-  // TODO: error code check, [send it via can/write to flash], shutdown
-  set_relay(0);
+    // cooling OFF
+    // discharge ON
+    set_discharge(0);
+    // rfe/frg OFF
+    set_rfe_frg(0);
+    primary_lv_errors_send();
+    HAL_Delay(1000);
+    /* Your Code Here */
+    // TODO: error code check, [send it via can/write to flash], shutdown
+    set_relay(0);
 
-  switch (next_state) {
-  case NO_CHANGE:
-    break;
-  default:
-    next_state = NO_CHANGE;
-  }
+    switch (next_state) {
+        case NO_CHANGE:
+            break;
+        default:
+            next_state = NO_CHANGE;
+    }
 
-  return next_state;
+    return next_state;
 }
 
 // Function to be executed in state tson
 // valid return states: NO_CHANGE, STATE_IDLE, STATE_TSON, STATE_RUN
 state_t do_tson(state_data_t *data) {
-  state_t next_state = NO_CHANGE;
+    state_t next_state = NO_CHANGE;
 
-  // cooling no change
-  // set discharge OFF
-  // set rfe/frg OFF
-  // until car_status == {...}
+    // cooling no change
+    // set discharge OFF
+    // set rfe/frg OFF
+    // until car_status == {...}
 
-  /* Your Code Here */
-  bms_lv_routine(true);
+    /* Your Code Here */
+    bms_lv_routine(true);
 
-  // until car_status == {...}
-  // car_status -> drive -> run
-  if (ecu_status.status == primary_ecu_status_status_enable_inv_drive) {
-    next_state = STATE_RUN;
-  } else if (hv_status.status != primary_hv_status_status_airn_close &&
-             hv_status.status != primary_hv_status_status_precharge &&
-             hv_status.status != primary_hv_status_status_airp_close &&
-             hv_status.status != primary_hv_status_status_ts_on) {
-    next_state = STATE_IDLE;
-  } else if (error_get_fatal()) {
-    next_state = STATE_ERROR;
-  }
-  // car_status -> idle -> idle
+    // until car_status == {...}
+    // car_status -> drive -> run
+    if (ecu_status.status == primary_ecu_status_status_enable_inv_drive) {
+        next_state = STATE_RUN;
+    } else if (
+        hv_status.status != primary_hv_status_status_airn_close && hv_status.status != primary_hv_status_status_precharge &&
+        hv_status.status != primary_hv_status_status_airp_close && hv_status.status != primary_hv_status_status_ts_on) {
+        next_state = STATE_IDLE;
+    } else if (error_get_fatal()) {
+        next_state = STATE_ERROR;
+    }
+    // car_status -> idle -> idle
 
-  switch (next_state) {
-  case NO_CHANGE:
-  case STATE_IDLE:
-  case STATE_TSON:
-  case STATE_RUN:
-    break;
-  default:
-    next_state = NO_CHANGE;
-  }
+    switch (next_state) {
+        case NO_CHANGE:
+        case STATE_IDLE:
+        case STATE_TSON:
+        case STATE_RUN:
+            break;
+        default:
+            next_state = NO_CHANGE;
+    }
 
-  return next_state;
+    return next_state;
 }
 
 // Function to be executed in state flashing
 // valid return states: STATE_ERROR
 state_t do_flashing(state_data_t *data) {
-  state_t next_state = STATE_ERROR;
+    state_t next_state = STATE_ERROR;
 
-  // cooling no change
-  // set discharge ON
-  // set rfe/frg OFF
-  // SET TIME_SET ON
-  set_time_set(1);
-  HAL_Delay(
-      16); // 15.51ms has been calculeted as charge time for che condensator
-  set_time_set(0);
+    // cooling no change
+    // set discharge ON
+    // set rfe/frg OFF
+    // SET TIME_SET ON
+    set_time_set(1);
+    HAL_Delay(16);  // 15.51ms has been calculeted as charge time for che condensator
+    set_time_set(0);
 
-  /* Your Code Here */
+    /* Your Code Here */
 
-  switch (next_state) {
-  case STATE_ERROR:
-    break;
-  default:
-    next_state = NO_CHANGE;
-  }
+    switch (next_state) {
+        case STATE_ERROR:
+            break;
+        default:
+            next_state = NO_CHANGE;
+    }
 
-  return next_state;
+    return next_state;
 }
 
 // Function to be executed in state run
 // valid return states: NO_CHANGE, STATE_IDLE, STATE_RUN, STATE_ERROR
 state_t do_run(state_data_t *data) {
-  state_t next_state = NO_CHANGE;
+    state_t next_state = NO_CHANGE;
 
-  // activate automatic cooling
-  // set discharge OFF
-  // set rfe/frg ON
+    // activate automatic cooling
+    // set discharge OFF
+    // set rfe/frg ON
 
-  /* Your Code Here */
-  bms_lv_routine(true);
+    /* Your Code Here */
+    bms_lv_routine(true);
 
-  // until car_status == run
-  if (!(ecu_status.status == primary_ecu_status_status_drive ||
-        ecu_status.status == primary_ecu_status_status_enable_inv_drive) ||
-      hv_status.status != primary_hv_status_status_ts_on) {
-    next_state = STATE_IDLE;
-  } else if (error_get_fatal()) {
-    next_state = STATE_ERROR;
-  }
+    // until car_status == run
+    if (!(ecu_status.status == primary_ecu_status_status_drive || ecu_status.status == primary_ecu_status_status_enable_inv_drive) ||
+        hv_status.status != primary_hv_status_status_ts_on) {
+        next_state = STATE_IDLE;
+    } else if (error_get_fatal()) {
+        next_state = STATE_ERROR;
+    }
 
-  switch (next_state) {
-  case NO_CHANGE:
-  case STATE_IDLE:
-  case STATE_RUN:
-  case STATE_ERROR:
-    break;
-  default:
-    next_state = NO_CHANGE;
-  }
+    switch (next_state) {
+        case NO_CHANGE:
+        case STATE_IDLE:
+        case STATE_RUN:
+        case STATE_ERROR:
+            break;
+        default:
+            next_state = NO_CHANGE;
+    }
 
-  return next_state;
+    return next_state;
 }
 
 /*  _____                    _ _   _
@@ -329,8 +327,8 @@ state_t do_run(state_data_t *data) {
 // This function is called in 1 transition:
 // 1. from init to idle
 void init_to_idle(state_data_t *data) { /* Your Code Here */
-  set_relay(1);
-  set_led(1, 0, 0);
+    set_relay(1);
+    set_led(1, 0, 0);
 }
 
 // This function is called in 4 transitions:
@@ -339,13 +337,13 @@ void init_to_idle(state_data_t *data) { /* Your Code Here */
 // 3. from run to error
 // 4. from flashing to error
 void to_error(state_data_t *data) { /* Your Code Here */
-  set_led(0, 0, 0);
+    set_led(0, 0, 0);
 }
 
 // This function is called in 1 transition:
 // 1. from idle to tson
 void idle_to_tson(state_data_t *data) { /* Your Code Here */
-  set_discharge(1);
+    set_discharge(1);
 }
 
 // This function is called in 1 transition:
@@ -356,28 +354,28 @@ void idle_to_flashing(state_data_t *data) { /* Your Code Here */
 // This function is called in 1 transition:
 // 1. from tson to idle
 void tson_to_idle(state_data_t *data) { /* Your Code Here */
-  set_discharge(0);
+    set_discharge(0);
 }
 
 // This function is called in 1 transition:
 // 1. from tson to run
 void tson_to_run(state_data_t *data) { /* Your Code Here */
-  set_discharge(1);
-  set_rfe_frg(1);
-  if (radiator_get_status() == primary_lv_radiator_speed_status_off) {
-    radiator_set_status(primary_lv_radiator_speed_status_auto);
-  }
+    set_discharge(1);
+    set_rfe_frg(1);
+    if (radiator_get_status() == primary_lv_radiator_speed_status_off) {
+        radiator_set_status(primary_lv_radiator_speed_status_auto);
+    }
 
-  if (dac_pump_get_status() == primary_lv_pumps_speed_status_off) {
-    dac_pump_set_status(primary_lv_pumps_speed_status_auto);
-  }
+    if (dac_pump_get_status() == primary_lv_pumps_speed_status_off) {
+        dac_pump_set_status(primary_lv_pumps_speed_status_auto);
+    }
 }
 
 // This function is called in 1 transition:
 // 1. from run to idle
 void run_to_idle(state_data_t *data) { /* Your Code Here */
-  set_discharge(0);
-  set_rfe_frg(0);
+    set_discharge(0);
+    set_rfe_frg(0);
 }
 
 /*  ____  _        _
@@ -395,24 +393,24 @@ void run_to_idle(state_data_t *data) { /* Your Code Here */
  */
 
 state_t run_state(state_t cur_state, state_data_t *data) {
-  state_t new_state = state_table[cur_state](data);
-  if (new_state == NO_CHANGE)
-    new_state = cur_state;
-  transition_func_t *transition = transition_table[cur_state][new_state];
-  if (transition)
-    transition(data);
-  return new_state;
+    state_t new_state = state_table[cur_state](data);
+    if (new_state == NO_CHANGE)
+        new_state = cur_state;
+    transition_func_t *transition = transition_table[cur_state][new_state];
+    if (transition)
+        transition(data);
+    return new_state;
 };
 
 #ifdef TEST_MAIN
 #include <unistd.h>
 int main() {
-  state_t cur_state = STATE_INIT;
-  do {
-    cur_state = run_state(cur_state, NULL);
-    sleep(1);
-  } while (cur_state != STATE_ERROR);
-  run_state(cur_state, NULL);
-  return 0;
+    state_t cur_state = STATE_INIT;
+    do {
+        cur_state = run_state(cur_state, NULL);
+        sleep(1);
+    } while (cur_state != STATE_ERROR);
+    run_state(cur_state, NULL);
+    return 0;
 }
 #endif

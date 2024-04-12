@@ -2,6 +2,7 @@
 
 #include "bms_lv_config.h"
 #include "dac.h"
+
 #include <math.h>
 #include <stdint.h>
 
@@ -9,64 +10,68 @@ float pump_duty_cycle;
 primary_lv_pumps_speed_status pump_status;
 
 void dac_pump_init() {
-  pump_duty_cycle = 0.0;
-  pump_status = primary_lv_pumps_speed_status_off;
+    pump_duty_cycle = 0.0;
+    pump_status     = primary_lv_pumps_speed_status_off;
 }
 
 void dac_pump_set_duty_cycle(float duty_cycle) {
-  float voltage = 0.0;
-  uint32_t analog_volt = 0.0;
-  if (duty_cycle != 0.0) {
-    voltage = duty_cycle * (MAX_OPAMP_OUT - MIN_OPAMP_OUT) + MIN_OPAMP_OUT;
-  }
-  analog_volt = (uint32_t)((voltage * MAX_DAC_OUT) / (MAX_OPAMP_OUT));
+    float voltage        = 0.0;
+    uint32_t analog_volt = 0.0;
+    if (duty_cycle != 0.0) {
+        voltage = duty_cycle * (MAX_OPAMP_OUT - MIN_OPAMP_OUT) + MIN_OPAMP_OUT;
+    }
+    analog_volt = (uint32_t)((voltage * MAX_DAC_OUT) / (MAX_OPAMP_OUT));
 
-  HAL_DAC_Start(&PUMP_DAC, PUMP_L_CHNL);
-  HAL_DAC_Start(&PUMP_DAC, PUMP_R_CHNL);
-  HAL_DAC_SetValue(&PUMP_DAC, PUMP_L_CHNL, DAC_ALIGN_12B_R, analog_volt);
-  HAL_DAC_SetValue(&PUMP_DAC, PUMP_L_CHNL, DAC_ALIGN_12B_R, analog_volt);
+    HAL_DAC_Start(&PUMP_DAC, PUMP_L_CHNL);
+    HAL_DAC_Start(&PUMP_DAC, PUMP_R_CHNL);
+    HAL_DAC_SetValue(&PUMP_DAC, PUMP_L_CHNL, DAC_ALIGN_12B_R, analog_volt);
+    HAL_DAC_SetValue(&PUMP_DAC, PUMP_L_CHNL, DAC_ALIGN_12B_R, analog_volt);
 
-  pump_duty_cycle = duty_cycle;
+    pump_duty_cycle = duty_cycle;
 }
 
-float dac_pump_get_duty_cycle() { return pump_duty_cycle; }
+float dac_pump_get_duty_cycle() {
+    return pump_duty_cycle;
+}
 
 void dac_pump_set_status(primary_lv_pumps_speed_status status) {
-  pump_status = status;
+    pump_status = status;
 }
 
-primary_lv_pumps_speed_status dac_pump_get_status() { return pump_status; }
+primary_lv_pumps_speed_status dac_pump_get_status() {
+    return pump_status;
+}
 
 bool dac_pump_is_auto() {
-  return pump_status == primary_lv_pumps_speed_status_auto;
+    return pump_status == primary_lv_pumps_speed_status_auto;
 }
 
 // TODO change duty cycles and temperature ranges
 void dac_pump_auto_mode(float temp) {
-  int8_t temp_rounded = (int8_t)round(temp);
-  float duty_cycle = 0.0;
+    int8_t temp_rounded = (int8_t)round(temp);
+    float duty_cycle    = 0.0;
 
-  switch (temp_rounded) {
-  case INT8_MIN ... 39:
-    duty_cycle = 0.0;
-    break;
-  case 40 ... 54:
-    /* code */
-    duty_cycle = 0.2;
-    break;
+    switch (temp_rounded) {
+        case INT8_MIN ... 39:
+            duty_cycle = 0.0;
+            break;
+        case 40 ... 54:
+            /* code */
+            duty_cycle = 0.2;
+            break;
 
-  case 55 ... 69:
-    /* code */
-    duty_cycle = 0.5;
-    break;
+        case 55 ... 69:
+            /* code */
+            duty_cycle = 0.5;
+            break;
 
-  case 70 ... INT8_MAX:
-    duty_cycle = 1;
-    break;
+        case 70 ... INT8_MAX:
+            duty_cycle = 1;
+            break;
 
-  default:
-    break;
-  }
+        default:
+            break;
+    }
 
-  dac_pump_set_duty_cycle(duty_cycle);
+    dac_pump_set_duty_cycle(duty_cycle);
 }

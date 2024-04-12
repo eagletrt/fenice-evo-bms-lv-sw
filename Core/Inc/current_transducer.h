@@ -48,9 +48,7 @@
  * @return Current in mA flowing inside the transducer
  *         if 0xFFFF then error
  */
-#define CT_get_electric_current_mA(adc_value_mV)                               \
-  (((adc_value_mV - HO_50_SP33_1106_VREF_mV) /                                 \
-    HO_50_SP33_1106_THEORETICAL_SENSITIVITY) *                                 \
-   1000)
+#define CT_get_electric_current_mA(adc_value_mV) \
+    (((adc_value_mV - HO_50_SP33_1106_VREF_mV) / HO_50_SP33_1106_THEORETICAL_SENSITIVITY) * 1000)
 
 #endif

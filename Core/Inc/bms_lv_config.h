@@ -4,8 +4,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#define clamp(num, max_n, min_n)                                               \
-  ((num > max_n) ? max_n : ((num < min_n) ? min_n : num))
+#define clamp(num, max_n, min_n) ((num > max_n) ? max_n : ((num < min_n) ? min_n : num))
 
 #define max(a, b) (a > b) ? a : b
 
@@ -15,126 +14,124 @@
 // Number of cells present in the bms lv, the cell configuration is 6s4p
 #define CELL_COUNT 6
 // Number of ntc sensors present in the bms lv
-#define TEMP_SENSOR_COUNT 12
-#define MAX_CELL_VOLTAGE_V (4.2f)
-#define MIN_CELL_VOLTAGE_V (3.0f)
+#define TEMP_SENSOR_COUNT      12
+#define MAX_CELL_VOLTAGE_V     (4.2f)
+#define MIN_CELL_VOLTAGE_V     (3.0f)
 #define MIN_BATTERY_VOLTAGE_mV ((MIN_CELL_VOLTAGE_V * 1000.0f) * 6.0f)
-#define MAX_CELL_TEMP (60.0f)
-#define MIN_CELL_TEMP (0.0f)
+#define MAX_CELL_TEMP          (60.0f)
+#define MIN_CELL_TEMP          (0.0f)
 
 // Max current output allowed
 #define MAX_CURRENT_mA (18000.0f)
 // Min difference threshold between V Relay and V Battery
-#define MIN_RELAY_VOLTAGE_DIFF_THRESHOLD_mV                                    \
-  2000.0f // diff v relay (that could be the charger one and bat out)
+#define MIN_RELAY_VOLTAGE_DIFF_THRESHOLD_mV 2000.0f  // diff v relay (that could be the charger one and bat out)
 // Min difference threshold between LVMS out V ans V Relay
-#define MIN_LVMS_VOLTAGE_DIFF_THRESHOLD_mV                                     \
-  2000.0f // diff lvms out and relay out 5%
-#define MIN_LOW_LOGIC_LEVEL_THRESHOLD_mV 500.0f // 500 mV
+#define MIN_LVMS_VOLTAGE_DIFF_THRESHOLD_mV 2000.0f  // diff lvms out and relay out 5%
+#define MIN_LOW_LOGIC_LEVEL_THRESHOLD_mV   500.0f   // 500 mV
 // adc voltage divider value
 #define ADC_VOLTAGE_DIVIDER_MULTIPLIER 9.0f
 // Threshold to check if an adc feedbacks is either logic high or logic low
 #define HIGH_LEVEL_THRESHOLD (1000.f) * ADC_VOLTAGE_DIVIDER_MULTIPLIER
 
-#define FLOAT_UNINITIALIZED_VALUE -1.0f
+#define FLOAT_UNINITIALIZED_VALUE   -1.0f
 #define MCP23017_INTERRUPTS_ENABLED 1
 
 #define SAFE_STATUS 0
-#define ERR_STATUS 1
+#define ERR_STATUS  1
 
 // Directly connected LV Feedbacks (no mux)
 enum directly_connected_feedbacks_indexes {
-  fb_computer_fb_idx = 0,
-  fb_relay_out_idx,
-  fb_lvms_out_idx,
-  fb_batt_out_idx,
-  directly_connected_fbs_n_values,
+    fb_computer_fb_idx = 0,
+    fb_relay_out_idx,
+    fb_lvms_out_idx,
+    fb_batt_out_idx,
+    directly_connected_fbs_n_values,
 };
 
 enum adc2_channel_indexes {
-  adc2_ch_mux_hall_idx = 0,
-  adc2_ch_mux_fb_idx,
-  adc2_ch_not_used_idx,
-  adc2_ch_relay_out_idx,
-  adc2_ch_lvms_out_idx,
-  adc2_ch_batt_out_idx,
-  adc2_ch_n_values
+    adc2_ch_mux_hall_idx = 0,
+    adc2_ch_mux_fb_idx,
+    adc2_ch_not_used_idx,
+    adc2_ch_relay_out_idx,
+    adc2_ch_lvms_out_idx,
+    adc2_ch_batt_out_idx,
+    adc2_ch_n_values
 };
 
 enum mux_fb_indexes {
-  mux_fb_sd_end_idx = 0,
-  mux_fb_bspd_fb_idx,
-  mux_fb_hvd_fb_idx,
-  mux_fb_lvms_fb_idx,
-  mux_fb_res_fb_idx,
-  mux_fb_pin5_disconnected_idx,
-  mux_fb_lv_encl_fb_idx,
-  mux_fb_pin7_disconnected_idx,
-  mux_fb_invc_lid_fb_idx,
-  mux_fb_hv_encl_2_fb_idx,
-  mux_fb_backplate_fb_idx,
-  mux_fb_invc_interlock_fb_idx,
-  mux_fb_ams_fb_idx,
-  mux_fb_asms_fb_idx,
-  mux_fb_interlock_fb_idx,
-  mux_fb_sd_start_idx,
-  mux_fb_n_values
+    mux_fb_sd_end_idx = 0,
+    mux_fb_bspd_fb_idx,
+    mux_fb_hvd_fb_idx,
+    mux_fb_lvms_fb_idx,
+    mux_fb_res_fb_idx,
+    mux_fb_pin5_disconnected_idx,
+    mux_fb_lv_encl_fb_idx,
+    mux_fb_pin7_disconnected_idx,
+    mux_fb_invc_lid_fb_idx,
+    mux_fb_hv_encl_2_fb_idx,
+    mux_fb_backplate_fb_idx,
+    mux_fb_invc_interlock_fb_idx,
+    mux_fb_ams_fb_idx,
+    mux_fb_asms_fb_idx,
+    mux_fb_interlock_fb_idx,
+    mux_fb_sd_start_idx,
+    mux_fb_n_values
 };
 
 enum mux_sensors_indexes {
-  mux_sensors_hall_0cd0_idx = 0,
-  mux_sensors_s_hall0_idx,
-  mux_sensors_hall_0cd1_idx,
-  mux_sensors_s_hall1_idx,
-  mux_sensors_hall_0cd2_idx,
-  mux_sensors_s_hall2_idx,
-  mux_sensors_lvac_temp0_idx,
-  mux_sensors_lvac_temp1_idx,
-  mux_sensors_pin8_nc_idx,
-  mux_sensors_pin9_nc_idx,
-  mux_sensors_pin10_nc_idx,
-  mux_sensors_pin11_nc_idx,
-  mux_sensors_pin12_nc_idx,
-  mux_sensors_pin13_nc_idx,
-  mux_sensors_pin14_nc_idx,
-  mux_sensors_pin15_nc_idx,
-  mux_sensors_n_values
+    mux_sensors_hall_0cd0_idx = 0,
+    mux_sensors_s_hall0_idx,
+    mux_sensors_hall_0cd1_idx,
+    mux_sensors_s_hall1_idx,
+    mux_sensors_hall_0cd2_idx,
+    mux_sensors_s_hall2_idx,
+    mux_sensors_lvac_temp0_idx,
+    mux_sensors_lvac_temp1_idx,
+    mux_sensors_pin8_nc_idx,
+    mux_sensors_pin9_nc_idx,
+    mux_sensors_pin10_nc_idx,
+    mux_sensors_pin11_nc_idx,
+    mux_sensors_pin12_nc_idx,
+    mux_sensors_pin13_nc_idx,
+    mux_sensors_pin14_nc_idx,
+    mux_sensors_pin15_nc_idx,
+    mux_sensors_n_values
 };
 
 enum mcp_feedbacks_bank_a {
-  mcp_feedbacks_bank_a_inverters_fb = 0,
-  mcp_feedbacks_bank_a_pcbs_fb,
-  mcp_feedbacks_bank_a_pumps_fb,
-  mcp_feedbacks_bank_a_shutdown_fb,
-  mcp_feedbacks_bank_a_radiators_fb,
-  mcp_feedbacks_bank_a_fan_fb,
-  mcp_feedbacks_bank_a__unused1,
-  mcp_feedbacks_bank_a__unused2,
-  mcp_feedbacks_bank_a_n_pins
+    mcp_feedbacks_bank_a_inverters_fb = 0,
+    mcp_feedbacks_bank_a_pcbs_fb,
+    mcp_feedbacks_bank_a_pumps_fb,
+    mcp_feedbacks_bank_a_shutdown_fb,
+    mcp_feedbacks_bank_a_radiators_fb,
+    mcp_feedbacks_bank_a_fan_fb,
+    mcp_feedbacks_bank_a__unused1,
+    mcp_feedbacks_bank_a__unused2,
+    mcp_feedbacks_bank_a_n_pins
 };
 
 enum mcp_controls_bank_b {
-  mcp_controls_bank_b_led_0 = 0,
-  mcp_controls_bank_b_led_1,
-  mcp_controls_bank_b_led_2,
-  mcp_controls_bank_b_frg,
-  mcp_controls_bank_b_rfe,
-  mcp_controls_bank_b__unused1,
-  mcp_controls_bank_b_discharge,
-  mcp_controls_bank_b__unused2,
-  mcp_controls_bank_b_n_pins
+    mcp_controls_bank_b_led_0 = 0,
+    mcp_controls_bank_b_led_1,
+    mcp_controls_bank_b_led_2,
+    mcp_controls_bank_b_frg,
+    mcp_controls_bank_b_rfe,
+    mcp_controls_bank_b__unused1,
+    mcp_controls_bank_b_discharge,
+    mcp_controls_bank_b__unused2,
+    mcp_controls_bank_b_n_pins
 };
 
 enum safe_statuses {
-  safe_statuses_chg_connect_only_mcu_pw = 0b000010,
-  safe_statuses_mcu_on_bat_only = 0b000100,
-  safe_statuses_car_on_chg_only = 0b001011,
-  safe_statuses_chg_batt = 0b001110,
-  safe_statuses_car_on_bat_only = 0b001111,
-  safe_statuses_relay_closed_chg_car_keep_closed = 0b011110,
-  safe_statuses_car_on_chg_and_bat = 0b011111,
-  safe_statuses_car_running = 0b110111,
-  safe_statuses_car_on_chg_and_bat_duplicated = 0b111111,
+    safe_statuses_chg_connect_only_mcu_pw          = 0b000010,
+    safe_statuses_mcu_on_bat_only                  = 0b000100,
+    safe_statuses_car_on_chg_only                  = 0b001011,
+    safe_statuses_chg_batt                         = 0b001110,
+    safe_statuses_car_on_bat_only                  = 0b001111,
+    safe_statuses_relay_closed_chg_car_keep_closed = 0b011110,
+    safe_statuses_car_on_chg_and_bat               = 0b011111,
+    safe_statuses_car_running                      = 0b110111,
+    safe_statuses_car_on_chg_and_bat_duplicated    = 0b111111,
 };
 
 // coefficient for conversion formula from voltage input to temperature
@@ -145,15 +142,19 @@ enum safe_statuses {
 #define TEMP_CONV_CONST_e 1.3552262617901958e-13
 
 /* PUM RELATED STUFF */
-#define PUMP_DAC hdac
+#define PUMP_DAC    hdac
 #define PUMP_L_CHNL DAC_CHANNEL_1
 #define PUMP_R_CHNL DAC_CHANNEL_2
 
 /* RAD_L AND RAD_R     -> TIM3 */
-#define RAD_HTIM htim3
+#define RAD_HTIM           htim3
 #define RAD_L_PWM_TIM_CHNL TIM_CHANNEL_1
 #define RAD_R_PWM_TIM_CHNL TIM_CHANNEL_2
 
 #define ERROR_TIMER htim7
 
-#endif // BMS_LV_CONFIG_H
+uint32_t get_current_time_ms(void);
+void monitor_get_voltages(float *);
+void monitor_get_temperatures(float *);
+
+#endif  // BMS_LV_CONFIG_H
