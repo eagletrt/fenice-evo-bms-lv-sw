@@ -50,13 +50,15 @@ void radiator_set_status(primary_lv_radiator_speed_status status);
 primary_lv_pumps_speed_status dac_pump_get_status();
 primary_lv_radiator_speed_status radiator_get_status();
 
-void bms_lv_routine(void) {
+void bms_lv_routine(bool checks_enabled) {
   error_routine();
   adc_routine();
   can_routine();
   gpio_extender_routine();
   monitor_routine();
-  all_measurements_check();
+  if (checks_enabled) {
+    all_measurements_check();
+  }
 }
 
 uint8_t inverter_state = 0;
@@ -132,6 +134,11 @@ state_t do_init(state_data_t *data) {
   monitor_routine();
   error_routine();
 
+  uint32_t prevtime = HAL_GetTick();
+  while ((HAL_GetTick() - prevtime) < 50) {
+    bms_lv_routine(false);
+  }
+
   if (error_get_fatal() || !check_total_voltage()) {
     next_state = STATE_ERROR;
   }
@@ -158,7 +165,7 @@ state_t do_idle(state_data_t *data) {
   // rfe/frg OFF
 
   /* Your Code Here */
-  bms_lv_routine();
+  bms_lv_routine(true);
 
   if (hv_status.status == primary_hv_status_status_airn_close) {
     next_state = STATE_TSON;
@@ -217,7 +224,7 @@ state_t do_tson(state_data_t *data) {
   // until car_status == {...}
 
   /* Your Code Here */
-  bms_lv_routine();
+  bms_lv_routine(true);
 
   // until car_status == {...}
   // car_status -> drive -> run
@@ -282,7 +289,7 @@ state_t do_run(state_data_t *data) {
   // set rfe/frg ON
 
   /* Your Code Here */
-  bms_lv_routine();
+  bms_lv_routine(true);
 
   // until car_status == run
   if (!(ecu_status.status == primary_ecu_status_status_drive ||
