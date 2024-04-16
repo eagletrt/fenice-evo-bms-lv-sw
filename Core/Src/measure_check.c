@@ -12,7 +12,7 @@ extern float dc_fb_mV[directly_connected_fbs_n_values];
 extern uint8_t mcp23017_feedbacks_state[8];
 uint8_t health_status = 0b000000;
 
-bool disable_overvoltage = false;
+bool disable_voltage_checks = false;
 
 // Index is from right to left
 void set_bit(uint8_t *value, uint8_t index, uint8_t bit_value) {
@@ -109,10 +109,17 @@ int check_status(uint8_t current_status) {
 }
 
 uint32_t last_charging_time = 0;
+bool lv_is_charging         = false;
 
-bool set_overvoltage_check(void) {
-    bool charging = (i_chg > MIN_CHARGER_CURRENT_THRESHOLD_mA) ? true : false; 
-    return charging;
+bool set_voltage_checks(float i_chg) {
+    if (i_chg > MIN_CHARGER_CURRENT_THRESHOLD_mA) {
+        lv_is_charging     = true;
+        last_charging_time = get_current_time_ms();
+    }
+    if (lv_is_charging && ((get_current_time_ms() - last_charging_time) > LV_VOLTAGE_CHECKS_DISABLED_TIMEOUT_ms)) {
+        lv_is_charging = false;
+    }
+    return lv_is_charging;
 }
 
 void health_check(void) {
@@ -125,7 +132,7 @@ void health_check(void) {
     relay_out            = dc_fb_mV[fb_relay_out_idx];
     lvms_out             = dc_fb_mV[fb_lvms_out_idx];
 
-    disable_overvoltage = set_overvoltage_check(); // (i_chg > MIN_CHARGER_CURRENT_THRESHOLD_mA) ? true : false;
+    disable_voltage_checks = set_voltage_checks(i_chg);
 
     update_status(&health_status, i_bat, i_chg, bat_out, relay_out, lvms_out);
     check_result = check_status(health_status);
@@ -140,7 +147,7 @@ void cell_voltage_check(void) {
     float voltages[CELL_COUNT] = {0};
     monitor_get_voltages(voltages);
 
-    if (!disable_overvoltage) {
+    if (!disable_voltage_checks) {
         for (size_t i = 0; i < CELL_COUNT; i++) {
             ERROR_TOGGLE_IF(voltages[i] < MIN_CELL_VOLTAGE_V, CELL_UNDERVOLTAGE, i, get_current_time_ms());
             ERROR_TOGGLE_IF(voltages[i] > MAX_CELL_VOLTAGE_V, CELL_OVERVOLTAGE, i, get_current_time_ms());

@@ -40,9 +40,6 @@ void all_measurements_check(void);
 
 void primary_lv_errors_send(void);
 
-int set_discharge(int state);
-int set_rfe_frg(int state);
-void set_relay(uint8_t status);
 int set_led(int led1, int led2, int led3);
 void set_time_set(uint8_t status);
 void radiator_init();

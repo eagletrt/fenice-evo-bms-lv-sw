@@ -8,8 +8,9 @@
 
 #define max(a, b) (a > b) ? a : b
 
-#define MIN_CHARGER_CURRENT_THRESHOLD_mA (2000.0f)
-#define MIN_BATTERY_CURRENT_THRESHOLD_mA (50.0f)
+#define LV_VOLTAGE_CHECKS_DISABLED_TIMEOUT_ms (5000U)
+#define MIN_CHARGER_CURRENT_THRESHOLD_mA      (2000.0f)
+#define MIN_BATTERY_CURRENT_THRESHOLD_mA      (50.0f)
 
 // Number of cells present in the bms lv, the cell configuration is 6s4p
 #define CELL_COUNT 6
@@ -156,5 +157,8 @@ enum safe_statuses {
 uint32_t get_current_time_ms(void);
 void monitor_get_voltages(float *);
 void monitor_get_temperatures(float *);
+int set_discharge(int state);
+int set_rfe_frg(int state);
+void set_relay(uint8_t status);
 
 #endif  // BMS_LV_CONFIG_H
