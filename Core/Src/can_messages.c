@@ -480,24 +480,23 @@ void primary_lv_feedback_gpio_send(void) {
     ERROR_TOGGLE_IF(can_mgr_send(bms_lv_primary_can_id, &msg) != 0, BMS_LV_CAN, 0, HAL_GetTick());
 }
 
+#define LV_FEEDBACK_THRESHOLD (12.0f)
+
 void primary_lv_feedback_send(void) {
-    // TODO: fix the voltages
-#if 0
+    extern float mux_fb_mV[mux_fb_n_values];
     primary_lv_feedback_converted_t converted = {
-        .feedbacks_ams = (mux_fb_mV[mux_fb_ams_fb_idx]) > ? 1 : 0,
-        .feedbacks_bspd = (mux_fb_mV[mux_fb_bspd_fb_idx]) > ? 1 : 0,
-        .feedbacks_hvd = ,
-        .feedbacks_interlock = ,
-        .feedbacks_invc_interlock = ,
-        .feedbacks_lvms = ,
-        .feedbacks_sd_end = ,
-        .feedbacks_sd_start = ,
-    }
-    
+        .feedbacks_ams            = ((mux_fb_mV[mux_fb_ams_fb_idx])) > LV_FEEDBACK_THRESHOLD ? 1 : 0,
+        .feedbacks_bspd           = ((mux_fb_mV[mux_fb_bspd_fb_idx])) > LV_FEEDBACK_THRESHOLD ? 1 : 0,
+        .feedbacks_hvd            = ((mux_fb_mV[mux_fb_hvd_fb_idx])) > LV_FEEDBACK_THRESHOLD ? 1 : 0,
+        .feedbacks_interlock      = ((mux_fb_mV[mux_fb_interlock_fb_idx])) > LV_FEEDBACK_THRESHOLD ? 1 : 0,
+        .feedbacks_invc_interlock = ((mux_fb_mV[mux_fb_invc_interlock_fb_idx])) > LV_FEEDBACK_THRESHOLD ? 1 : 0,
+        .feedbacks_lvms           = ((mux_fb_mV[mux_fb_lvms_fb_idx])) > LV_FEEDBACK_THRESHOLD ? 1 : 0,
+        .feedbacks_sd_end         = ((mux_fb_mV[mux_fb_sd_end_idx])) > LV_FEEDBACK_THRESHOLD ? 1 : 0,
+        .feedbacks_sd_start       = ((mux_fb_mV[mux_fb_sd_start_idx])) > LV_FEEDBACK_THRESHOLD ? 1 : 0,
+    };
     CANLIB_PACK_MSG(primary, PRIMARY, lv_feedback, LV_FEEDBACK);
 
     ERROR_TOGGLE_IF(can_mgr_send(bms_lv_primary_can_id, &msg) != 0, BMS_LV_CAN, 0, HAL_GetTick());
-#endif
 }
 
 extern bool lv_is_charging;
