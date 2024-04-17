@@ -106,4 +106,14 @@ void HAL_UART_MspDeInit(UART_HandleTypeDef *uartHandle) {
 
 /* USER CODE BEGIN 1 */
 
+const char i_am_alive_msg[]   = "I am alive\r\n";
+uint32_t last_i_am_alive_send = 0;
+
+void send_i_am_alive_msg(void) {
+    if (HAL_GetTick() - last_i_am_alive_send > 1000) {
+        last_i_am_alive_send = HAL_GetTick();
+        HAL_UART_Transmit(&huart1, (uint8_t *)i_am_alive_msg, sizeof(i_am_alive_msg), 100);
+    }
+}
+
 /* USER CODE END 1 */

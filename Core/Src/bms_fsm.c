@@ -37,6 +37,7 @@ void gpio_extender_routine(void);
 void monitor_routine(void);
 bool check_total_voltage(void);
 void all_measurements_check(void);
+void send_i_am_alive_msg(void);
 
 void primary_lv_errors_send(void);
 
@@ -50,6 +51,7 @@ primary_lv_pumps_speed_status dac_pump_get_status();
 primary_lv_radiator_speed_status radiator_get_status();
 
 void bms_lv_routine(bool checks_enabled) {
+    send_i_am_alive_msg();
     error_routine();
     adc_routine();
     can_routine();

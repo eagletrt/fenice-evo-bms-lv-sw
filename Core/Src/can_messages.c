@@ -510,7 +510,7 @@ void primary_lv_charging_status_send(void) {
 void primary_lv_cells_voltage_stats_send(void) {
     float voltages[CELL_COUNT];
     monitor_get_voltages(voltages);
-    float vavg = 0.0f, vmax = 0.0f, vmin = 0.0f, cv = 0.0f;
+    float vavg = 0.0f, vmax = 0.0f, vmin = 100.0f, cv = 0.0f;
     for (size_t idx = 0; idx < CELL_COUNT; idx++) {
         cv   = voltages[idx];
         vmax = fmax(vmax, cv);
@@ -526,7 +526,7 @@ void primary_lv_cells_voltage_stats_send(void) {
 void primary_lv_cells_temp_stats_send(void) {
     float temperatures[TEMP_SENSOR_COUNT];
     monitor_get_temperatures(temperatures);
-    float vavg = 0.0f, vmax = 0.0f, vmin = 0.0f, cv = 0.0f;
+    float vavg = 0.0f, vmax = 0.0f, vmin = 100.0f, cv = 0.0f;
     for (size_t idx = 0; idx < TEMP_SENSOR_COUNT; idx++) {
         cv   = temperatures[idx];
         vmax = fmax(vmax, cv);
