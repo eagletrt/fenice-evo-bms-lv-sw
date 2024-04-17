@@ -43,6 +43,10 @@ void primary_inverter_connection_status_send(void);
 void primary_lv_version_send(void);
 void primary_lv_pump_speed_send(void);
 void primary_lv_radiator_speed_send(void);
+void primary_lv_feedback_send(void);
+void primary_lv_charging_status_send(void);
+void primary_lv_cells_voltage_stats_send(void);
+void primary_lv_cells_temp_stats_send(void);
 
 int (*primary_message_handlers[N_MONITORED_MESSAGES])(can_mgr_msg_t *) = CAN_MESSAGES_HANDLERS;
 
@@ -127,6 +131,7 @@ void can_send_messages() {
         primary_lv_feedback_sd_send();
         primary_lv_feedback_enclosure_send();
         primary_lv_feedback_gpio_send();
+        primary_lv_feedback_send();
 
         last_time_msg_sent_timestamp[LV_MSG_LV_CELLS_VOLTAGE_MSG_IDX] = current_time;
     }
@@ -134,6 +139,9 @@ void can_send_messages() {
     if (current_time - last_time_msg_sent_timestamp[LV_MSG_LV_PUMPS_SPEED_MSG_IDX] > PRIMARY_LV_PUMPS_SPEED_CYCLE_TIME_MS) {
         primary_lv_pump_speed_send();
         primary_lv_radiator_speed_send();
+        primary_lv_charging_status_send();
+        primary_lv_cells_voltage_stats_send();
+        primary_lv_cells_temp_stats_send();
 
         last_time_msg_sent_timestamp[LV_MSG_LV_PUMPS_SPEED_MSG_IDX] = current_time;
     }
@@ -464,6 +472,66 @@ void primary_lv_feedback_gpio_send(void) {
 
     CANLIB_PACK_MSG(primary, PRIMARY, lv_feedback_gpio_extender, LV_FEEDBACK_GPIO_EXTENDER);
 
+    ERROR_TOGGLE_IF(can_mgr_send(bms_lv_primary_can_id, &msg) != 0, BMS_LV_CAN, 0, HAL_GetTick());
+}
+
+void primary_lv_feedback_send(void) {
+    // TODO: fix the voltages
+#if 0
+    primary_lv_feedback_converted_t converted = {
+        .feedbacks_ams = (mux_fb_mV[mux_fb_ams_fb_idx]) > ? 1 : 0,
+        .feedbacks_bspd = (mux_fb_mV[mux_fb_bspd_fb_idx]) > ? 1 : 0,
+        .feedbacks_hvd = ,
+        .feedbacks_interlock = ,
+        .feedbacks_invc_interlock = ,
+        .feedbacks_lvms = ,
+        .feedbacks_sd_end = ,
+        .feedbacks_sd_start = ,
+    }
+    
+    CANLIB_PACK_MSG(primary, PRIMARY, lv_feedback, LV_FEEDBACK);
+
+    ERROR_TOGGLE_IF(can_mgr_send(bms_lv_primary_can_id, &msg) != 0, BMS_LV_CAN, 0, HAL_GetTick());
+#endif
+}
+
+extern bool lv_is_charging;
+
+void primary_lv_charging_status_send(void) {
+    primary_lv_charging_status_converted_t converted = {.status = lv_is_charging};
+    CANLIB_PACK_MSG(primary, PRIMARY, lv_charging_status, LV_CHARGING_STATUS);
+    ERROR_TOGGLE_IF(can_mgr_send(bms_lv_primary_can_id, &msg) != 0, BMS_LV_CAN, 0, HAL_GetTick());
+}
+
+void primary_lv_cells_voltage_stats_send(void) {
+    float voltages[CELL_COUNT];
+    monitor_get_voltages(voltages);
+    float vavg = 0.0f, vmax = 0.0f, vmin = 0.0f, cv = 0.0f;
+    for (size_t idx = 0; idx < CELL_COUNT; idx++) {
+        cv   = voltages[idx];
+        vmax = fmax(vmax, cv);
+        vmin = fmin(vmin, cv);
+        vavg += cv / (float)CELL_COUNT;
+    }
+
+    primary_lv_cells_voltage_stats_converted_t converted = {.avg = vavg, .delta = (vmax - vmin), .max = vmax, .min = vmin};
+    CANLIB_PACK_MSG(primary, PRIMARY, lv_cells_voltage_stats, LV_CELLS_VOLTAGE_STATS);
+    ERROR_TOGGLE_IF(can_mgr_send(bms_lv_primary_can_id, &msg) != 0, BMS_LV_CAN, 0, HAL_GetTick());
+}
+
+void primary_lv_cells_temp_stats_send(void) {
+    float temperatures[TEMP_SENSOR_COUNT];
+    monitor_get_temperatures(temperatures);
+    float vavg = 0.0f, vmax = 0.0f, vmin = 0.0f, cv = 0.0f;
+    for (size_t idx = 0; idx < TEMP_SENSOR_COUNT; idx++) {
+        cv   = temperatures[idx];
+        vmax = fmax(vmax, cv);
+        vmin = fmin(vmin, cv);
+        vavg += (cv / (float)TEMP_SENSOR_COUNT);
+    }
+
+    primary_lv_cells_temp_stats_converted_t converted = {.avg = vavg, .max = vmax, .min = vmin};
+    CANLIB_PACK_MSG(primary, PRIMARY, lv_cells_temp_stats, LV_CELLS_TEMP_STATS);
     ERROR_TOGGLE_IF(can_mgr_send(bms_lv_primary_can_id, &msg) != 0, BMS_LV_CAN, 0, HAL_GetTick());
 }
 
