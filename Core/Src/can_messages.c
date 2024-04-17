@@ -50,16 +50,6 @@ void primary_lv_cells_temp_stats_send(void);
 
 int (*primary_message_handlers[N_MONITORED_MESSAGES])(can_mgr_msg_t *) = CAN_MESSAGES_HANDLERS;
 
-enum bms_lv_messages_to_send {
-    LV_MSG_LV_STATUS_MSG_IDX = 0,
-    LV_MSG_LV_CELLS_VOLTAGE_MSG_IDX,
-    LV_MSG_LV_PUMPS_SPEED_MSG_IDX,
-    LV_MSG_LV_VERSION_MSG_IDX,
-    LV_MSG_N_MSG_TO_SEND
-};
-
-uint32_t last_time_msg_sent_timestamp[LV_MSG_N_MSG_TO_SEND] = {0};
-
 #if 0
 void _compile_time_check() {
     static_assert(
@@ -110,47 +100,62 @@ int can_start(void) {
     return 0;
 }
 
+#define CYCLE_TIME_ELAPSED(MSG_NAME) \
+    ((HAL_GetTick() - last_time_msg_sent_timestamp[LV_MSG_##MSG_NAME##_MSG_IDX]) > PRIMARY_##MSG_NAME##_CYCLE_TIME_MS)
+
+#define UPDATE_LAST_TIMESTAMP_SENT(MSG_NAME) (last_time_msg_sent_timestamp[LV_MSG_##MSG_NAME##_MSG_IDX] = HAL_GetTick())
+
+#define CHECK_AND_UPDATE_TIME_ELAPSED_AND_SEND_MSG(MSG_NAME, send_function) \
+    if (CYCLE_TIME_ELAPSED(MSG_NAME)) {                                     \
+        send_function();                                                    \
+        UPDATE_LAST_TIMESTAMP_SENT(MSG_NAME);                               \
+    }
+
+enum bms_lv_messages_to_send {
+    LV_MSG_LV_STATUS_MSG_IDX = 0,
+    LV_MSG_LV_INVERTER_CONNECTION_STATUS_MSG_IDX,
+    LV_MSG_LV_ERRORS_MSG_IDX,
+    LV_MSG_LV_CELLS_VOLTAGE_MSG_IDX,
+    LV_MSG_LV_CELLS_TEMP_MSG_IDX,
+    LV_MSG_LV_TOTAL_VOLTAGE_MSG_IDX,
+    LV_MSG_LV_CURRENT_BATTERY_MSG_IDX,
+    LV_MSG_LV_CURRENT_CHARGER_MSG_IDX,
+    LV_MSG_LV_FEEDBACK_TS_VOLTAGE_MSG_IDX,
+    LV_MSG_LV_FEEDBACK_SD_VOLTAGE_MSG_IDX,
+    LV_MSG_LV_FEEDBACK_ENCLOSURE_VOLTAGE_MSG_IDX,
+    LV_MSG_LV_FEEDBACK_GPIO_EXTENDER_MSG_IDX,
+    LV_MSG_LV_FEEDBACK_MSG_IDX,
+    LV_MSG_LV_PUMPS_SPEED_MSG_IDX,
+    LV_MSG_LV_RADIATOR_SPEED_MSG_IDX,
+    LV_MSG_LV_CHARGING_STATUS_MSG_IDX,
+    LV_MSG_LV_CELLS_VOLTAGE_STATS_MSG_IDX,
+    LV_MSG_LV_CELLS_TEMP_STATS_MSG_IDX,
+    LV_MSG_LV_VERSION_MSG_IDX,
+    LV_MSG_N_MSG_TO_SEND
+};
+
+uint32_t last_time_msg_sent_timestamp[LV_MSG_N_MSG_TO_SEND] = {0};
+
 void can_send_messages() {
-    uint32_t current_time = HAL_GetTick();
-
-    if (current_time - last_time_msg_sent_timestamp[LV_MSG_LV_STATUS_MSG_IDX] > PRIMARY_LV_STATUS_CYCLE_TIME_MS) {
-        primary_lv_status_send();
-        primary_lv_errors_send();
-        primary_inverter_connection_status_send();
-
-        last_time_msg_sent_timestamp[LV_MSG_LV_STATUS_MSG_IDX] = current_time;
-    }
-
-    if (current_time - last_time_msg_sent_timestamp[LV_MSG_LV_CELLS_VOLTAGE_MSG_IDX] > PRIMARY_LV_CELLS_VOLTAGE_CYCLE_TIME_MS) {
-        primary_lv_cells_voltage_send();
-        primary_lv_cells_temp_send();
-        primary_lv_total_voltage_send();
-        primary_lv_current_battery_send();
-        primary_lv_current_charger_send();
-        primary_lv_feedback_ts_send();
-        primary_lv_feedback_sd_send();
-        primary_lv_feedback_enclosure_send();
-        primary_lv_feedback_gpio_send();
-        primary_lv_feedback_send();
-
-        last_time_msg_sent_timestamp[LV_MSG_LV_CELLS_VOLTAGE_MSG_IDX] = current_time;
-    }
-
-    if (current_time - last_time_msg_sent_timestamp[LV_MSG_LV_PUMPS_SPEED_MSG_IDX] > PRIMARY_LV_PUMPS_SPEED_CYCLE_TIME_MS) {
-        primary_lv_pump_speed_send();
-        primary_lv_radiator_speed_send();
-        primary_lv_charging_status_send();
-        primary_lv_cells_voltage_stats_send();
-        primary_lv_cells_temp_stats_send();
-
-        last_time_msg_sent_timestamp[LV_MSG_LV_PUMPS_SPEED_MSG_IDX] = current_time;
-    }
-
-    if (current_time - last_time_msg_sent_timestamp[LV_MSG_LV_VERSION_MSG_IDX] > PRIMARY_LV_VERSION_CYCLE_TIME_MS) {
-        primary_lv_version_send();
-
-        last_time_msg_sent_timestamp[LV_MSG_LV_VERSION_MSG_IDX] = current_time;
-    }
+    CHECK_AND_UPDATE_TIME_ELAPSED_AND_SEND_MSG(LV_STATUS, primary_lv_status_send)
+    CHECK_AND_UPDATE_TIME_ELAPSED_AND_SEND_MSG(LV_INVERTER_CONNECTION_STATUS, primary_inverter_connection_status_send)
+    CHECK_AND_UPDATE_TIME_ELAPSED_AND_SEND_MSG(LV_ERRORS, primary_lv_errors_send)
+    CHECK_AND_UPDATE_TIME_ELAPSED_AND_SEND_MSG(LV_CELLS_VOLTAGE, primary_lv_cells_voltage_send)
+    CHECK_AND_UPDATE_TIME_ELAPSED_AND_SEND_MSG(LV_CELLS_TEMP, primary_lv_cells_temp_send)
+    CHECK_AND_UPDATE_TIME_ELAPSED_AND_SEND_MSG(LV_TOTAL_VOLTAGE, primary_lv_total_voltage_send)
+    CHECK_AND_UPDATE_TIME_ELAPSED_AND_SEND_MSG(LV_CURRENT_BATTERY, primary_lv_current_battery_send)
+    CHECK_AND_UPDATE_TIME_ELAPSED_AND_SEND_MSG(LV_CURRENT_CHARGER, primary_lv_current_charger_send)
+    CHECK_AND_UPDATE_TIME_ELAPSED_AND_SEND_MSG(LV_FEEDBACK_TS_VOLTAGE, primary_lv_feedback_ts_send)
+    CHECK_AND_UPDATE_TIME_ELAPSED_AND_SEND_MSG(LV_FEEDBACK_SD_VOLTAGE, primary_lv_feedback_sd_send)
+    CHECK_AND_UPDATE_TIME_ELAPSED_AND_SEND_MSG(LV_FEEDBACK_ENCLOSURE_VOLTAGE, primary_lv_feedback_enclosure_send)
+    CHECK_AND_UPDATE_TIME_ELAPSED_AND_SEND_MSG(LV_FEEDBACK_GPIO_EXTENDER, primary_lv_feedback_gpio_send)
+    CHECK_AND_UPDATE_TIME_ELAPSED_AND_SEND_MSG(LV_FEEDBACK, primary_lv_feedback_send)
+    CHECK_AND_UPDATE_TIME_ELAPSED_AND_SEND_MSG(LV_PUMPS_SPEED, primary_lv_pump_speed_send)
+    CHECK_AND_UPDATE_TIME_ELAPSED_AND_SEND_MSG(LV_RADIATOR_SPEED, primary_lv_radiator_speed_send)
+    CHECK_AND_UPDATE_TIME_ELAPSED_AND_SEND_MSG(LV_CHARGING_STATUS, primary_lv_charging_status_send)
+    CHECK_AND_UPDATE_TIME_ELAPSED_AND_SEND_MSG(LV_CELLS_VOLTAGE_STATS, primary_lv_cells_voltage_stats_send)
+    CHECK_AND_UPDATE_TIME_ELAPSED_AND_SEND_MSG(LV_CELLS_TEMP_STATS, primary_lv_cells_temp_stats_send)
+    CHECK_AND_UPDATE_TIME_ELAPSED_AND_SEND_MSG(LV_VERSION, primary_lv_version_send)
 }
 
 int can_routine(void) {
