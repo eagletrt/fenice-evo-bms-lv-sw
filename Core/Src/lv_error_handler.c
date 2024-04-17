@@ -43,6 +43,5 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 }
 
 bool error_get_fatal(void) {
-    // dummy comment
     return error_get_expired() > 0;
 }

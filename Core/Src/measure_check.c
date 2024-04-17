@@ -24,80 +24,39 @@ void set_bit(uint8_t *value, uint8_t index, uint8_t bit_value) {
 }
 
 uint8_t convert_relay_out_ang_to_state(float relay_out, float bat_out) {
-    uint8_t state      = 0;
-    float diff_voltage = relay_out - bat_out;
-
-    if (diff_voltage < 0) {
-        diff_voltage = -diff_voltage;
-    }
-
-    if (diff_voltage < MIN_RELAY_VOLTAGE_DIFF_THRESHOLD_mV && relay_out > MIN_LOW_LOGIC_LEVEL_THRESHOLD_mV &&
-        bat_out > MIN_LOW_LOGIC_LEVEL_THRESHOLD_mV) {
-        state = 1;
-    } else {
-        state = 0;
-    }
-
-    return state;
+    return (
+        (fabs(relay_out - bat_out) < MIN_RELAY_VOLTAGE_DIFF_THRESHOLD_mV) && (relay_out > MIN_LOW_LOGIC_LEVEL_THRESHOLD_mV) &&
+        (bat_out > MIN_LOW_LOGIC_LEVEL_THRESHOLD_mV));
 }
 
 uint8_t convert_lvms_out_ang_to_state(float relay_out, float lvms_out) {
-    uint8_t state      = 0;
-    float diff_voltage = relay_out - lvms_out;
-
-    if (diff_voltage < 0) {
-        diff_voltage = -diff_voltage;
-    }
-
-    if (diff_voltage < MIN_LVMS_VOLTAGE_DIFF_THRESHOLD_mV && relay_out > MIN_LOW_LOGIC_LEVEL_THRESHOLD_mV &&
-        lvms_out > MIN_LOW_LOGIC_LEVEL_THRESHOLD_mV) {
-        state = 1;
-    } else {
-        state = 0;
-    }
-
-    return state;
+    return (
+        (fabs(relay_out - lvms_out) < MIN_LVMS_VOLTAGE_DIFF_THRESHOLD_mV) && (relay_out > MIN_LOW_LOGIC_LEVEL_THRESHOLD_mV) &&
+        (lvms_out > MIN_LOW_LOGIC_LEVEL_THRESHOLD_mV));
 }
 
 void update_status(uint8_t *current_status, float i_bat, float i_chg, float bat_out, float relay_out, float lvms_out) {
     set_bit(current_status, 5, i_bat < 0 ? 0 : 1);
     set_bit(current_status, 4, i_bat < MIN_BATTERY_CURRENT_THRESHOLD_mA ? 0 : 1);
-    set_bit(current_status, 3, i_chg < MIN_CHARGER_CURRENT_THRESHOLD_mA ? 0 : 1);
     set_bit(current_status, 2, bat_out < MIN_BATTERY_VOLTAGE_mV ? 0 : 1);
+    set_bit(current_status, 3, i_chg < MIN_CHARGER_CURRENT_THRESHOLD_mA ? 0 : 1);
     set_bit(current_status, 1, convert_relay_out_ang_to_state(relay_out, bat_out));
     set_bit(current_status, 0, convert_lvms_out_ang_to_state(relay_out, lvms_out));
 }
 
-// TODO in case relay is already at 1 we don't need to set the relay pin every
-// time
 int check_status(uint8_t current_status) {
     switch (current_status) {
         case safe_statuses_chg_connect_only_mcu_pw:
-            set_relay(0);
-            break;
-        case safe_statuses_mcu_on_bat_only:
-            set_relay(1);
-            break;
         case safe_statuses_car_on_chg_only:
             set_relay(0);
             break;
+        case safe_statuses_mcu_on_bat_only:
         case safe_statuses_chg_batt:
-            set_relay(1);
-            break;
         case safe_statuses_car_on_bat_only:
-            set_relay(1);
-            break;
         case safe_statuses_relay_closed_chg_car_keep_closed:
-            set_relay(1);
-            break;
         case safe_statuses_car_on_chg_and_bat:
-            set_relay(1);
-            break;
         case safe_statuses_car_running:
-            set_relay(1);
-            break;
         case safe_statuses_car_on_chg_and_bat_duplicated:
-            set_relay(1);
             break;
 
         default:
@@ -137,9 +96,9 @@ void health_check(void) {
     update_status(&health_status, i_bat, i_chg, bat_out, relay_out, lvms_out);
     check_result = check_status(health_status);
     if (check_result != SAFE_STATUS) {
-        error_set(HEALTH, 0, get_current_time_ms());
+        error_set(BMS_LV_HEALTH, 0, get_current_time_ms());
     } else {
-        error_reset(HEALTH, 0);
+        error_reset(BMS_LV_HEALTH, 0);
     }
 }
 
@@ -149,13 +108,13 @@ void cell_voltage_check(void) {
 
     if (!disable_voltage_checks) {
         for (size_t i = 0; i < CELL_COUNT; i++) {
-            ERROR_TOGGLE_IF(voltages[i] < MIN_CELL_VOLTAGE_V, CELL_UNDERVOLTAGE, i, get_current_time_ms());
-            ERROR_TOGGLE_IF(voltages[i] > MAX_CELL_VOLTAGE_V, CELL_OVERVOLTAGE, i, get_current_time_ms());
+            ERROR_TOGGLE_IF(voltages[i] < MIN_CELL_VOLTAGE_V, BMS_LV_CELL_UNDERVOLTAGE, i, get_current_time_ms());
+            ERROR_TOGGLE_IF(voltages[i] > MAX_CELL_VOLTAGE_V, BMS_LV_CELL_OVERVOLTAGE, i, get_current_time_ms());
         }
     } else {
         for (size_t i = 0; i < CELL_COUNT; i++) {
-            error_reset(CELL_UNDERVOLTAGE, i);
-            error_reset(CELL_OVERVOLTAGE, i);
+            error_reset(BMS_LV_CELL_UNDERVOLTAGE, i);
+            error_reset(BMS_LV_CELL_OVERVOLTAGE, i);
         }
     }
 }
@@ -165,14 +124,14 @@ void cell_temperature_check(void) {
     monitor_get_temperatures(temperatures);
 
     for (size_t i = 0; i < TEMP_SENSOR_COUNT; i++) {
-        ERROR_TOGGLE_IF(temperatures[i] < MIN_CELL_TEMP, CELL_UNDER_TEMPERATURE, i, get_current_time_ms());
-        ERROR_TOGGLE_IF(temperatures[i] > MAX_CELL_TEMP, CELL_OVER_TEMPERATURE, i, get_current_time_ms());
+        ERROR_TOGGLE_IF(temperatures[i] < MIN_CELL_TEMP, BMS_LV_CELL_UNDER_TEMPERATURE, i, get_current_time_ms());
+        ERROR_TOGGLE_IF(temperatures[i] > MAX_CELL_TEMP, BMS_LV_CELL_OVER_TEMPERATURE, i, get_current_time_ms());
     }
 }
 
 void overcurrent_check(void) {
-    ERROR_TOGGLE_IF(mux_sensors_mA[mux_sensors_s_hall1_idx] > MAX_CURRENT_mA, OVER_CURRENT, 1, get_current_time_ms());
-    ERROR_TOGGLE_IF(mux_sensors_mA[mux_sensors_s_hall2_idx] > MAX_CURRENT_mA, OVER_CURRENT, 2, get_current_time_ms());
+    ERROR_TOGGLE_IF(mux_sensors_mA[mux_sensors_s_hall1_idx] > MAX_CURRENT_mA, BMS_LV_OVER_CURRENT, 1, get_current_time_ms());
+    ERROR_TOGGLE_IF(mux_sensors_mA[mux_sensors_s_hall2_idx] > MAX_CURRENT_mA, BMS_LV_OVER_CURRENT, 2, get_current_time_ms());
 }
 
 void all_measurements_check(void) {

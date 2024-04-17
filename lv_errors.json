@@ -1,52 +1,57 @@
 {
     "errors": [
         {
-            "name": "CELL_UNDERVOLTAGE",
+            "name": "BMS_LV_CELL_UNDERVOLTAGE",
             "timeout": 400,
             "instances": 6
         },
         {
-            "name": "CELL_OVERVOLTAGE",
+            "name": "BMS_LV_CELL_OVERVOLTAGE",
             "timeout": 400,
             "instances": 6
         },
         {
-            "name": "OPEN_WIRE",
+            "name": "BMS_LV_OPEN_WIRE",
             "timeout": 400,
             "instances": 1
         },
         {
-            "name": "CAN",
+            "name": "BMS_LV_ADC",
+            "timeout": 500,
+            "instances": 1
+        },
+        {
+            "name": "BMS_LV_CAN",
             "timeout": 500,
             "instances": 2
         },
         {
-            "name": "SPI",
+            "name": "BMS_LV_SPI",
             "timeout": 500,
             "instances": 1
         },
         {
-            "name": "OVER_CURRENT",
+            "name": "BMS_LV_OVER_CURRENT",
             "timeout": 400,
             "instances": 3
         },
         {
-            "name": "CELL_UNDER_TEMPERATURE",
+            "name": "BMS_LV_CELL_UNDER_TEMPERATURE",
             "timeout": 1000,
             "instances": 12
         },
         {
-            "name": "CELL_OVER_TEMPERATURE",
+            "name": "BMS_LV_CELL_OVER_TEMPERATURE",
             "timeout": 200,
             "instances": 12
         },
         {
-            "name": "MCP23017",
+            "name": "BMS_LV_MCP23017",
             "timeout": 1000,
             "instances": 1
         },
         {
-            "name": "HEALTH",
+            "name": "BMS_LV_HEALTH",
             "timeout": 700,
             "instances": 1
         }

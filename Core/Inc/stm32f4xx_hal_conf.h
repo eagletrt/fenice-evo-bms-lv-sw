@@ -190,7 +190,7 @@ extern "C" {
 #define USE_HAL_SRAM_REGISTER_CALLBACKS      0U /* SRAM register callback disabled      */
 #define USE_HAL_SPDIFRX_REGISTER_CALLBACKS   0U /* SPDIFRX register callback disabled   */
 #define USE_HAL_SMBUS_REGISTER_CALLBACKS     0U /* SMBUS register callback disabled     */
-#define USE_HAL_SPI_REGISTER_CALLBACKS       0U /* SPI register callback disabled       */
+#define USE_HAL_SPI_REGISTER_CALLBACKS       0U /* BMS_LV_SPI register callback disabled       */
 #define USE_HAL_TIM_REGISTER_CALLBACKS       1U /* TIM register callback enabled       */
 #define USE_HAL_UART_REGISTER_CALLBACKS      0U /* UART register callback disabled      */
 #define USE_HAL_USART_REGISTER_CALLBACKS     0U /* USART register callback disabled     */
@@ -259,9 +259,9 @@ extern "C" {
 #define PHY_SPEED_STATUS  ((uint16_t)) /*!< PHY Speed mask                                  */
 #define PHY_DUPLEX_STATUS ((uint16_t)) /*!< PHY Duplex mask                                 */
 
-/* ################## SPI peripheral configuration ########################## */
+/* ################## BMS_LV_SPI peripheral configuration ########################## */
 
-/* CRC FEATURE: Use to activate CRC feature inside HAL SPI Driver
+/* CRC FEATURE: Use to activate CRC feature inside HAL BMS_LV_SPI Driver
  * Activated: CRC code is present inside driver
  * Deactivated: CRC code cleaned from driver
  */

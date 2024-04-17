@@ -22,6 +22,7 @@
 
 /* USER CODE BEGIN 0 */
 #include "current_transducer.h"
+#include "lv_errors.h"
 #include "usart.h"
 
 #include <stdio.h>
@@ -67,12 +68,11 @@ void adc_routine_start(void) {
 
     set_mux_addr();
     if (HAL_ADC_Start_DMA(&hadc2, (uint32_t *)adc2_raw, adc2_ch_n_values) != HAL_OK) {
-        // TODO handle error
+        error_set(BMS_LV_ADC, 0, HAL_GetTick());
     };
     // TODO: start vrefint calibration
 }
 
-// TODO: first check that the acquisition works, then add vrefint calibration
 void adc_vrefint_calibration(void) {
 }
 
@@ -100,7 +100,8 @@ void adc_routine(void) {
         current_mux_idx = (current_mux_idx + 1) % 16;
         set_mux_addr();
         if (HAL_ADC_Start_DMA(&hadc2, (uint32_t *)adc2_raw, adc2_ch_n_values) != HAL_OK) {
-            // TODO handle error
+            return;
+            // error_set(BMS_LV_ADC, 0, HAL_GetTick()); // TODO: setting the error is too strong, consider other options
         }
         adc2_conversion_ended = 0;
     }

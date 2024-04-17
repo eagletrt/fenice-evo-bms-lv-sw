@@ -3,7 +3,7 @@
  ******************************************************************************
  * @file    spi.c
  * @brief   This file provides code for the configuration
- *          of the SPI instances.
+ *          of the BMS_LV_SPI instances.
  ******************************************************************************
  * @attention
  *
@@ -74,8 +74,8 @@ void monitor_routine(void) {
     /**
    * TODO: check correct timings and set appropriate errors
    */
-    ERROR_TOGGLE_IF(monitor_update_voltages() != MONITOR_OK, SPI, 0, HAL_GetTick());
-    ERROR_TOGGLE_IF(monitor_update_temperatures() != MONITOR_OK, SPI, 0, HAL_GetTick());
+    ERROR_TOGGLE_IF(monitor_update_voltages() != MONITOR_OK, BMS_LV_SPI, 0, HAL_GetTick());
+    ERROR_TOGGLE_IF(monitor_update_temperatures() != MONITOR_OK, BMS_LV_SPI, 0, HAL_GetTick());
 }
 
 /**
