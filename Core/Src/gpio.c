@@ -46,6 +46,8 @@ void set_time_set(uint8_t status) {
     }
 }
 
+int discharge_state = 0;
+
 /* USER CODE END 1 */
 
 /** Configure pins as
@@ -257,7 +259,8 @@ int set_led(int led1, int led2, int led3) {
 }
 
 int set_discharge(int state) {
-    hal_status = HAL_ERROR;
+    hal_status      = HAL_ERROR;
+    discharge_state = state;
     mcp23017_set_register_bit(&gpiob_register_value, mcp_controls_bank_b_discharge, state);
 
     hal_status = HAL_I2C_Mem_Write(

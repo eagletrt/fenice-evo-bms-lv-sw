@@ -466,6 +466,7 @@ void primary_lv_feedback_gpio_send(void) {
     primary_lv_feedback_gpio_extender_converted_t converted;
 
     extern uint8_t mcp23017_feedbacks_state[8];
+    extern int discharge_state;
 
     converted.feedback_autonomous_system_actuation = mcp23017_feedbacks_state[mcp_feedbacks_bank_a__unused1];
     converted.feedback_hv_fans                     = mcp23017_feedbacks_state[mcp_feedbacks_bank_a_fan_fb];
@@ -474,6 +475,7 @@ void primary_lv_feedback_gpio_send(void) {
     converted.feedback_pumps                       = mcp23017_feedbacks_state[mcp_feedbacks_bank_a_pumps_fb];
     converted.feedback_radiators                   = mcp23017_feedbacks_state[mcp_feedbacks_bank_a_radiators_fb];
     converted.feedback_shutdown                    = mcp23017_feedbacks_state[mcp_feedbacks_bank_a_shutdown_fb];
+    converted.feedback_discharge                   = discharge_state;
 
     CANLIB_PACK_MSG(primary, PRIMARY, lv_feedback_gpio_extender, LV_FEEDBACK_GPIO_EXTENDER);
 
