@@ -8,6 +8,10 @@
 #include "primary_network.h"
 #include "primary_watchdog.h"
 
+extern int bms_lv_primary_can_id;
+extern can_mgr_msg_t can_messages_states[N_MONITORED_MESSAGES];
+extern uint8_t can_messages_is_new[N_MONITORED_MESSAGES];
+
 #define CANLIB_UNPACK_AND_UPDATE_MSG(ntw, NTW, msg_name, MSG_NAME)                                     \
     ntw##_##msg_name##_t raw;                                                                          \
     ntw##_##msg_name##_converted_t converted;                                                          \

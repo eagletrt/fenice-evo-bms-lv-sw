@@ -8,6 +8,12 @@
 
 #define max(a, b) (a > b) ? a : b
 
+#define CAN_MESSAGES_HANDLERS                                                                                                              \
+    {                                                                                                                                      \
+        primary_lv_set_radiator_speed_handler, primary_lv_set_pumps_speed_handler, primary_hv_status_handler, inverters_inv_l_rcv_handler, \
+            inverters_inv_r_rcv_handler, primary_flash_request_handler, primary_flash_request_handler, primary_ecu_status_handler,         \
+    }
+
 #define LV_VOLTAGE_CHECKS_DISABLED_TIMEOUT_ms (5000U)
 #define MIN_CHARGER_CURRENT_THRESHOLD_mA      (2000.0f)
 #define MIN_BATTERY_CURRENT_THRESHOLD_mA      (50.0f)
@@ -133,6 +139,41 @@ enum safe_statuses {
     safe_statuses_car_on_chg_and_bat               = 0b011111,
     safe_statuses_car_running                      = 0b110111,
     safe_statuses_car_on_chg_and_bat_duplicated    = 0b111111,
+};
+
+enum {
+    BMS_LV_PRIMARY_LV_SET_RADIATOR_SPEED = 0,
+    BMS_LV_PRIMARY_LV_SET_PUMPS_SPEED,
+    BMS_LV_PRIMARY_HV_STATUS,
+    BMS_LV_INVERTERS_INV_L_RCV,
+    BMS_LV_INVERTERS_INV_R_RCV,
+    BMS_LV_PRIMARY_LV_CAN_FLASH_REQ_STEERING_WHEEL,
+    BMS_LV_PRIMARY_LV_CAN_FLASH_REQ_TLM,
+    BMS_LV_PRIMARY_ECU_STATUS,
+    N_MONITORED_MESSAGES
+};
+
+enum {
+    LV_MSG_LV_STATUS_MSG_IDX = 0,
+    LV_MSG_LV_INVERTER_CONNECTION_STATUS_MSG_IDX,
+    LV_MSG_LV_ERRORS_MSG_IDX,
+    LV_MSG_LV_CELLS_VOLTAGE_MSG_IDX,
+    LV_MSG_LV_CELLS_TEMP_MSG_IDX,
+    LV_MSG_LV_TOTAL_VOLTAGE_MSG_IDX,
+    LV_MSG_LV_CURRENT_BATTERY_MSG_IDX,
+    LV_MSG_LV_CURRENT_CHARGER_MSG_IDX,
+    LV_MSG_LV_FEEDBACK_TS_VOLTAGE_MSG_IDX,
+    LV_MSG_LV_FEEDBACK_SD_VOLTAGE_MSG_IDX,
+    LV_MSG_LV_FEEDBACK_ENCLOSURE_VOLTAGE_MSG_IDX,
+    LV_MSG_LV_FEEDBACK_GPIO_EXTENDER_MSG_IDX,
+    LV_MSG_LV_FEEDBACK_MSG_IDX,
+    LV_MSG_LV_PUMPS_SPEED_MSG_IDX,
+    LV_MSG_LV_RADIATOR_SPEED_MSG_IDX,
+    LV_MSG_LV_CHARGING_STATUS_MSG_IDX,
+    LV_MSG_LV_CELLS_VOLTAGE_STATS_MSG_IDX,
+    LV_MSG_LV_CELLS_TEMP_STATS_MSG_IDX,
+    LV_MSG_LV_VERSION_MSG_IDX,
+    LV_MSG_N_MSG_TO_SEND
 };
 
 // coefficient for conversion formula from voltage input to temperature

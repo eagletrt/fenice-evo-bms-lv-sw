@@ -176,7 +176,7 @@ int gpio_extender_init(void) {
         &intcona_register_value,
         &defvala_register_value,
         MCP23017_INT_ENABLED,
-        MCP23017_INT_MODE_COMPARE,
+        MCP23017_INT_MODE_ON_CHANGE,
         compare_value);
 
     hal_status = HAL_I2C_Mem_Write(

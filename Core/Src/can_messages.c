@@ -13,10 +13,8 @@
 #include <math.h>
 #include <string.h>
 
-extern int bms_lv_primary_can_id;
-extern can_mgr_msg_t can_messages_states[N_MONITORED_MESSAGES];
-extern uint8_t can_messages_is_new[N_MONITORED_MESSAGES];
-static float inv_temps[2] = {0};
+uint32_t last_time_msg_sent_timestamp[LV_MSG_N_MSG_TO_SEND] = {0};
+static float inv_temps[2]                                   = {0};
 primary_hv_status_converted_t hv_status;
 primary_ecu_status_converted_t ecu_status;
 
@@ -69,24 +67,22 @@ int can_mgr_from_id_to_index(int can_id, int msg_id) {
     if (can_id != bms_lv_primary_can_id)
         return -1;
     switch (msg_id) {
-        case PRIMARY_LV_SET_INVERTER_CONNECTION_STATUS_FRAME_ID:
-            return 0;
         case PRIMARY_LV_SET_RADIATOR_SPEED_FRAME_ID:
-            return 1;
+            return BMS_LV_PRIMARY_LV_SET_RADIATOR_SPEED;
         case PRIMARY_LV_SET_PUMPS_SPEED_FRAME_ID:
-            return 2;
+            return BMS_LV_PRIMARY_LV_SET_PUMPS_SPEED;
         case PRIMARY_HV_STATUS_FRAME_ID:
-            return 3;
+            return BMS_LV_PRIMARY_HV_STATUS;
         case INVERTERS_INV_L_RCV_FRAME_ID:
-            return 4;
+            return BMS_LV_INVERTERS_INV_L_RCV;
         case INVERTERS_INV_R_RCV_FRAME_ID:
-            return 5;
+            return BMS_LV_INVERTERS_INV_R_RCV;
         case PRIMARY_LV_CAN_FLASH_REQ_STEERING_WHEEL_FRAME_ID:
-            return 6;
+            return BMS_LV_PRIMARY_LV_CAN_FLASH_REQ_STEERING_WHEEL;
         case PRIMARY_LV_CAN_FLASH_REQ_TLM_FRAME_ID:
-            return 7;
+            return BMS_LV_PRIMARY_LV_CAN_FLASH_REQ_TLM;
         case PRIMARY_ECU_STATUS_FRAME_ID:
-            return 8;
+            return BMS_LV_PRIMARY_ECU_STATUS;
         default:
             return -1;
     }
@@ -110,31 +106,6 @@ int can_start(void) {
         send_function();                                                    \
         UPDATE_LAST_TIMESTAMP_SENT(MSG_NAME);                               \
     }
-
-enum bms_lv_messages_to_send {
-    LV_MSG_LV_STATUS_MSG_IDX = 0,
-    LV_MSG_LV_INVERTER_CONNECTION_STATUS_MSG_IDX,
-    LV_MSG_LV_ERRORS_MSG_IDX,
-    LV_MSG_LV_CELLS_VOLTAGE_MSG_IDX,
-    LV_MSG_LV_CELLS_TEMP_MSG_IDX,
-    LV_MSG_LV_TOTAL_VOLTAGE_MSG_IDX,
-    LV_MSG_LV_CURRENT_BATTERY_MSG_IDX,
-    LV_MSG_LV_CURRENT_CHARGER_MSG_IDX,
-    LV_MSG_LV_FEEDBACK_TS_VOLTAGE_MSG_IDX,
-    LV_MSG_LV_FEEDBACK_SD_VOLTAGE_MSG_IDX,
-    LV_MSG_LV_FEEDBACK_ENCLOSURE_VOLTAGE_MSG_IDX,
-    LV_MSG_LV_FEEDBACK_GPIO_EXTENDER_MSG_IDX,
-    LV_MSG_LV_FEEDBACK_MSG_IDX,
-    LV_MSG_LV_PUMPS_SPEED_MSG_IDX,
-    LV_MSG_LV_RADIATOR_SPEED_MSG_IDX,
-    LV_MSG_LV_CHARGING_STATUS_MSG_IDX,
-    LV_MSG_LV_CELLS_VOLTAGE_STATS_MSG_IDX,
-    LV_MSG_LV_CELLS_TEMP_STATS_MSG_IDX,
-    LV_MSG_LV_VERSION_MSG_IDX,
-    LV_MSG_N_MSG_TO_SEND
-};
-
-uint32_t last_time_msg_sent_timestamp[LV_MSG_N_MSG_TO_SEND] = {0};
 
 void can_send_messages() {
     CHECK_AND_UPDATE_TIME_ELAPSED_AND_SEND_MSG(LV_STATUS, primary_lv_status_send)
@@ -165,7 +136,6 @@ int can_routine(void) {
             (*primary_message_handlers[msg_idx])(&can_messages_states[msg_idx]);
         }
     }
-
     can_send_messages();
     return 0;
 }
