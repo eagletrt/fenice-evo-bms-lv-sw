@@ -116,4 +116,17 @@ void send_i_am_alive_msg(void) {
     }
 }
 
+#include <stdarg.h>
+#include <stdio.h>
+#include <string.h>
+
+void print(const char *fmt, ...) {
+    char buff[256];
+    va_list args;
+    va_start(args, fmt);
+    vsnprintf(buff, sizeof(buff), fmt, args);
+    va_end(args);
+    HAL_UART_Transmit(&huart1, (uint8_t *)buff, strlen(buff), 250);
+}
+
 /* USER CODE END 1 */

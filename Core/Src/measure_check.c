@@ -3,6 +3,7 @@
 #include "math.h"
 
 #include <stdint.h>
+#include <stdlib.h>
 
 void set_relay(uint8_t status);
 
@@ -23,22 +24,22 @@ void set_bit(uint8_t *value, uint8_t index, uint8_t bit_value) {
     }
 }
 
-uint8_t convert_relay_out_ang_to_state(float relay_out, float bat_out) {
+uint8_t convert_relay_out_ang_to_state(int relay_out, int bat_out) {
     return (
-        (fabs(relay_out - bat_out) < MIN_RELAY_VOLTAGE_DIFF_THRESHOLD_mV) && (relay_out > MIN_LOW_LOGIC_LEVEL_THRESHOLD_mV) &&
+        (abs(relay_out - bat_out) < MIN_RELAY_VOLTAGE_DIFF_THRESHOLD_mV) && (relay_out > MIN_LOW_LOGIC_LEVEL_THRESHOLD_mV) &&
         (bat_out > MIN_LOW_LOGIC_LEVEL_THRESHOLD_mV));
 }
 
-uint8_t convert_lvms_out_ang_to_state(float relay_out, float lvms_out) {
+uint8_t convert_lvms_out_ang_to_state(int relay_out, int lvms_out) {
     return (
-        (fabs(relay_out - lvms_out) < MIN_LVMS_VOLTAGE_DIFF_THRESHOLD_mV) && (relay_out > MIN_LOW_LOGIC_LEVEL_THRESHOLD_mV) &&
+        (abs(relay_out - lvms_out) < MIN_LVMS_VOLTAGE_DIFF_THRESHOLD_mV) && (relay_out > MIN_LOW_LOGIC_LEVEL_THRESHOLD_mV) &&
         (lvms_out > MIN_LOW_LOGIC_LEVEL_THRESHOLD_mV));
 }
 
-void update_status(uint8_t *current_status, float i_bat, float i_chg, float bat_out, float relay_out, float lvms_out) {
+void update_status(uint8_t *current_status, float i_bat, float i_chg, int bat_out, int relay_out, int lvms_out) {
     set_bit(current_status, 5, i_bat < 0 ? 0 : 1);
     set_bit(current_status, 4, i_bat < MIN_BATTERY_CURRENT_THRESHOLD_mA ? 0 : 1);
-    set_bit(current_status, 2, bat_out < MIN_BATTERY_VOLTAGE_mV ? 0 : 1);
+    set_bit(current_status, 2, ((float)(bat_out)) < MIN_BATTERY_VOLTAGE_mV ? 0 : 1);
     set_bit(current_status, 3, i_chg < MIN_CHARGER_CURRENT_THRESHOLD_mA ? 0 : 1);
     set_bit(current_status, 1, convert_relay_out_ang_to_state(relay_out, bat_out));
     set_bit(current_status, 0, convert_lvms_out_ang_to_state(relay_out, lvms_out));
@@ -82,20 +83,21 @@ bool set_voltage_checks(float i_chg) {
 }
 
 void health_check(void) {
-    float i_bat, i_chg, bat_out, relay_out, lvms_out = 0.0;
+    float i_bat, i_chg = 0.0f;
+    int bat_out, relay_out, lvms_out = 0;
     uint8_t check_result = ERR_STATUS;
     health_status        = 0b000000;
     i_bat                = mux_sensors_mA[mux_sensors_s_hall1_idx];
     i_chg                = mux_sensors_mA[mux_sensors_s_hall2_idx];
-    bat_out              = dc_fb_mV[fb_batt_out_idx];
-    relay_out            = dc_fb_mV[fb_relay_out_idx];
-    lvms_out             = dc_fb_mV[fb_lvms_out_idx];
+    bat_out              = (int)dc_fb_mV[fb_batt_out_idx];
+    relay_out            = (int)dc_fb_mV[fb_relay_out_idx];
+    lvms_out             = (int)dc_fb_mV[fb_lvms_out_idx];
 
     disable_voltage_checks = set_voltage_checks(i_chg);
 
     update_status(&health_status, i_bat, i_chg, bat_out, relay_out, lvms_out);
     check_result = check_status(health_status);
-    if (check_result != SAFE_STATUS) {
+    if (check_result != SAFE_STATUS && get_current_time_ms() > 2000) {
         error_set(BMS_LV_HEALTH, 0, get_current_time_ms());
     } else {
         error_reset(BMS_LV_HEALTH, 0);
