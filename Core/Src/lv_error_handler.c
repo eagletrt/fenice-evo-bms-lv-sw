@@ -4,7 +4,6 @@
 #include "timer_utils.h"
 
 uint32_t primask;
-static uint8_t fatal_error = 0;
 void error_cs_enter(void) {
     primask = __get_PRIMASK();
     __disable_irq();
@@ -32,14 +31,6 @@ void error_update_timer_callback(uint32_t timestamp, uint16_t timeout) {
 }
 void error_stop_timer_callback(void) {
     HAL_TIM_Base_Stop_IT(&ERROR_TIMER);
-}
-
-void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
-    if (htim->Instance == ERROR_TIMER.Instance) {
-        HAL_TIM_Base_Stop_IT(htim);
-        error_expire();
-        fatal_error++;
-    }
 }
 
 bool error_get_fatal(void) {

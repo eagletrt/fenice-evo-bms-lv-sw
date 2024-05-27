@@ -29,6 +29,7 @@ void adc_routine_start(void);
 void monitor_init(void);
 void gpio_extender_init(void);
 void adc_vrefint_calibration(void);
+void buzzer_init(void);
 int can_start();
 
 void adc_routine(void);
@@ -122,6 +123,7 @@ state_t do_init(state_data_t *data) {
     set_discharge(0);
     // rfe/frg OFF
     set_rfe_frg(0);
+    buzzer_init();
 
     // check error codes
     lv_error_init();

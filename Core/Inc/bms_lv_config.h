@@ -8,10 +8,16 @@
 
 #define max(a, b) (a > b) ? a : b
 
-#define CAN_MESSAGES_HANDLERS                                                                                                              \
-    {                                                                                                                                      \
-        primary_lv_set_radiator_speed_handler, primary_lv_set_pumps_speed_handler, primary_hv_status_handler, inverters_inv_l_rcv_handler, \
-            inverters_inv_r_rcv_handler, primary_flash_request_handler, primary_flash_request_handler, primary_ecu_status_handler,         \
+#define CAN_MESSAGES_HANDLERS                  \
+    {                                          \
+        primary_lv_set_radiator_speed_handler, \
+        primary_lv_set_pumps_speed_handler,    \
+        primary_hv_status_handler,             \
+        inverters_inv_l_rcv_handler,           \
+        inverters_inv_r_rcv_handler,           \
+        primary_flash_request_handler,         \
+        primary_flash_request_handler,         \
+        primary_ecu_status_handler,            \
     }
 
 #define LV_VOLTAGE_CHECKS_DISABLED_TIMEOUT_ms (5000U)
@@ -27,6 +33,7 @@
 #define MIN_BATTERY_VOLTAGE_mV ((MIN_CELL_VOLTAGE_V * 1000.0f) * 6.0f)
 #define MAX_CELL_TEMP          (60.0f)
 #define MIN_CELL_TEMP          (0.0f)
+#define WARNING_VOLTAGE_V      (3.3f)
 
 // Max current output allowed
 #define MAX_CURRENT_mA (18000.0f)
@@ -45,6 +52,8 @@
 
 #define SAFE_STATUS 0
 #define ERR_STATUS  1
+
+#define WARNING_BUZZ_DURATION_ms 750
 
 // Directly connected LV Feedbacks (no mux)
 enum directly_connected_feedbacks_indexes {
@@ -176,6 +185,12 @@ enum {
     LV_MSG_N_MSG_TO_SEND
 };
 
+// buzzer sound mods
+typedef enum {
+    NORMAL,
+    WARNING,
+} buzzer_mode;
+
 // coefficient for conversion formula from voltage input to temperature
 #define TEMP_CONV_CONST_a 127.02004615145405
 #define TEMP_CONV_CONST_b -0.06979687590434158
@@ -192,6 +207,11 @@ enum {
 #define RAD_HTIM           htim3
 #define RAD_L_PWM_TIM_CHNL TIM_CHANNEL_1
 #define RAD_R_PWM_TIM_CHNL TIM_CHANNEL_2
+
+/* BUZZER    -> TIM8 CH1 */
+#define BZZR_HTIM         htim8
+#define BZZR_TIMER        htim10
+#define BZZR_PWM_TIM_CHNL TIM_CHANNEL_1
 
 #define ERROR_TIMER htim7
 

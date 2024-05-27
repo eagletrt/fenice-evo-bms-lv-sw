@@ -6,6 +6,7 @@
 #include <stdlib.h>
 
 void set_relay(uint8_t status);
+void buzzer_beep_async(uint32_t buzzer_duration, uint8_t sound_mode);
 
 extern float mux_fb_mV[mux_fb_n_values];
 extern float mux_sensors_mA[mux_sensors_n_values];
@@ -107,11 +108,19 @@ void health_check(void) {
 void cell_voltage_check(void) {
     float voltages[CELL_COUNT] = {0};
     monitor_get_voltages(voltages);
+    float min_voltage        = 999.99;
+    static bool warning_done = false;
 
     if (!disable_voltage_checks) {
         for (size_t i = 0; i < CELL_COUNT; i++) {
             ERROR_TOGGLE_IF(voltages[i] < MIN_CELL_VOLTAGE_V, BMS_LV_CELL_UNDERVOLTAGE, i, get_current_time_ms());
             ERROR_TOGGLE_IF(voltages[i] > MAX_CELL_VOLTAGE_V, BMS_LV_CELL_OVERVOLTAGE, i, get_current_time_ms());
+            min_voltage = fmin(min_voltage, voltages[i]);
+        }
+
+        if (!warning_done && min_voltage < WARNING_VOLTAGE_V) {
+            buzzer_beep_async(WARNING_BUZZ_DURATION_ms, WARNING);
+            warning_done = true;
         }
     } else {
         for (size_t i = 0; i < CELL_COUNT; i++) {
