@@ -451,14 +451,9 @@ void HAL_TIM_Base_MspDeInit(TIM_HandleTypeDef *tim_baseHandle) {
 
 /* USER CODE BEGIN 1 */
 
-typedef enum {
-    SOUND,
-    PAUSE,
-} buzzer_sound;
-
-buzzer_mode mode;
-#define WARNING_BUZZ_LENGTH 8
-buzzer_sound warning_buz[WARNING_BUZZ_LENGTH] = {SOUND, PAUSE, SOUND, PAUSE, SOUND, PAUSE, SOUND, PAUSE};
+buzzer_mode_t mode;
+buzzer_sound_t warning_buz[WARNING_BUZZ_LENGTH] = {BUZZER_SOUND, BUZZER_PAUSE, BUZZER_SOUND, BUZZER_PAUSE, BUZZER_SOUND, BUZZER_PAUSE};
+bool is_buzzer_playing                          = false;
 
 void buzzer_init() {
     pwm_set_period(&BZZR_HTIM, 1);
@@ -466,6 +461,7 @@ void buzzer_init() {
 }
 
 void buzzer_start() {
+    is_buzzer_playing = true;
     pwm_start_channel(&BZZR_HTIM, BZZR_PWM_TIM_CHNL);
 }
 
@@ -479,7 +475,9 @@ void buzzer_beep_sync(uint32_t buzzer_duration) {
     buzzer_stop();
 }
 
-void buzzer_beep_async(uint32_t buzzer_duration, uint8_t sound_mode) {
+void buzzer_beep_async(uint32_t buzzer_duration, buzzer_mode_t sound_mode) {
+    if (is_buzzer_playing)
+        return;
     __HAL_TIM_SET_COUNTER(&BZZR_TIMER, 0);
     __HAL_TIM_SET_AUTORELOAD(&BZZR_TIMER, TIM_MS_TO_TICKS(&BZZR_TIMER, buzzer_duration));
     __HAL_TIM_CLEAR_FLAG(&BZZR_TIMER, TIM_IT_UPDATE);
@@ -490,18 +488,21 @@ void buzzer_beep_async(uint32_t buzzer_duration, uint8_t sound_mode) {
 
 void buzzer_expire_callback() {
     buzzer_stop();
-    if (mode == WARNING) {
+    if (mode == BUZZER_MODE_WARNING) {
         static uint8_t counter = 1;
         if (counter == WARNING_BUZZ_LENGTH) {
-            counter = 1;
+            is_buzzer_playing = false;
+            counter           = 1;
             return;
         }
         __HAL_TIM_SET_COUNTER(&BZZR_TIMER, 0);
         __HAL_TIM_CLEAR_FLAG(&BZZR_TIMER, TIM_IT_UPDATE);
         HAL_TIM_Base_Start_IT(&BZZR_TIMER);
-        if (warning_buz[counter++] == SOUND) {
+        if (warning_buz[counter++] == BUZZER_SOUND) {
             buzzer_start();
         }
+    } else {
+        is_buzzer_playing = false;
     }
 }
 

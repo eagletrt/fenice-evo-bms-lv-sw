@@ -8,16 +8,10 @@
 
 #define max(a, b) (a > b) ? a : b
 
-#define CAN_MESSAGES_HANDLERS                  \
-    {                                          \
-        primary_lv_set_radiator_speed_handler, \
-        primary_lv_set_pumps_speed_handler,    \
-        primary_hv_status_handler,             \
-        inverters_inv_l_rcv_handler,           \
-        inverters_inv_r_rcv_handler,           \
-        primary_flash_request_handler,         \
-        primary_flash_request_handler,         \
-        primary_ecu_status_handler,            \
+#define CAN_MESSAGES_HANDLERS                                                                                                              \
+    {                                                                                                                                      \
+        primary_lv_set_radiator_speed_handler, primary_lv_set_pumps_speed_handler, primary_hv_status_handler, inverters_inv_l_rcv_handler, \
+            inverters_inv_r_rcv_handler, primary_flash_request_handler, primary_flash_request_handler, primary_ecu_status_handler,         \
     }
 
 #define LV_VOLTAGE_CHECKS_DISABLED_TIMEOUT_ms (5000U)
@@ -53,7 +47,7 @@
 #define SAFE_STATUS 0
 #define ERR_STATUS  1
 
-#define WARNING_BUZZ_DURATION_ms 750
+#define WARNING_BUZZ_DURATION_ms 250
 
 // Directly connected LV Feedbacks (no mux)
 enum directly_connected_feedbacks_indexes {
@@ -185,11 +179,17 @@ enum {
     LV_MSG_N_MSG_TO_SEND
 };
 
-// buzzer sound mods
 typedef enum {
-    NORMAL,
-    WARNING,
-} buzzer_mode;
+    BUZZER_MODE_NORMAL,
+    BUZZER_MODE_WARNING,
+} buzzer_mode_t;
+
+typedef enum {
+    BUZZER_SOUND,
+    BUZZER_PAUSE,
+} buzzer_sound_t;
+
+#define WARNING_BUZZ_LENGTH (6U)
 
 // coefficient for conversion formula from voltage input to temperature
 #define TEMP_CONV_CONST_a 127.02004615145405

@@ -42,6 +42,8 @@ void send_i_am_alive_msg(void);
 
 void primary_lv_errors_send(void);
 
+void buzzer_beep_async(uint32_t buzzer_duration, buzzer_mode_t sound_mode);
+
 int set_led(int led1, int led2, int led3);
 void set_time_set(uint8_t status);
 void radiator_init();
@@ -145,6 +147,8 @@ state_t do_init(state_data_t *data) {
         next_state = STATE_ERROR;
     }
 
+    buzzer_beep_async(WARNING_BUZZ_DURATION_ms, BUZZER_MODE_WARNING);
+
     switch (next_state) {
         case STATE_IDLE:
         case STATE_ERROR:
@@ -193,6 +197,8 @@ state_t do_idle(state_data_t *data) {
 // valid return states: NO_CHANGE
 state_t do_error(state_data_t *data) {
     state_t next_state = NO_CHANGE;
+
+    buzzer_beep_async(65535, BUZZER_MODE_NORMAL);
 
     // cooling OFF
     // discharge ON
@@ -258,6 +264,8 @@ state_t do_tson(state_data_t *data) {
 // valid return states: STATE_ERROR
 state_t do_flashing(state_data_t *data) {
     state_t next_state = STATE_ERROR;
+
+    buzzer_beep_async(65535, BUZZER_MODE_NORMAL);
 
     // cooling no change
     // set discharge ON
@@ -370,6 +378,8 @@ void tson_to_run(state_data_t *data) { /* Your Code Here */
     if (dac_pump_get_status() == primary_lv_pumps_speed_status_off) {
         dac_pump_set_status(primary_lv_pumps_speed_status_auto);
     }
+
+    buzzer_beep_async(WARNING_BUZZ_DURATION_ms, BUZZER_MODE_NORMAL);
 }
 
 // This function is called in 1 transition:
@@ -377,6 +387,8 @@ void tson_to_run(state_data_t *data) { /* Your Code Here */
 void run_to_idle(state_data_t *data) { /* Your Code Here */
     set_discharge(0);
     set_rfe_frg(0);
+
+    buzzer_beep_async(WARNING_BUZZ_DURATION_ms, BUZZER_MODE_NORMAL);
 }
 
 /*  ____  _        _
