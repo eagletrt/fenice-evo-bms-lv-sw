@@ -14,6 +14,7 @@
 #include <string.h>
 
 uint32_t last_time_msg_sent_timestamp[LV_MSG_N_MSG_TO_SEND] = {0};
+uint32_t last_time_auto_cooling_set                         = 0;
 static float inv_temps[2]                                   = {0};
 primary_hv_status_converted_t hv_status;
 primary_ecu_status_converted_t ecu_status;
@@ -47,17 +48,6 @@ void primary_lv_cells_voltage_stats_send(void);
 void primary_lv_cells_temp_stats_send(void);
 
 int (*primary_message_handlers[N_MONITORED_MESSAGES])(can_mgr_msg_t *) = CAN_MESSAGES_HANDLERS;
-
-#if 0
-void _compile_time_check() {
-    static_assert(
-        PRIMARY_LV_CELLS_VOLTAGE_CYCLE_TIME_MS == PRIMARY_LV_CELLS_TEMP_CYCLE_TIME_MS == PRIMARY_LV_TOTAL_VOLTAGE_CYCLE_TIME_MS ==
-            PRIMARY_LV_CURRENT_BATTERY_CYCLE_TIME_MS == PRIMARY_LV_CURRENT_CHARGER_CYCLE_TIME_MS == PRIMARY_LV_FEEDBACK_CYCLE_TIME_MS ==
-            PRIMARY_LV_FEEDBACK_SD_VOLTAGE_CYCLE_TIME_MS == PRIMARY_LV_FEEDBACK_ENCLOSURE_VOLTAGE_CYCLE_TIME_MS ==
-            PRIMARY_LV_FEEDBACK_GPIO_EXTENDER_CYCLE_TIME_MS &&
-        "Please update the can messages file to send the messages with the appropriate timings");
-}
-#endif
 
 void can_init_errors_handler(int can_mgr_error_code) {
     error_set(BMS_LV_CAN, 0, HAL_GetTick());
@@ -189,13 +179,15 @@ int inverters_inv_l_rcv_handler(can_mgr_msg_t *msg) {
         inv_temps[0] = convert_t_igbt(inv_converted.t_igbt);
         float max    = max(inv_temps[0], inv_temps[1]);
 
+        // if ((get_current_time_ms() - last_time_auto_cooling_set) > 50) {
+        // last_time_auto_cooling_set = get_current_time_ms();
         if (radiator_is_auto()) {
             radiator_auto_mode(max);
         }
-
         if (dac_pump_is_auto()) {
             dac_pump_auto_mode(max);
         }
+        // }
     }
 
     return 0;
@@ -211,13 +203,15 @@ int inverters_inv_r_rcv_handler(can_mgr_msg_t *msg) {
         inv_temps[1] = convert_t_igbt(inv_converted.t_igbt);
         float max    = max(inv_temps[0], inv_temps[1]);
 
+        // if ((get_current_time_ms() - last_time_auto_cooling_set) > 50) {
+        // last_time_auto_cooling_set = get_current_time_ms();
         if (radiator_is_auto()) {
             radiator_auto_mode(max);
         }
-
         if (dac_pump_is_auto()) {
             dac_pump_auto_mode(max);
         }
+        // }
     }
 
     return 0;

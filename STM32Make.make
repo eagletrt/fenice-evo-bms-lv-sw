@@ -62,6 +62,7 @@ Core/Src/adc.c \
 Core/Src/bms_fsm.c \
 Core/Src/can.c \
 Core/Src/can_messages.c \
+Core/Src/cooling_control.c \
 Core/Src/dac.c \
 Core/Src/dac_pump.c \
 Core/Src/dma.c \
@@ -176,6 +177,7 @@ AS_INCLUDES = \
 # C includes
 C_INCLUDES =  \
 -ICore/Inc \
+-ICore/Lib/can/lib \
 -ICore/Lib/can/lib/bms \
 -ICore/Lib/can/lib/inverters \
 -ICore/Lib/can/lib/ivts \

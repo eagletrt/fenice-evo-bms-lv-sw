@@ -18,6 +18,12 @@
 #define MIN_CHARGER_CURRENT_THRESHOLD_mA      (2000.0f)
 #define MIN_BATTERY_CURRENT_THRESHOLD_mA      (50.0f)
 
+#define COOLING_AGGRESSIVENESS_LOW    (0u)
+#define COOLING_AGGRESSIVENESS_NORMAL (1u)
+#define COOLING_AGGRESSIVENESS_HIGH   (2u)
+
+#define COOLING_AGGRESSIVENESS COOLING_AGGRESSIVENESS_NORMAL
+
 // Number of cells present in the bms lv, the cell configuration is 6s4p
 #define CELL_COUNT 6
 // Number of ntc sensors present in the bms lv

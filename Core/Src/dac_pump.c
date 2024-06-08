@@ -1,6 +1,7 @@
 #include "dac_pump.h"
 
 #include "bms_lv_config.h"
+#include "cooling_control.h"
 #include "dac.h"
 
 #include <math.h>
@@ -46,32 +47,7 @@ bool dac_pump_is_auto() {
     return pump_status == primary_lv_pumps_speed_status_auto;
 }
 
-// TODO change duty cycles and temperature ranges
 void dac_pump_auto_mode(float temp) {
-    int8_t temp_rounded = (int8_t)round(temp);
-    float duty_cycle    = 0.0;
-
-    switch (temp_rounded) {
-        case INT8_MIN ... 39:
-            duty_cycle = 0.0;
-            break;
-        case 40 ... 54:
-            /* code */
-            duty_cycle = 0.2;
-            break;
-
-        case 55 ... 69:
-            /* code */
-            duty_cycle = 0.5;
-            break;
-
-        case 70 ... INT8_MAX:
-            duty_cycle = 1;
-            break;
-
-        default:
-            break;
-    }
-
-    dac_pump_set_duty_cycle(duty_cycle);
+    float pumps_duty_cycle = from_temperature_to_pumps_percentage(temp);
+    dac_pump_set_duty_cycle(pumps_duty_cycle);
 }

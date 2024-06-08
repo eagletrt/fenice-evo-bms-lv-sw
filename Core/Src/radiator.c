@@ -1,6 +1,7 @@
 #include "radiator.h"
 
 #include "bms_lv_config.h"
+#include "cooling_control.h"
 #include "pwm.h"
 #include "tim.h"
 
@@ -42,31 +43,7 @@ primary_lv_radiator_speed_status radiator_get_status() {
     return rad_status;
 }
 
-// TODO change duty cycles and temperature ranges
 void radiator_auto_mode(float temp) {
-    int8_t temp_rounded = (int8_t)round(temp);
-    float duty_cycle    = 1.0;
-    switch (temp_rounded) {
-        case INT8_MIN ... 49:
-            duty_cycle = 0.0;
-            break;
-        case 50 ... 64:
-            /* code */
-            duty_cycle = 0.2;
-            break;
-
-        case 65 ... 74:
-            /* code */
-            duty_cycle = 0.5;
-            break;
-
-        case 75 ... INT8_MAX:
-            duty_cycle = 1.0;
-            break;
-
-        default:
-            break;
-    }
-
-    radiator_set_duty_cycle(duty_cycle);
+    float radiators_duty_cycle = from_temperature_to_radiator_percentage(temp);
+    radiator_set_duty_cycle(radiator_duty_cycle);
 }
