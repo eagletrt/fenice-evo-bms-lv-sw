@@ -3,6 +3,8 @@
 
 #include "bms_lv_config.h"
 
+#if COOLING_TYPE == COOLING_TYPE_POLYNOMIAL
+
 #define COOLING_OFF_THRESHOLD (40.0f)
 
 #if COOLING_AGGRESSIVENESS == COOLING_AGGRESSIVENESS_LOW
@@ -21,6 +23,15 @@
 #define RADIATOR_COEFFICIENTS \
     { 0.169047619047619, -11.964285714285769, 208.16666666666936 }
 #endif
+
+#elif COOLING_TYPE == COOLING_TYPE_PID
+
+#define COOLING_PID_PUMPS_EFFORT     (0.8f)
+#define COOLING_PID_RADIATORS_EFFORT (0.2f)
+
+void cooling_pid_init(float kp, float ki, float kd, float sample_time, float anti_windUp);
+
+#endif  // COOLING_TYPE
 
 float from_temperature_to_pumps_percentage(float);
 float from_temperature_to_radiator_percentage(float);

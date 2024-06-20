@@ -546,3 +546,17 @@ void primary_lv_radiator_speed_send(void) {
 
     ERROR_TOGGLE_IF(can_mgr_send(bms_lv_primary_can_id, &msg) != 0, BMS_LV_CAN, 0, HAL_GetTick());
 }
+
+void send_primary_debug_1_signals(float field_1, float field_2, float field_3, float field_4) {
+    primary_debug_signal_1_converted_t converted = {.field_1 = field_1, .field_2 = field_2, .field_3 = field_3, .field_4 = field_4};
+    CANLIB_PACK_MSG(primary, PRIMARY, debug_signal_1, DEBUG_SIGNAL_1);
+
+    ERROR_TOGGLE_IF(can_mgr_send(bms_lv_primary_can_id, &msg) != 0, BMS_LV_CAN, 0, HAL_GetTick());
+}
+
+void send_primary_debug_2_signals(float field_1, float field_2, float field_3, float field_4) {
+    primary_debug_signal_2_converted_t converted = {.field_1 = field_1, .field_2 = field_2, .field_3 = field_3, .field_4 = field_4};
+    CANLIB_PACK_MSG(primary, PRIMARY, debug_signal_2, DEBUG_SIGNAL_2);
+
+    ERROR_TOGGLE_IF(can_mgr_send(bms_lv_primary_can_id, &msg) != 0, BMS_LV_CAN, 0, HAL_GetTick());
+}

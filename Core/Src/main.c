@@ -57,6 +57,10 @@ uint32_t get_current_time_ms(void) {
     return HAL_GetTick();
 }
 
+void blocking_delay_ms(uint32_t ms) {
+    HAL_Delay(ms);
+}
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/

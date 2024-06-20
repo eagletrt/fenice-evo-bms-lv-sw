@@ -22,6 +22,7 @@ ldscript: STM32F446RETx_FLASH.ld # linker script
 # Compiler definitions. The -D prefix for the compiler will be automatically added.
 cDefinitions:
   - NOLOGGER
+  # - PID_ERRORS_VECTOR
 cxxDefinitions: []
 asDefinitions: []
 
@@ -87,6 +88,7 @@ sourceFiles:
   - Core/Lib/micro-libs/min-heap/src/*.c
   - Core/Lib/micro-libs/ring-buffer/src/*.c
   - Core/Lib/invlib/inverter_conversions.c
+  - Core/Lib/micro-libs/pid/pid.c
 
 # When no makefile is present it will show a warning pop-up.
 # However when compilation without the CubeMX Makefile is desired, this can be turned of.
@@ -104,8 +106,8 @@ customMakefileRules:
 #   dependsOn: $(BUILD_DIR)/$(TARGET).elf # can be left out    
 
 # Additional flags which will be used when invoking the make command
-makeFlags:
-  - formatt
+makeFlags: []
+  # - formatt
 # - -O  # use this option when the output of make is mixed up only works for make version 4.0 and upwards
 # - --silent # use this option to silence the output of the build
     

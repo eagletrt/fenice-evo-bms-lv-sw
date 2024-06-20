@@ -55,6 +55,7 @@ Core/Lib/micro-libs/can-manager/src/can_manager.c \
 Core/Lib/micro-libs/generic-queue/generic_queue.c \
 Core/Lib/micro-libs/mcp23017/src/mcp23017.c \
 Core/Lib/micro-libs/min-heap/src/min-heap.c \
+Core/Lib/micro-libs/pid/pid.c \
 Core/Lib/micro-libs/pwm/pwm.c \
 Core/Lib/micro-libs/ring-buffer/src/ring-buffer.c \
 Core/Lib/micro-libs/timer-utils/timer_utils.c \
@@ -213,11 +214,16 @@ C_INCLUDES =  \
 -ICore/Lib/micro-libs/Unity/test/tests \
 -ICore/Lib/micro-libs/blinky/inc \
 -ICore/Lib/micro-libs/bms-monitor/inc \
+-ICore/Lib/micro-libs/can-fifo-queue-legacy \
+-ICore/Lib/micro-libs/can-fifo-queue-legacy/test \
 -ICore/Lib/micro-libs/can-manager/inc \
--ICore/Lib/micro-libs/cli \
+-ICore/Lib/micro-libs/cli-legacy \
 -ICore/Lib/micro-libs/eeprom-config \
 -ICore/Lib/micro-libs/generic-queue \
 -ICore/Lib/micro-libs/invlib \
+-ICore/Lib/micro-libs/llist-legacy \
+-ICore/Lib/micro-libs/llist-legacy/test \
+-ICore/Lib/micro-libs/llist-legacy/test/munit \
 -ICore/Lib/micro-libs/logger \
 -ICore/Lib/micro-libs/m95256 \
 -ICore/Lib/micro-libs/mcp23017/inc \
@@ -228,6 +234,7 @@ C_INCLUDES =  \
 -ICore/Lib/micro-libs/pwm \
 -ICore/Lib/micro-libs/ring-buffer/inc \
 -ICore/Lib/micro-libs/timer-utils \
+-ICore/Lib/micro-libs/ucli/inc \
 -IDrivers/CMSIS/Device/ST/STM32F4xx/Include \
 -IDrivers/CMSIS/Include \
 -IDrivers/STM32F4xx_HAL_Driver/Inc \

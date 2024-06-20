@@ -16,8 +16,8 @@ The finite state machine has:
 
 #include "bms_lv_config.h"
 #include "can_messages.h"
+#include "cooling_control.h"
 #include "primary_network.h"
-#include "stm32f4xx_hal.h"
 
 #include <stdint.h>
 
@@ -118,6 +118,12 @@ state_t do_init(state_data_t *data) {
 
     /* Your Code Here */
 
+#if COOLING_TYPE == COOLING_TYPE_PID
+    // TODO: set coefficients for PID
+    // cooling_pid_init(float kp, float ki, float kd, float sample_time, float anti_windUp);
+    cooling_pid_init(0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
+#endif
+
     // cooling OFF
     radiator_init();
     dac_pump_init();
@@ -138,8 +144,8 @@ state_t do_init(state_data_t *data) {
     monitor_routine();
     error_routine();
 
-    uint32_t prevtime = HAL_GetTick();
-    while ((HAL_GetTick() - prevtime) < 50) {
+    uint32_t prevtime = get_current_time_ms();
+    while ((get_current_time_ms() - prevtime) < 50) {
         bms_lv_routine(false);
     }
 
@@ -206,7 +212,7 @@ state_t do_error(state_data_t *data) {
     // rfe/frg OFF
     set_rfe_frg(0);
     primary_lv_errors_send();
-    HAL_Delay(1000);
+    blocking_delay_ms(1000);
     /* Your Code Here */
     // TODO: error code check, [send it via can/write to flash], shutdown
     set_relay(0);
@@ -272,7 +278,7 @@ state_t do_flashing(state_data_t *data) {
     // set rfe/frg OFF
     // SET TIME_SET ON
     set_time_set(1);
-    HAL_Delay(16);  // 15.51ms has been calculeted as charge time for che condensator
+    blocking_delay_ms(16);  // 15.51ms has been calculeted as charge time for the capacitor
     set_time_set(0);
 
     /* Your Code Here */

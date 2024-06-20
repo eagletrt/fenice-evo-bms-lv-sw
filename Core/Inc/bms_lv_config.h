@@ -18,16 +18,23 @@
 #define MIN_CHARGER_CURRENT_THRESHOLD_mA      (2000.0f)
 #define MIN_BATTERY_CURRENT_THRESHOLD_mA      (50.0f)
 
+#define COOLING_TYPE_POLYNOMIAL (0u)
+#define COOLING_TYPE_PID        (1u)
+
+#define COOLING_TYPE COOLING_TYPE_POLYNOMIAL
+// #define COOLING_TYPE COOLING_TYPE_PID
+
+#if COOLING_TYPE == COOLING_TYPE_POLYNOMIAL
 #define COOLING_AGGRESSIVENESS_LOW    (0u)
 #define COOLING_AGGRESSIVENESS_NORMAL (1u)
 #define COOLING_AGGRESSIVENESS_HIGH   (2u)
-
-#define COOLING_AGGRESSIVENESS COOLING_AGGRESSIVENESS_NORMAL
+#define COOLING_AGGRESSIVENESS        COOLING_AGGRESSIVENESS_NORMAL
+#endif
 
 // Number of cells present in the bms lv, the cell configuration is 6s4p
-#define CELL_COUNT 6
+#define CELL_COUNT (6)
 // Number of ntc sensors present in the bms lv
-#define TEMP_SENSOR_COUNT      12
+#define TEMP_SENSOR_COUNT      (12)
 #define MAX_CELL_VOLTAGE_V     (4.2f)
 #define MIN_CELL_VOLTAGE_V     (3.0f)
 #define MIN_BATTERY_VOLTAGE_mV ((MIN_CELL_VOLTAGE_V * 1000.0f) * 6.0f)
@@ -38,22 +45,22 @@
 // Max current output allowed
 #define MAX_CURRENT_mA (18000.0f)
 // Min difference threshold between V Relay and V Battery
-#define MIN_RELAY_VOLTAGE_DIFF_THRESHOLD_mV 2000.0f  // diff v relay (that could be the charger one and bat out)
+#define MIN_RELAY_VOLTAGE_DIFF_THRESHOLD_mV (2000.0f)  // diff v relay (that could be the charger one and bat out)
 // Min difference threshold between LVMS out V ans V Relay
-#define MIN_LVMS_VOLTAGE_DIFF_THRESHOLD_mV 2000.0f  // diff lvms out and relay out 5%
-#define MIN_LOW_LOGIC_LEVEL_THRESHOLD_mV   500.0f   // 500 mV
+#define MIN_LVMS_VOLTAGE_DIFF_THRESHOLD_mV (2000.0f)  // diff lvms out and relay out 5%
+#define MIN_LOW_LOGIC_LEVEL_THRESHOLD_mV   (500.0f)   // 500 mV
 // adc voltage divider value
-#define ADC_VOLTAGE_DIVIDER_MULTIPLIER 9.0f
+#define ADC_VOLTAGE_DIVIDER_MULTIPLIER (9.0f)
 // Threshold to check if an adc feedbacks is either logic high or logic low
 #define HIGH_LEVEL_THRESHOLD (1000.f) * ADC_VOLTAGE_DIVIDER_MULTIPLIER
 
-#define FLOAT_UNINITIALIZED_VALUE   -1.0f
-#define MCP23017_INTERRUPTS_ENABLED 1
+#define FLOAT_UNINITIALIZED_VALUE   (-1.0f)
+#define MCP23017_INTERRUPTS_ENABLED (1u)
 
-#define SAFE_STATUS 0
-#define ERR_STATUS  1
+#define SAFE_STATUS (0u)
+#define ERR_STATUS  (1u)
 
-#define WARNING_BUZZ_DURATION_ms 250
+#define WARNING_BUZZ_DURATION_ms (250u)
 
 // Directly connected LV Feedbacks (no mux)
 enum directly_connected_feedbacks_indexes {
@@ -198,34 +205,37 @@ typedef enum {
 #define WARNING_BUZZ_LENGTH (6U)
 
 // coefficient for conversion formula from voltage input to temperature
-#define TEMP_CONV_CONST_a 127.02004615145405
-#define TEMP_CONV_CONST_b -0.06979687590434158
-#define TEMP_CONV_CONST_c 2.1026948971763155e-05
-#define TEMP_CONV_CONST_d -3.3042552498294913e-09
-#define TEMP_CONV_CONST_e 1.3552262617901958e-13
+#define TEMP_CONV_CONST_a (127.02004615145405)
+#define TEMP_CONV_CONST_b (-0.06979687590434158)
+#define TEMP_CONV_CONST_c (2.1026948971763155e-05)
+#define TEMP_CONV_CONST_d (-3.3042552498294913e-09)
+#define TEMP_CONV_CONST_e (1.3552262617901958e-13)
 
 /* PUM RELATED STUFF */
-#define PUMP_DAC    hdac
-#define PUMP_L_CHNL DAC_CHANNEL_1
-#define PUMP_R_CHNL DAC_CHANNEL_2
+#define PUMP_DAC    (hdac)
+#define PUMP_L_CHNL (DAC_CHANNEL_1)
+#define PUMP_R_CHNL (DAC_CHANNEL_2)
 
 /* RAD_L AND RAD_R     -> TIM3 */
-#define RAD_HTIM           htim3
-#define RAD_L_PWM_TIM_CHNL TIM_CHANNEL_1
-#define RAD_R_PWM_TIM_CHNL TIM_CHANNEL_2
+#define RAD_HTIM           (htim3)
+#define RAD_L_PWM_TIM_CHNL (TIM_CHANNEL_1)
+#define RAD_R_PWM_TIM_CHNL (TIM_CHANNEL_2)
 
 /* BUZZER    -> TIM8 CH1 */
-#define BZZR_HTIM         htim8
-#define BZZR_TIMER        htim10
-#define BZZR_PWM_TIM_CHNL TIM_CHANNEL_1
+#define BZZR_HTIM         (htim8)
+#define BZZR_TIMER        (htim10)
+#define BZZR_PWM_TIM_CHNL (TIM_CHANNEL_1)
 
 #define ERROR_TIMER htim7
 
 uint32_t get_current_time_ms(void);
+void blocking_delay_ms(uint32_t ms);
 void monitor_get_voltages(float *);
 void monitor_get_temperatures(float *);
 int set_discharge(int state);
 int set_rfe_frg(int state);
 void set_relay(uint8_t status);
+void send_primary_debug_1_signals(float field_1, float field_2, float field_3, float field_4);
+void send_primary_debug_2_signals(float field_1, float field_2, float field_3, float field_4);
 
 #endif  // BMS_LV_CONFIG_H

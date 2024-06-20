@@ -16,6 +16,7 @@
 #include "min-heap.h"
 #include "ring-buffer.h"
 
+#include <stdio.h>
 #include <string.h>
 
 // Ring buffer maximum number of elements
