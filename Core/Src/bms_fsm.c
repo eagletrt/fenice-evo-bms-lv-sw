@@ -153,8 +153,6 @@ state_t do_init(state_data_t *data) {
         next_state = STATE_ERROR;
     }
 
-    buzzer_beep_async(WARNING_BUZZ_DURATION_ms, BUZZER_MODE_WARNING);
-
     switch (next_state) {
         case STATE_IDLE:
         case STATE_ERROR:
@@ -384,8 +382,6 @@ void tson_to_run(state_data_t *data) { /* Your Code Here */
     if (dac_pump_get_status() == primary_lv_pumps_speed_status_off) {
         dac_pump_set_status(primary_lv_pumps_speed_status_auto);
     }
-
-    buzzer_beep_async(WARNING_BUZZ_DURATION_ms, BUZZER_MODE_NORMAL);
 }
 
 // This function is called in 1 transition:
@@ -393,8 +389,6 @@ void tson_to_run(state_data_t *data) { /* Your Code Here */
 void run_to_idle(state_data_t *data) { /* Your Code Here */
     set_discharge(0);
     set_rfe_frg(0);
-
-    buzzer_beep_async(WARNING_BUZZ_DURATION_ms, BUZZER_MODE_NORMAL);
 }
 
 /*  ____  _        _

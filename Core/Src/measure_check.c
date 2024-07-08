@@ -108,7 +108,7 @@ void health_check(void) {
 void cell_voltage_check(void) {
     float voltages[CELL_COUNT] = {0};
     monitor_get_voltages(voltages);
-    float min_voltage = 999.99;
+    float min_voltage = 999.99f;
 
     if (!disable_voltage_checks) {
         for (size_t i = 0; i < CELL_COUNT; i++) {
@@ -117,7 +117,9 @@ void cell_voltage_check(void) {
             min_voltage = fmin(min_voltage, voltages[i]);
         }
 
-        if (min_voltage < WARNING_VOLTAGE_V) {
+        static uint32_t last_undervoltage_warning = 0;
+        if ((min_voltage < WARNING_VOLTAGE_V) && (get_current_time_ms() - last_undervoltage_warning) > BUZZER_WARNING_INTERVAL) {
+            last_undervoltage_warning = get_current_time_ms();
             buzzer_beep_async(WARNING_BUZZ_DURATION_ms, BUZZER_MODE_WARNING);
         }
     } else {
