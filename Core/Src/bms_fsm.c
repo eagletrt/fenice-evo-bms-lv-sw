@@ -36,7 +36,7 @@ void adc_routine(void);
 void can_routine(void);
 void gpio_extender_routine(void);
 void monitor_routine(void);
-bool check_total_voltage(void);
+bool is_total_voltage_ok(void);
 void all_measurements_check(void);
 void send_i_am_alive_msg(void);
 
@@ -149,7 +149,7 @@ state_t do_init(state_data_t *data) {
         bms_lv_routine(false);
     }
 
-    if (error_get_fatal() || !check_total_voltage()) {
+    if (error_get_fatal() || !is_total_voltage_ok()) {
         next_state = STATE_ERROR;
     }
 

@@ -4,6 +4,7 @@
 *.hex
 *.map
 .mxproject
+*.out
 
 **/build/
 **/Backup/*

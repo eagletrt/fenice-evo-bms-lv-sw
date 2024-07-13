@@ -36,11 +36,11 @@
 // Number of ntc sensors present in the bms lv
 #define TEMP_SENSOR_COUNT       (12)
 #define MAX_CELL_VOLTAGE_V      (4.2f)
-#define MIN_CELL_VOLTAGE_V      (2.8f)
+#define MIN_CELL_VOLTAGE_V      (3.3f)
 #define MIN_BATTERY_VOLTAGE_mV  ((MIN_CELL_VOLTAGE_V * 1000.0f) * 6.0f)
 #define MAX_CELL_TEMP           (60.0f)
-#define MIN_CELL_TEMP           (0.0f)
-#define WARNING_VOLTAGE_V       (3.3f)
+#define MIN_CELL_TEMP           (8.0f)
+#define WARNING_VOLTAGE_V       (3.5f)
 #define BUZZER_WARNING_INTERVAL (90000)
 
 // Max current output allowed
@@ -58,8 +58,8 @@
 #define FLOAT_UNINITIALIZED_VALUE   (-1.0f)
 #define MCP23017_INTERRUPTS_ENABLED (1u)
 
-#define SAFE_STATUS (0u)
-#define ERR_STATUS  (1u)
+#define HEALTH_SAFE_STATUS  (0u)
+#define HEALTH_ERROR_STATUS (1u)
 
 #define WARNING_BUZZ_DURATION_ms (250u)
 
@@ -146,17 +146,23 @@ enum mcp_controls_bank_b {
     mcp_controls_bank_b_n_pins
 };
 
-enum safe_statuses {
-    safe_statuses_chg_connect_only_mcu_pw          = 0b000010,
-    safe_statuses_mcu_on_bat_only                  = 0b000100,
-    safe_statuses_car_on_chg_only                  = 0b001011,
-    safe_statuses_chg_batt                         = 0b001110,
-    safe_statuses_car_on_bat_only                  = 0b001111,
-    safe_statuses_relay_closed_chg_car_keep_closed = 0b011110,
-    safe_statuses_car_on_chg_and_bat               = 0b011111,
-    safe_statuses_car_running                      = 0b110111,
-    safe_statuses_car_on_chg_and_bat_duplicated    = 0b111111,
-};
+#define HEALTH_IBAT_SIGN_INDEX (0U)
+#define HEALTH_IBAT_INDEX      (1U)
+#define HEALTH_ICHARGER_INDEX  (2U)
+#define HEALTH_BATTOUT_INDEX   (3U)
+#define HEALTH_RELAY_OUT_INDEX (4U)
+#define HEALTH_LVMS_OUT_INDEX  (5U)
+#define HEALTH_SIGNALS_N       (6U)
+
+#define HEALTH_SAFE_STATUS_CHG_CONNECT_ONLY_MCU_PW          (0b000010)
+#define HEALTH_SAFE_STATUS_MCU_ON_BAT_ONLY                  (0b000100)
+#define HEALTH_SAFE_STATUS_CAR_ON_CHG_ONLY                  (0b001011)
+#define HEALTH_SAFE_STATUS_CHG_BATT                         (0b001110)
+#define HEALTH_SAFE_STATUS_CAR_ON_BAT_ONLY                  (0b001111)
+#define HEALTH_SAFE_STATUS_RELAY_CLOSED_CHG_CAR_KEEP_CLOSED (0b011110)
+#define HEALTH_SAFE_STATUS_CAR_ON_CHG_AND_BAT               (0b011111)
+#define HEALTH_SAFE_STATUS_CAR_RUNNING                      (0b110111)
+#define HEALTH_SAFE_STATUS_CAR_ON_CHG_AND_BAT_DUPLICATED    (0b111111)
 
 enum {
     BMS_LV_PRIMARY_LV_SET_RADIATOR_SPEED = 0,

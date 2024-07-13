@@ -25,7 +25,7 @@ void error_update_timer_callback(uint32_t timestamp, uint16_t timeout) {
     if (dt <= 0)
         dt = 0;
     __HAL_TIM_SET_COUNTER(&ERROR_TIMER, 0);
-    __HAL_TIM_SET_AUTORELOAD(&ERROR_TIMER, TIM_MS_TO_TICKS(&ERROR_TIMER, timeout));
+    __HAL_TIM_SET_AUTORELOAD(&ERROR_TIMER, TIM_MS_TO_TICKS(&ERROR_TIMER, dt));
     __HAL_TIM_CLEAR_FLAG(&ERROR_TIMER, TIM_IT_UPDATE);
     HAL_TIM_Base_Start_IT(&ERROR_TIMER);
 }

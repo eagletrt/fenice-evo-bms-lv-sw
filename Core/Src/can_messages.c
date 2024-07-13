@@ -368,7 +368,7 @@ void primary_lv_current_charger_send(void) {
     primary_lv_current_charger_converted_t converted;
     extern float mux_sensors_mA[mux_sensors_n_values];
 
-    converted.charger_current = mux_sensors_mA[mux_sensors_s_hall2_idx] / 1000.0;
+    converted.charger_current = mux_sensors_mA[mux_sensors_s_hall2_idx] / 1000.0f;
     CANLIB_PACK_MSG(primary, PRIMARY, lv_current_charger, LV_CURRENT_CHARGER);
 
     ERROR_TOGGLE_IF(can_mgr_send(bms_lv_primary_can_id, &msg) != 0, ERROR_GROUP_BMS_LV_CAN, 0, HAL_GetTick());
