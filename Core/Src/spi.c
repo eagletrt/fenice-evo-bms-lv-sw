@@ -74,8 +74,8 @@ void monitor_routine(void) {
     /**
    * TODO: check correct timings and set appropriate errors
    */
-    ERROR_TOGGLE_IF(monitor_update_voltages() != MONITOR_OK, BMS_LV_SPI, 0, HAL_GetTick());
-    ERROR_TOGGLE_IF(monitor_update_temperatures() != MONITOR_OK, BMS_LV_SPI, 0, HAL_GetTick());
+    ERROR_TOGGLE_IF(monitor_update_voltages() != MONITOR_OK, ERROR_GROUP_BMS_LV_SPI, 0, HAL_GetTick());
+    ERROR_TOGGLE_IF(monitor_update_temperatures() != MONITOR_OK, ERROR_GROUP_BMS_LV_SPI, 0, HAL_GetTick());
 }
 
 /**

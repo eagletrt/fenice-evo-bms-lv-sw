@@ -83,7 +83,7 @@ void MX_CAN1_Init(void) {
         .SlaveStartFilterBank = 0};
     bms_lv_primary_can_id = can_mgr_init(&hcan1);
     if (bms_lv_primary_can_id < 0) {
-        error_set(BMS_LV_ADC, 0, HAL_GetTick());
+        error_set(ERROR_GROUP_BMS_LV_ADC, 0, HAL_GetTick());
     }
     if (can_mgr_config(
             bms_lv_primary_can_id,
@@ -93,7 +93,7 @@ void MX_CAN1_Init(void) {
             can_messages_states,
             can_messages_is_new,
             N_MONITORED_MESSAGES) < 0) {
-        error_set(BMS_LV_ADC, 0, HAL_GetTick());
+        error_set(ERROR_GROUP_BMS_LV_ADC, 0, HAL_GetTick());
     }
 
     /* USER CODE END CAN1_Init 2 */

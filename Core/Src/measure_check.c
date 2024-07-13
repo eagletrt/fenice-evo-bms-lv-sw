@@ -99,9 +99,9 @@ void health_check(void) {
     update_status(&health_status, i_bat, i_chg, bat_out, relay_out, lvms_out);
     check_result = check_status(health_status);
     if (check_result != SAFE_STATUS && get_current_time_ms() > 2000) {
-        error_set(BMS_LV_HEALTH, 0, get_current_time_ms());
+        error_set(ERROR_GROUP_BMS_LV_HEALTH, 0, get_current_time_ms());
     } else {
-        error_reset(BMS_LV_HEALTH, 0);
+        error_reset(ERROR_GROUP_BMS_LV_HEALTH, 0);
     }
 }
 
@@ -112,8 +112,8 @@ void cell_voltage_check(void) {
 
     if (!disable_voltage_checks) {
         for (size_t i = 0; i < CELL_COUNT; i++) {
-            ERROR_TOGGLE_IF(voltages[i] < MIN_CELL_VOLTAGE_V, BMS_LV_CELL_UNDERVOLTAGE, i, get_current_time_ms());
-            ERROR_TOGGLE_IF(voltages[i] > MAX_CELL_VOLTAGE_V, BMS_LV_CELL_OVERVOLTAGE, i, get_current_time_ms());
+            ERROR_TOGGLE_IF(voltages[i] < MIN_CELL_VOLTAGE_V, ERROR_GROUP_BMS_LV_CELL_UNDERVOLTAGE, i, get_current_time_ms());
+            ERROR_TOGGLE_IF(voltages[i] > MAX_CELL_VOLTAGE_V, ERROR_GROUP_BMS_LV_CELL_OVERVOLTAGE, i, get_current_time_ms());
             min_voltage = fmin(min_voltage, voltages[i]);
         }
 
@@ -124,8 +124,8 @@ void cell_voltage_check(void) {
         }
     } else {
         for (size_t i = 0; i < CELL_COUNT; i++) {
-            error_reset(BMS_LV_CELL_UNDERVOLTAGE, i);
-            error_reset(BMS_LV_CELL_OVERVOLTAGE, i);
+            error_reset(ERROR_GROUP_BMS_LV_CELL_UNDERVOLTAGE, i);
+            error_reset(ERROR_GROUP_BMS_LV_CELL_OVERVOLTAGE, i);
         }
     }
 }
@@ -135,14 +135,14 @@ void cell_temperature_check(void) {
     monitor_get_temperatures(temperatures);
 
     for (size_t i = 0; i < TEMP_SENSOR_COUNT; i++) {
-        ERROR_TOGGLE_IF(temperatures[i] < MIN_CELL_TEMP, BMS_LV_CELL_UNDER_TEMPERATURE, i, get_current_time_ms());
-        ERROR_TOGGLE_IF(temperatures[i] > MAX_CELL_TEMP, BMS_LV_CELL_OVER_TEMPERATURE, i, get_current_time_ms());
+        ERROR_TOGGLE_IF(temperatures[i] < MIN_CELL_TEMP, ERROR_GROUP_BMS_LV_CELL_UNDER_TEMPERATURE, i, get_current_time_ms());
+        ERROR_TOGGLE_IF(temperatures[i] > MAX_CELL_TEMP, ERROR_GROUP_BMS_LV_CELL_OVER_TEMPERATURE, i, get_current_time_ms());
     }
 }
 
 void overcurrent_check(void) {
-    ERROR_TOGGLE_IF(mux_sensors_mA[mux_sensors_s_hall1_idx] > MAX_CURRENT_mA, BMS_LV_OVER_CURRENT, 1, get_current_time_ms());
-    ERROR_TOGGLE_IF(mux_sensors_mA[mux_sensors_s_hall2_idx] > MAX_CURRENT_mA, BMS_LV_OVER_CURRENT, 2, get_current_time_ms());
+    ERROR_TOGGLE_IF(mux_sensors_mA[mux_sensors_s_hall1_idx] > MAX_CURRENT_mA, ERROR_GROUP_BMS_LV_OVER_CURRENT, 1, get_current_time_ms());
+    ERROR_TOGGLE_IF(mux_sensors_mA[mux_sensors_s_hall2_idx] > MAX_CURRENT_mA, ERROR_GROUP_BMS_LV_OVER_CURRENT, 2, get_current_time_ms());
 }
 
 void all_measurements_check(void) {
