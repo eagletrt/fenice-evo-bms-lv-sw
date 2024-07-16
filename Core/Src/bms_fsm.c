@@ -341,7 +341,7 @@ state_t do_run(state_data_t *data) {
 // 1. from init to idle
 void init_to_idle(state_data_t *data) { /* Your Code Here */
     buzzer_beep_async(1, BUZZER_MODE_NORMAL);
-    // set_rfe_frg(1);
+    set_rfe_frg(1);
     set_relay(1);
     set_led(1, 0, 0);
 }
