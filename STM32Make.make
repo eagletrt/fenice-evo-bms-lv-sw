@@ -59,7 +59,12 @@ Core/Lib/micro-libs/pid/pid.c \
 Core/Lib/micro-libs/pwm/pwm.c \
 Core/Lib/micro-libs/ring-buffer/src/ring-buffer.c \
 Core/Lib/micro-libs/timer-utils/timer_utils.c \
+Core/Lib/micro-libs/ucli/src/ucli-dictionary.c \
+Core/Lib/micro-libs/ucli/src/ucli-fsm.c \
+Core/Lib/micro-libs/ucli/src/ucli-parser.c \
+Core/Lib/micro-libs/ucli/src/ucli.c \
 Core/Src/adc.c \
+Core/Src/bms_cli.c \
 Core/Src/bms_fsm.c \
 Core/Src/can.c \
 Core/Src/can_messages.c \

@@ -14,10 +14,12 @@ The finite state machine has:
 
 #include "bms_fsm.h"
 
+#include "bms_cli.h"
 #include "bms_lv_config.h"
 #include "can_messages.h"
 #include "cooling_control.h"
 #include "primary_network.h"
+#include "ucli.h"
 
 #include <stdint.h>
 
@@ -54,7 +56,7 @@ primary_lv_pumps_speed_status dac_pump_get_status();
 primary_lv_radiator_speed_status radiator_get_status();
 
 void bms_lv_routine(bool checks_enabled) {
-    send_i_am_alive_msg();
+    // send_i_am_alive_msg();
     error_routine();
     adc_routine();
     can_routine();
@@ -63,6 +65,7 @@ void bms_lv_routine(bool checks_enabled) {
     if (checks_enabled) {
         all_measurements_check();
     }
+    ucli_routine();
 }
 
 uint8_t inverter_state = 0;
@@ -143,6 +146,7 @@ state_t do_init(state_data_t *data) {
 
     monitor_routine();
     error_routine();
+    bms_cli_init();
 
     uint32_t prevtime = get_current_time_ms();
     while ((get_current_time_ms() - prevtime) < 50) {
@@ -340,7 +344,7 @@ state_t do_run(state_data_t *data) {
 // This function is called in 1 transition:
 // 1. from init to idle
 void init_to_idle(state_data_t *data) { /* Your Code Here */
-    buzzer_beep_async(1, BUZZER_MODE_NORMAL);
+    buzzer_beep_async(500, BUZZER_MODE_NORMAL);
     // set_rfe_frg(1);
     set_relay(1);
     set_led(1, 0, 0);
