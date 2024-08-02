@@ -15,7 +15,7 @@ extern float dc_fb_mV[directly_connected_fbs_n_values];
 extern uint8_t mcp23017_feedbacks_state[8];
 uint8_t health_status = 0;
 
-/* Due to hardware problems of the LTC and the electric circuit, voltage readings during charging are sometimes incorrect */
+/* Due to hardware problems (maybe) of the LTC and the electric circuit, voltage readings during charging are sometimes incorrect */
 bool disable_voltage_checks = false;
 
 // Index is from right to left

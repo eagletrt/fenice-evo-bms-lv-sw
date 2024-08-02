@@ -135,7 +135,7 @@ int primary_lv_set_radiator_speed_handler(can_mgr_msg_t *msg) {
     primary_lv_set_radiator_speed_converted_t radiator_converted;
     primary_lv_set_radiator_speed_unpack(&radiator_raw, msg->data, PRIMARY_LV_SET_RADIATOR_SPEED_BYTE_SIZE);
     primary_lv_set_radiator_speed_raw_to_conversion_struct(&radiator_converted, &radiator_raw);
-    radiator_converted.radiator_speed = round(radiator_converted.radiator_speed * 10) / 10;
+    radiator_converted.radiator_speed = (float)((float)((int)(radiator_converted.radiator_speed * 10.0f)) / 10.0f);
 
     if (radiator_converted.status == primary_lv_set_radiator_speed_status_auto) {
         radiator_set_status(primary_lv_radiator_speed_status_auto);
@@ -558,6 +558,22 @@ void send_primary_debug_1_signals(float field_1, float field_2, float field_3, f
 void send_primary_debug_2_signals(float field_1, float field_2, float field_3, float field_4) {
     primary_debug_signal_2_converted_t converted = {
         .device_id = primary_debug_signal_2_device_id_lv, .field_1 = field_1, .field_2 = field_2, .field_3 = field_3};
+    CANLIB_PACK_MSG(primary, PRIMARY, debug_signal_2, DEBUG_SIGNAL_2);
+
+    ERROR_TOGGLE_IF(can_mgr_send(bms_lv_primary_can_id, &msg) != 0, ERROR_GROUP_BMS_LV_CAN, 0, HAL_GetTick());
+}
+
+void send_primary_debug_3_signals(float field_1, float field_2, float field_3, float field_4) {
+    primary_debug_signal_1_converted_t converted = {
+        .device_id = primary_debug_signal_3_device_id_lv, .field_1 = field_1, .field_2 = field_2, .field_3 = field_3};
+    CANLIB_PACK_MSG(primary, PRIMARY, debug_signal_1, DEBUG_SIGNAL_1);
+
+    ERROR_TOGGLE_IF(can_mgr_send(bms_lv_primary_can_id, &msg) != 0, ERROR_GROUP_BMS_LV_CAN, 0, HAL_GetTick());
+}
+
+void send_primary_debug_4_signals(float field_1, float field_2, float field_3, float field_4) {
+    primary_debug_signal_2_converted_t converted = {
+        .device_id = primary_debug_signal_4_device_id_lv, .field_1 = field_1, .field_2 = field_2, .field_3 = field_3};
     CANLIB_PACK_MSG(primary, PRIMARY, debug_signal_2, DEBUG_SIGNAL_2);
 
     ERROR_TOGGLE_IF(can_mgr_send(bms_lv_primary_can_id, &msg) != 0, ERROR_GROUP_BMS_LV_CAN, 0, HAL_GetTick());
