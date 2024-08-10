@@ -44,6 +44,8 @@ primary_lv_radiator_speed_status radiator_get_status() {
 }
 
 void radiator_auto_mode(float temp) {
-    float radiators_duty_cycle = from_temperature_to_radiator_percentage(temp);
-    radiator_set_duty_cycle(radiators_duty_cycle);
+    float local_radiators_duty_cycle = from_temperature_to_radiator_percentage(temp);
+    local_radiators_duty_cycle = fminf(local_radiators_duty_cycle, 1.0f);
+    local_radiators_duty_cycle = fmaxf(local_radiators_duty_cycle, 0.0f);
+    radiator_set_duty_cycle(local_radiators_duty_cycle);
 }

@@ -21,7 +21,7 @@
     }
 
 #define LV_VOLTAGE_CHECKS_DISABLED_TIMEOUT_ms (5000U)
-#define MIN_CHARGER_CURRENT_THRESHOLD_mA      (1000.0f)
+#define MIN_CHARGER_CURRENT_THRESHOLD_mA      (1500.0f)
 #define MIN_BATTERY_CURRENT_THRESHOLD_mA      (50.0f)
 
 #define COOLING_TYPE_POLYNOMIAL (0u)
@@ -42,12 +42,12 @@
 // Number of ntc sensors present in the bms lv
 #define TEMP_SENSOR_COUNT       (12)
 #define MAX_CELL_VOLTAGE_V      (4.2f)
-#define MIN_CELL_VOLTAGE_V      (3.3f)
+#define MIN_CELL_VOLTAGE_V      (3.2f)
 #define MIN_BATTERY_VOLTAGE_mV  ((MIN_CELL_VOLTAGE_V * 1000.0f) * 6.0f)
 #define MAX_CELL_TEMP           (60.0f)
 #define MIN_CELL_TEMP           (8.0f)
 #define WARNING_VOLTAGE_V       (3.5f)
-#define BUZZER_WARNING_INTERVAL (90000)
+#define BUZZER_WARNING_INTERVAL (90000U)
 
 // Max current output allowed
 #define MAX_CURRENT_mA (18000.0f)

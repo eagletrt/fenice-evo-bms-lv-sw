@@ -48,6 +48,8 @@ bool dac_pump_is_auto() {
 }
 
 void dac_pump_auto_mode(float temp) {
-    float pumps_duty_cycle = from_temperature_to_pumps_percentage(temp);
-    dac_pump_set_duty_cycle(pumps_duty_cycle);
+    float local_pumps_duty_cycle = from_temperature_to_pumps_percentage(temp);
+    local_pumps_duty_cycle = fminf(local_pumps_duty_cycle, 1.0f);
+    local_pumps_duty_cycle = fmaxf(local_pumps_duty_cycle, 0.0f);
+    dac_pump_set_duty_cycle(local_pumps_duty_cycle);
 }
