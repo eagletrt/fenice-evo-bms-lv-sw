@@ -135,7 +135,7 @@ int primary_lv_set_radiator_speed_handler(can_mgr_msg_t *msg) {
     primary_lv_set_radiator_speed_converted_t radiator_converted;
     primary_lv_set_radiator_speed_unpack(&radiator_raw, msg->data, PRIMARY_LV_SET_RADIATOR_SPEED_BYTE_SIZE);
     primary_lv_set_radiator_speed_raw_to_conversion_struct(&radiator_converted, &radiator_raw);
-    radiator_converted.radiator_speed = (float)((float)((int)(radiator_converted.radiator_speed * 10.0f)) / 10.0f);
+    radiator_converted.radiator_speed = roundf(radiator_converted.radiator_speed * 10.0f) / 10.0f;
 
     if (radiator_converted.status == primary_lv_set_radiator_speed_status_auto) {
         radiator_set_status(primary_lv_radiator_speed_status_auto);
@@ -152,7 +152,7 @@ int primary_lv_set_pumps_speed_handler(can_mgr_msg_t *msg) {
     primary_lv_set_pumps_speed_converted_t pumps_converted;
     primary_lv_set_pumps_speed_unpack(&pumps_raw, msg->data, PRIMARY_LV_SET_PUMPS_SPEED_BYTE_SIZE);
     primary_lv_set_pumps_speed_raw_to_conversion_struct(&pumps_converted, &pumps_raw);
-    pumps_converted.pumps_speed = (float)((float)((int)(pumps_converted.pumps_speed * 10.0f)) / 10.0f);
+    pumps_converted.pumps_speed = roundf(pumps_converted.pumps_speed * 10.0f) / 10.0f;
 
     if (pumps_converted.status == primary_lv_set_pumps_speed_status_auto) {
         dac_pump_set_status(primary_lv_pumps_speed_status_auto);
