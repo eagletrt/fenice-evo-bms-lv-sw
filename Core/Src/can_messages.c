@@ -1,6 +1,7 @@
 #include "can_messages.h"
 
 #include "bms_fsm.h"
+#include "cooling_control.h"
 #include "dac_pump.h"
 #include "inverter_conversions.h"
 #include "lv_errors.h"
@@ -22,6 +23,7 @@ primary_ecu_status_converted_t ecu_status;
 int primary_lv_set_radiator_speed_handler(can_mgr_msg_t *msg);
 int primary_lv_set_pumps_speed_handler(can_mgr_msg_t *msg);
 int primary_hv_status_handler(can_mgr_msg_t *msg);
+int primary_lv_cooling_aggressiveness_handler(can_mgr_msg_t *msg);
 int inverters_inv_l_rcv_handler(can_mgr_msg_t *msg);
 int inverters_inv_r_rcv_handler(can_mgr_msg_t *msg);
 int primary_flash_request_handler(can_mgr_msg_t *msg);
@@ -165,9 +167,30 @@ int primary_lv_set_pumps_speed_handler(can_mgr_msg_t *msg) {
 }
 
 int primary_hv_status_handler(can_mgr_msg_t *msg) {
+    // TODO: this is useless
     primary_hv_status_t ts_status_raw;
     primary_hv_status_unpack(&ts_status_raw, msg->data, PRIMARY_HV_STATUS_BYTE_SIZE);
     primary_hv_status_raw_to_conversion_struct(&hv_status, &ts_status_raw);
+    return 0;
+}
+
+int primary_lv_cooling_aggressiveness_handler(can_mgr_msg_t *msg) {
+    primary_lv_cooling_aggressiveness_t lv_cooling_aggressiveness_raw;
+    primary_lv_cooling_aggressiveness_converted_t lv_cooling_aggressiveness_converted;
+    primary_lv_cooling_aggressiveness_unpack(&lv_cooling_aggressiveness_raw, msg->data, PRIMARY_LV_COOLING_AGGRESSIVENESS_BYTE_SIZE);
+    primary_lv_cooling_aggressiveness_raw_to_conversion_struct(&lv_cooling_aggressiveness_converted, &lv_cooling_aggressiveness_raw);
+
+    switch (lv_cooling_aggressiveness_converted.status) {
+        case primary_lv_cooling_aggressiveness_status_weak: {
+            set_cooling_control(cooling_control_weak);
+        }
+        case primary_lv_cooling_aggressiveness_status_normal: {
+            set_cooling_control(cooling_control_normal);
+        }
+        case primary_lv_cooling_aggressiveness_status_aggressive: {
+            set_cooling_control(cooling_control_aggressive);
+        }
+    }
     return 0;
 }
 

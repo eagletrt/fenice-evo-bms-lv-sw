@@ -8,17 +8,16 @@
 
 #define max(a, b) (a > b) ? a : b
 
-#define CAN_MESSAGES_HANDLERS                  \
-    {                                          \
-        primary_lv_set_radiator_speed_handler, \
-        primary_lv_set_pumps_speed_handler,    \
-        primary_hv_status_handler,             \
-        inverters_inv_l_rcv_handler,           \
-        inverters_inv_r_rcv_handler,           \
-        primary_flash_request_handler,         \
-        primary_flash_request_handler,         \
-        primary_ecu_status_handler,            \
-    }
+#define CAN_MESSAGES_HANDLERS               \
+    {primary_lv_set_radiator_speed_handler, \
+     primary_lv_set_pumps_speed_handler,    \
+     primary_hv_status_handler,             \
+     inverters_inv_l_rcv_handler,           \
+     inverters_inv_r_rcv_handler,           \
+     primary_flash_request_handler,         \
+     primary_flash_request_handler,         \
+     primary_ecu_status_handler,            \
+     primary_lv_cooling_aggressiveness_handler}
 
 #define LV_VOLTAGE_CHECKS_DISABLED_TIMEOUT_ms (5000U)
 #define MIN_CHARGER_CURRENT_THRESHOLD_mA      (1500.0f)
@@ -179,6 +178,7 @@ enum {
     BMS_LV_PRIMARY_LV_CAN_FLASH_REQ_STEERING_WHEEL,
     BMS_LV_PRIMARY_LV_CAN_FLASH_REQ_TLM,
     BMS_LV_PRIMARY_ECU_STATUS,
+    BMS_LV_PRIMARY_COOLING_AGGRESSIVENESS,
     N_MONITORED_MESSAGES
 };
 

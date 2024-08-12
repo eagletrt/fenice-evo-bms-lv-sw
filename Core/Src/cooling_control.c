@@ -2,21 +2,51 @@
 
 #if COOLING_TYPE == COOLING_TYPE_POLYNOMIAL
 
-static double pumps_coeffs[3]     = PUMPS_COEFFICIENTS;
-static double radiators_coeffs[3] = RADIATOR_COEFFICIENTS;
+cooling_control_t current_cooling_control = cooling_control_normal;
+
+static const float pumps_coefficients_weak[3]          = {0.06267081819754365f, -4.42371562013492f, 77.31101885486927f};
+static const float radiator_coefficients_weak[3]       = {0.06860264519838995f, -5.620327774583103f, 108.79025301897668f};
+static const float pumps_coefficients_normal[3]        = {0.12628672845592465f, -9.320252415697114f, 168.96963123644622f};
+static const float radiator_coefficients_normal[3]     = {0.10048676874059574f, -8.098327285600545f, 157.13956987344554f};
+static const float pumps_coefficients_aggressive[3]    = {0.2689248895434452f, -19.290132547864452f, 339.2268041237107f};
+static const float radiator_coefficients_aggressive[3] = {0.169047619047619f, -11.964285714285769f, 208.16666666666936f};
+
+void set_cooling_control(cooling_control_t cc) {
+    current_cooling_control = cc;
+}
 
 float from_temperature_to_pumps_percentage(float temp) {
     if (temp < COOLING_OFF_THRESHOLD) {
         return 0.0f;
     }
-    return ((pumps_coeffs[0] * temp * temp) + (pumps_coeffs[1] * temp) + pumps_coeffs[2]) / 100.0f;
+    if (current_cooling_control == cooling_control_weak) {
+        return ((pumps_coefficients_weak[0] * temp * temp) + (pumps_coefficients_weak[1] * temp) + pumps_coefficients_weak[2]) / 100.0f;
+    } else if (current_cooling_control == cooling_control_normal) {
+        return ((pumps_coefficients_normal[0] * temp * temp) + (pumps_coefficients_normal[1] * temp) + pumps_coefficients_normal[2]) /
+               100.0f;
+    } else {  // if (current_cooling_control == cooling_control_aggressive) {
+        return ((pumps_coefficients_aggressive[0] * temp * temp) + (pumps_coefficients_aggressive[1] * temp) +
+                pumps_coefficients_aggressive[2]) /
+               100.0f;
+    }
 }
 
 float from_temperature_to_radiator_percentage(float temp) {
     if (temp < COOLING_OFF_THRESHOLD) {
         return 0.0f;
     }
-    return ((radiators_coeffs[0] * temp * temp) + (radiators_coeffs[1] * temp) + radiators_coeffs[2]) / 100.0f;
+    if (current_cooling_control == cooling_control_weak) {
+        return ((radiator_coefficients_weak[0] * temp * temp) + (radiator_coefficients_weak[1] * temp) + radiator_coefficients_weak[2]) /
+               100.0f;
+    } else if (current_cooling_control == cooling_control_normal) {
+        return ((radiator_coefficients_normal[0] * temp * temp) + (radiator_coefficients_normal[1] * temp) +
+                radiator_coefficients_normal[2]) /
+               100.0f;
+    } else {  // if (current_cooling_control == cooling_control_aggressive) {
+        return ((radiator_coefficients_aggressive[0] * temp * temp) + (radiator_coefficients_aggressive[1] * temp) +
+                radiator_coefficients_aggressive[2]) /
+               100.0f;
+    }
 }
 
 #elif COOLING_TYPE == COOLING_TYPE_PID
