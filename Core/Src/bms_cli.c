@@ -35,12 +35,14 @@ void print_commands(int argc, char args[][10]);
 void print_voltages(int argc, char args[][10]);
 void print_temperature(int argc, char args[][10]);
 void print_health_status(int argc, char args[][10]);
+void set_rfe_frg_on(int argc, char args[][10]);
 
 ucli_command_t bms_cli_commands[] = {
-    {.name = "commands", .function = &print_commands},
-    {.name = "volt", .function = &print_voltages},
-    {.name = "temp", .function = &print_temperature},
-    {.name = "health", .function = &print_health_status},
+    {.name = "commands", .function = print_commands},
+    {.name = "volt", .function = print_voltages},
+    {.name = "temp", .function = print_temperature},
+    {.name = "health", .function = print_health_status},
+    {.name = "rfe", .function = set_rfe_frg_on}
 };
 const size_t bms_cli_commands_size = sizeof(bms_cli_commands) / sizeof(bms_cli_commands[0]);
 
@@ -182,6 +184,16 @@ void print_health_status(int argc, char args[][10]) {
     memcpy(bms_cli_buffer + buff_idx, delimiter, strlen(delimiter));
     buff_idx += strlen(delimiter);
 
+    serial_tx(bms_cli_buffer, buff_idx);
+}
+
+void set_rfe_frg_on(int argc, char args[][10]) {
+    (void)argc;
+    (void)args;
+
+    int buff_idx = 0;
+    set_rfe_frg(1);
+    buff_idx = snprintf(bms_cli_buffer, BMS_CLI_BUFFER_SIZE, "\r\nSetting rfe frg pins ON\r\n");
     serial_tx(bms_cli_buffer, buff_idx);
 }
 

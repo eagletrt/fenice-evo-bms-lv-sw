@@ -250,5 +250,7 @@ int set_rfe_frg(int state);
 void set_relay(uint8_t status);
 void send_primary_debug_1_signals(float field_1, float field_2, float field_3, float field_4);
 void send_primary_debug_2_signals(float field_1, float field_2, float field_3, float field_4);
+void send_primary_debug_3_signals(float field_1, float field_2, float field_3, float field_4);
+void send_primary_debug_4_signals(float field_1, float field_2, float field_3, float field_4);
 
 #endif  // BMS_LV_CONFIG_H

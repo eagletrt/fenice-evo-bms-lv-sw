@@ -168,8 +168,8 @@ void cell_temperature_check(void) {
 }
 
 void overcurrent_check(void) {
-    ERROR_TOGGLE_IF(mux_sensors_mA[mux_sensors_s_hall1_idx] > MAX_CURRENT_mA, ERROR_GROUP_BMS_LV_OVER_CURRENT, 1, get_current_time_ms());
-    ERROR_TOGGLE_IF(mux_sensors_mA[mux_sensors_s_hall2_idx] > MAX_CURRENT_mA, ERROR_GROUP_BMS_LV_OVER_CURRENT, 2, get_current_time_ms());
+    ERROR_TOGGLE_IF(fabsf(mux_sensors_mA[mux_sensors_s_hall1_idx]) > MAX_CURRENT_mA, ERROR_GROUP_BMS_LV_OVER_CURRENT, 1, get_current_time_ms());
+    ERROR_TOGGLE_IF(fabsf(mux_sensors_mA[mux_sensors_s_hall2_idx]) > MAX_CURRENT_mA, ERROR_GROUP_BMS_LV_OVER_CURRENT, 2, get_current_time_ms());
 }
 
 void all_measurements_check(void) {
