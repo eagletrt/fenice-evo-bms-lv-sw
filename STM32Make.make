@@ -22,7 +22,7 @@ TARGET = fenice-bms-lv
 # debug build?
 DEBUG = 1
 # optimization
-OPT = -Og
+OPT = -O0
 
 
 #######################################
@@ -72,10 +72,9 @@ Core/Src/cooling_control.c \
 Core/Src/dac.c \
 Core/Src/dac_pump.c \
 Core/Src/dma.c \
+Core/Src/error_simple.c \
 Core/Src/gpio.c \
 Core/Src/i2c.c \
-Core/Src/lv_error_handler.c \
-Core/Src/lv_errors.c \
 Core/Src/main.c \
 Core/Src/measure_check.c \
 Core/Src/radiator.c \

@@ -31,26 +31,31 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
     }
 }
 
-void print_commands(int argc, char args[][10]);
-void print_voltages(int argc, char args[][10]);
-void print_temperature(int argc, char args[][10]);
-void print_health_status(int argc, char args[][10]);
-void set_rfe_frg_on(int argc, char args[][10]);
+void print_commands(int argc, char args[][50]);
+void print_voltages(int argc, char args[][50]);
+void print_temperature(int argc, char args[][50]);
+void print_health_status(int argc, char args[][50]);
+void set_rfe_frg_on(int argc, char args[][50]);
+void set_rfe_frg_off(int argc, char args[][50]);
+void discharge_on(int argc, char args[][50]);
+void discharge_off(int argc, char args[][50]);
 
 ucli_command_t bms_cli_commands[] = {
     {.name = "commands", .function = print_commands},
     {.name = "volt", .function = print_voltages},
     {.name = "temp", .function = print_temperature},
     {.name = "health", .function = print_health_status},
-    {.name = "rfe", .function = set_rfe_frg_on}
-};
+    {.name = "rfe_frg_on", .function = set_rfe_frg_on},
+    {.name = "rfe_frg_off", .function = set_rfe_frg_off},
+    {.name = "discharge_on", .function = discharge_on},
+    {.name = "discharge_off", .function = discharge_off}};
 const size_t bms_cli_commands_size = sizeof(bms_cli_commands) / sizeof(bms_cli_commands[0]);
 
 #define BMS_CLI_BUFFER_SIZE (256U)
 char bms_cli_buffer[BMS_CLI_BUFFER_SIZE];
 
 /** Print all commands */
-void print_commands(int argc, char args[][10]) {
+void print_commands(int argc, char args[][50]) {
     (void)argc;
     (void)args;
     int buff_idx             = 0;
@@ -77,7 +82,7 @@ void print_commands(int argc, char args[][10]) {
 }
 
 /** Print voltages */
-void print_voltages(int argc, char args[][10]) {
+void print_voltages(int argc, char args[][50]) {
     (void)argc;
     (void)args;
 
@@ -113,7 +118,7 @@ void print_voltages(int argc, char args[][10]) {
 }
 
 /** Print temperatures */
-void print_temperature(int argc, char args[][10]) {
+void print_temperature(int argc, char args[][50]) {
     (void)argc;
     (void)args;
 
@@ -149,7 +154,7 @@ void print_temperature(int argc, char args[][10]) {
 }
 
 /** Print health status */
-void print_health_status(int argc, char args[][10]) {
+void print_health_status(int argc, char args[][50]) {
     (void)argc;
     (void)args;
 
@@ -174,8 +179,8 @@ void print_health_status(int argc, char args[][10]) {
     };
     */
 
-    extern uint8_t health_status;
-    added_chars = snprintf(bms_cli_buffer + buff_idx, BMS_CLI_BUFFER_SIZE - buff_idx, "%d", (int)health_status);
+    uint8_t health_status = get_health_status();
+    added_chars           = snprintf(bms_cli_buffer + buff_idx, BMS_CLI_BUFFER_SIZE - buff_idx, "%d", (int)health_status);
     if (added_chars < 0) {
         // TODO handle errors
     }
@@ -187,13 +192,43 @@ void print_health_status(int argc, char args[][10]) {
     serial_tx(bms_cli_buffer, buff_idx);
 }
 
-void set_rfe_frg_on(int argc, char args[][10]) {
+void set_rfe_frg_on(int argc, char args[][50]) {
     (void)argc;
     (void)args;
 
     int buff_idx = 0;
     set_rfe_frg(1);
-    buff_idx = snprintf(bms_cli_buffer, BMS_CLI_BUFFER_SIZE, "\r\nSetting rfe frg pins ON\r\n");
+    buff_idx = snprintf(bms_cli_buffer, BMS_CLI_BUFFER_SIZE, "\r\nSetting RFE FRG pins ON\r\n");
+    serial_tx(bms_cli_buffer, buff_idx);
+}
+
+void set_rfe_frg_off(int argc, char args[][50]) {
+    (void)argc;
+    (void)args;
+
+    int buff_idx = 0;
+    set_rfe_frg(0);
+    buff_idx = snprintf(bms_cli_buffer, BMS_CLI_BUFFER_SIZE, "\r\nSetting RFE FRG pins OFF\r\n");
+    serial_tx(bms_cli_buffer, buff_idx);
+}
+
+void discharge_off(int argc, char args[][50]) {
+    (void)argc;
+    (void)args;
+
+    int buff_idx = 0;
+    set_discharge(1);
+    buff_idx = snprintf(bms_cli_buffer, BMS_CLI_BUFFER_SIZE, "\r\nSetting discharge OFF\r\n");
+    serial_tx(bms_cli_buffer, buff_idx);
+}
+
+void discharge_on(int argc, char args[][50]) {
+    (void)argc;
+    (void)args;
+
+    int buff_idx = 0;
+    set_discharge(0);
+    buff_idx = snprintf(bms_cli_buffer, BMS_CLI_BUFFER_SIZE, "\r\nSetting discharge ON\r\n");
     serial_tx(bms_cli_buffer, buff_idx);
 }
 

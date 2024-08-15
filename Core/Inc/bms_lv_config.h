@@ -20,8 +20,11 @@
      primary_lv_cooling_aggressiveness_handler}
 
 #define LV_VOLTAGE_CHECKS_DISABLED_TIMEOUT_ms (5000U)
-#define MIN_CHARGER_CURRENT_THRESHOLD_mA      (1500.0f)
+#define MIN_CHARGER_CURRENT_THRESHOLD_mA      (2500.0f)
 #define MIN_BATTERY_CURRENT_THRESHOLD_mA      (50.0f)
+#define LVMS_THRESHOLD_mV                     (20000)
+#define HEALTH_STATUS_CHECK_ENABLED           (0U)
+#define WAIT_BEFORE_CHECKING_LVMS_ms          (2000U)
 
 #define COOLING_TYPE_POLYNOMIAL (0u)
 #define COOLING_TYPE_PID        (1u)
@@ -45,8 +48,8 @@
 #define MIN_BATTERY_VOLTAGE_mV  ((MIN_CELL_VOLTAGE_V * 1000.0f) * 6.0f)
 #define MAX_CELL_TEMP           (60.0f)
 #define MIN_CELL_TEMP           (8.0f)
-#define WARNING_VOLTAGE_V       (3.5f)
-#define BUZZER_WARNING_INTERVAL (90000U)
+#define WARNING_VOLTAGE_V       (3.3f)
+#define BUZZER_WARNING_INTERVAL (60000U)
 
 // Max current output allowed
 #define MAX_CURRENT_mA (18000.0f)
@@ -159,9 +162,9 @@ enum mcp_controls_bank_b {
 #define HEALTH_LVMS_OUT_INDEX  (5U)
 #define HEALTH_SIGNALS_N       (6U)
 
-#define HEALTH_SAFE_STATUS_CHG_CONNECT_ONLY_MCU_PW          (0b000010)
-#define HEALTH_SAFE_STATUS_MCU_ON_BAT_ONLY                  (0b000100)
-#define HEALTH_SAFE_STATUS_CAR_ON_CHG_ONLY                  (0b001011)
+// #define HEALTH_SAFE_STATUS_CHG_CONNECT_ONLY_MCU_PW          (0b000010) // not safe (?)
+#define HEALTH_SAFE_STATUS_MCU_ON_BAT_ONLY (0b000100)
+// #define HEALTH_SAFE_STATUS_CAR_ON_CHG_ONLY                  (0b001011) // not safe (?)
 #define HEALTH_SAFE_STATUS_CHG_BATT                         (0b001110)
 #define HEALTH_SAFE_STATUS_CAR_ON_BAT_ONLY                  (0b001111)
 #define HEALTH_SAFE_STATUS_RELAY_CLOSED_CHG_CAR_KEEP_CLOSED (0b011110)
@@ -248,9 +251,10 @@ void monitor_get_temperatures(float *);
 int set_discharge(int state);
 int set_rfe_frg(int state);
 void set_relay(uint8_t status);
-void send_primary_debug_1_signals(float field_1, float field_2, float field_3, float field_4);
-void send_primary_debug_2_signals(float field_1, float field_2, float field_3, float field_4);
-void send_primary_debug_3_signals(float field_1, float field_2, float field_3, float field_4);
-void send_primary_debug_4_signals(float field_1, float field_2, float field_3, float field_4);
+void send_primary_debug_1_signals(float field_1, float field_2, float field_3);
+void send_primary_debug_2_signals(float field_1, float field_2, float field_3);
+void send_primary_debug_3_signals(float field_1, float field_2, float field_3);
+void send_primary_debug_4_signals(float field_1, float field_2, float field_3);
+uint8_t get_health_status(void);
 
 #endif  // BMS_LV_CONFIG_H

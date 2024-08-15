@@ -1,5 +1,5 @@
 #include "bms_lv_config.h"
-#include "lv_errors.h"
+#include "error_simple.h"
 
 #include <float.h>
 #include <math.h>
@@ -13,7 +13,11 @@ extern float mux_fb_mV[mux_fb_n_values];
 extern float mux_sensors_mA[mux_sensors_n_values];
 extern float dc_fb_mV[directly_connected_fbs_n_values];
 extern uint8_t mcp23017_feedbacks_state[8];
-uint8_t health_status = 0;
+static volatile uint8_t health_status = 0;
+
+uint8_t get_health_status(void) {
+    return health_status;
+}
 
 /* Due to hardware problems (maybe) of the LTC and the electric circuit, voltage readings during charging are sometimes incorrect */
 bool disable_voltage_checks = false;
@@ -39,7 +43,7 @@ uint8_t convert_lvms_out_ang_to_state(int relay_out, int lvms_out) {
         (lvms_out > MIN_LOW_LOGIC_LEVEL_THRESHOLD_mV));
 }
 
-uint8_t get_health_status(float i_bat, float i_chg, int bat_out, int relay_out, int lvms_out) {
+uint8_t set_health_status(float i_bat, float i_chg, int bat_out, int relay_out, int lvms_out) {
     uint8_t current_status = 0;
     set_bit(&current_status, (HEALTH_SIGNALS_N - HEALTH_IBAT_SIGN_INDEX - 1), i_bat < 0 ? 0 : 1);
     set_bit(&current_status, (HEALTH_SIGNALS_N - HEALTH_IBAT_INDEX - 1), i_bat < MIN_BATTERY_CURRENT_THRESHOLD_mA ? 0 : 1);
@@ -50,12 +54,9 @@ uint8_t get_health_status(float i_bat, float i_chg, int bat_out, int relay_out, 
     return current_status;
 }
 
+#if HEALTH_STATUS_CHECK_ENABLED
 int check_status(uint8_t current_status) {
     switch (current_status) {
-        case HEALTH_SAFE_STATUS_CHG_CONNECT_ONLY_MCU_PW:
-        case HEALTH_SAFE_STATUS_CAR_ON_CHG_ONLY:
-            set_relay(0);
-            break;
         case HEALTH_SAFE_STATUS_MCU_ON_BAT_ONLY:
         case HEALTH_SAFE_STATUS_CHG_BATT:
         case HEALTH_SAFE_STATUS_CAR_ON_BAT_ONLY:
@@ -72,6 +73,7 @@ int check_status(uint8_t current_status) {
 
     return HEALTH_SAFE_STATUS;
 }
+#endif
 
 uint32_t last_charging_time = 0;
 bool lv_is_charging         = false;
@@ -90,22 +92,33 @@ bool disable_undervoltage_and_overvoltage_checks(float i_chg) {
 void health_check(void) {
     float i_bat, i_chg = 0.0f;
     int bat_out, relay_out, lvms_out = 0;
-    uint8_t check_result = HEALTH_ERROR_STATUS;
-    i_bat                = mux_sensors_mA[mux_sensors_s_hall1_idx];
-    i_chg                = mux_sensors_mA[mux_sensors_s_hall2_idx];
-    bat_out              = (int)dc_fb_mV[fb_batt_out_idx];
-    relay_out            = (int)dc_fb_mV[fb_relay_out_idx];
-    lvms_out             = (int)dc_fb_mV[fb_lvms_out_idx];
+    i_bat     = mux_sensors_mA[mux_sensors_s_hall1_idx];
+    i_chg     = mux_sensors_mA[mux_sensors_s_hall2_idx];
+    bat_out   = (int)dc_fb_mV[fb_batt_out_idx];
+    relay_out = (int)dc_fb_mV[fb_relay_out_idx];
+    lvms_out  = (int)dc_fb_mV[fb_lvms_out_idx];
 
     disable_voltage_checks = disable_undervoltage_and_overvoltage_checks(i_chg);
+    send_primary_debug_4_signals((float)disable_voltage_checks, dc_fb_mV[fb_lvms_out_idx] / 30000.0f, 0.0f);
 
-    health_status = get_health_status(i_bat, i_chg, bat_out, relay_out, lvms_out);
-    check_result  = check_status(health_status);
+    health_status = set_health_status(i_bat, i_chg, bat_out, relay_out, lvms_out);
+
+#if HEALTH_STATUS_CHECK_ENABLED
+    uint8_t check_result = HEALTH_ERROR_STATUS;
+    check_result         = check_status(health_status);
+
     if (check_result != HEALTH_SAFE_STATUS && get_current_time_ms() > 2000) {
-        error_set(ERROR_GROUP_BMS_LV_HEALTH, 0, get_current_time_ms());
+        error_simple_set(ERROR_GROUP_BMS_LV_HEALTH, 0);
     } else {
-        error_reset(ERROR_GROUP_BMS_LV_HEALTH, 0);
+        error_simple_reset(ERROR_GROUP_BMS_LV_HEALTH, 0);
     }
+#else
+    if (lvms_out < LVMS_THRESHOLD_mV && get_current_time_ms() > WAIT_BEFORE_CHECKING_LVMS_ms) {
+        error_simple_set(ERROR_GROUP_BMS_LV_HEALTH, 0);
+    } else {
+        error_simple_reset(ERROR_GROUP_BMS_LV_HEALTH, 0);
+    }
+#endif
 }
 
 void single_cells_voltages_checks(void) {
@@ -118,10 +131,10 @@ void single_cells_voltages_checks(void) {
     } else {
         for (size_t i = 0; i < CELL_COUNT; i++) {
             if (voltages[i] < MIN_CELL_VOLTAGE_V) {
-                error_set(ERROR_GROUP_BMS_LV_CELL_UNDERVOLTAGE, i, get_current_time_ms());
+                error_simple_set(ERROR_GROUP_BMS_LV_CELL_UNDERVOLTAGE, i);
             }
             if (voltages[i] > MAX_CELL_VOLTAGE_V) {
-                error_set(ERROR_GROUP_BMS_LV_CELL_OVERVOLTAGE, i, get_current_time_ms());
+                error_simple_set(ERROR_GROUP_BMS_LV_CELL_OVERVOLTAGE, i);
             }
             min_voltage = fmin(min_voltage, voltages[i]);
         }
@@ -134,10 +147,10 @@ void single_cells_voltages_checks(void) {
 
         for (size_t i = 0; i < CELL_COUNT; i++) {
             if (voltages[i] >= MIN_CELL_VOLTAGE_V) {
-                error_reset(ERROR_GROUP_BMS_LV_CELL_UNDERVOLTAGE, i);
+                error_simple_reset(ERROR_GROUP_BMS_LV_CELL_UNDERVOLTAGE, i);
             }
             if (voltages[i] <= MAX_CELL_VOLTAGE_V) {
-                error_reset(ERROR_GROUP_BMS_LV_CELL_OVERVOLTAGE, i);
+                error_simple_reset(ERROR_GROUP_BMS_LV_CELL_OVERVOLTAGE, i);
             }
         }
     }
@@ -162,14 +175,14 @@ void cell_temperature_check(void) {
     monitor_get_temperatures(temperatures);
 
     for (size_t i = 0; i < TEMP_SENSOR_COUNT; i++) {
-        ERROR_TOGGLE_IF(temperatures[i] < MIN_CELL_TEMP, ERROR_GROUP_BMS_LV_CELL_UNDER_TEMPERATURE, i, get_current_time_ms());
-        ERROR_TOGGLE_IF(temperatures[i] > MAX_CELL_TEMP, ERROR_GROUP_BMS_LV_CELL_OVER_TEMPERATURE, i, get_current_time_ms());
+        ERROR_TOGGLE_IF(temperatures[i] < MIN_CELL_TEMP, ERROR_GROUP_BMS_LV_CELL_UNDER_TEMPERATURE, i);
+        ERROR_TOGGLE_IF(temperatures[i] > MAX_CELL_TEMP, ERROR_GROUP_BMS_LV_CELL_OVER_TEMPERATURE, i);
     }
 }
 
 void overcurrent_check(void) {
-    ERROR_TOGGLE_IF(fabsf(mux_sensors_mA[mux_sensors_s_hall1_idx]) > MAX_CURRENT_mA, ERROR_GROUP_BMS_LV_OVER_CURRENT, 1, get_current_time_ms());
-    ERROR_TOGGLE_IF(fabsf(mux_sensors_mA[mux_sensors_s_hall2_idx]) > MAX_CURRENT_mA, ERROR_GROUP_BMS_LV_OVER_CURRENT, 2, get_current_time_ms());
+    ERROR_TOGGLE_IF(fabsf(mux_sensors_mA[mux_sensors_s_hall1_idx]) > MAX_CURRENT_mA, ERROR_GROUP_BMS_LV_OVER_CURRENT, 1);
+    ERROR_TOGGLE_IF(fabsf(mux_sensors_mA[mux_sensors_s_hall2_idx]) > MAX_CURRENT_mA, ERROR_GROUP_BMS_LV_OVER_CURRENT, 2);
 }
 
 void all_measurements_check(void) {

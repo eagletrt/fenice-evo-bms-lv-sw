@@ -10,7 +10,7 @@ target: fenice-bms-lv
 # Can be C or C++
 language: C
 
-optimization: Og
+optimization: O0
 
 # MCU settings
 targetMCU: stm32f4x

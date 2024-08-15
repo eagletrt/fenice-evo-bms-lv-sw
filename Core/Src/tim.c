@@ -506,12 +506,12 @@ void buzzer_expire_callback() {
     }
 }
 
-void error_expire(void);
+// void error_expire(void); // old error library
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
     if (htim->Instance == ERROR_TIMER.Instance) {
         HAL_TIM_Base_Stop_IT(htim);
-        error_expire();
+        // error_expire(); // old error library
     } else if (htim->Instance == BZZR_TIMER.Instance) {
         HAL_TIM_Base_Stop_IT(htim);
         buzzer_expire_callback();

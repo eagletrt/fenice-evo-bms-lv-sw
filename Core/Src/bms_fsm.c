@@ -18,6 +18,7 @@ The finite state machine has:
 #include "bms_lv_config.h"
 #include "can_messages.h"
 #include "cooling_control.h"
+#include "error_simple.h"
 #include "primary_network.h"
 #include "ucli.h"
 
@@ -25,7 +26,7 @@ The finite state machine has:
 
 void lv_error_init(void);
 void error_routine(void);
-bool error_get_fatal(void);
+size_t get_expired_errors(void);
 
 void adc_routine_start(void);
 void monitor_init(void);
@@ -55,16 +56,12 @@ void radiator_set_status(primary_lv_radiator_speed_status status);
 primary_lv_pumps_speed_status dac_pump_get_status();
 primary_lv_radiator_speed_status radiator_get_status();
 
-void bms_lv_routine(bool checks_enabled) {
-    // send_i_am_alive_msg();
-    error_routine();
+void bms_lv_routine() {
+    error_simple_routine();
     adc_routine();
     can_routine();
     gpio_extender_routine();
     monitor_routine();
-    if (checks_enabled) {
-        all_measurements_check();
-    }
     ucli_routine();
 }
 
@@ -136,8 +133,6 @@ state_t do_init(state_data_t *data) {
     set_rfe_frg(0);
     buzzer_init();
 
-    // check error codes
-    lv_error_init();
     adc_routine_start();
     adc_vrefint_calibration();
     monitor_init();
@@ -145,15 +140,15 @@ state_t do_init(state_data_t *data) {
     can_start();
 
     monitor_routine();
-    error_routine();
     bms_cli_init();
 
     uint32_t prevtime = get_current_time_ms();
-    while ((get_current_time_ms() - prevtime) < 50) {
-        bms_lv_routine(false);
+    while ((get_current_time_ms() - prevtime) < 500) {
+        bms_lv_routine();
     }
+    all_measurements_check();
 
-    if (error_get_fatal() || !is_total_voltage_ok()) {
+    if (get_expired_errors() || !is_total_voltage_ok()) {
         next_state = STATE_ERROR;
     }
 
@@ -179,12 +174,14 @@ state_t do_idle(state_data_t *data) {
     // rfe/frg OFF
 
     /* Your Code Here */
-    bms_lv_routine(true);
+    bms_lv_routine();
+    all_measurements_check();
+    if (get_expired_errors() > 0) {
+        next_state = STATE_ERROR;
+    }
 
     if (hv_status.status == primary_hv_status_status_airn_close) {
         next_state = STATE_TSON;
-    } else if (error_get_fatal()) {
-        next_state = STATE_ERROR;
     }
 
     switch (next_state) {
@@ -240,7 +237,11 @@ state_t do_tson(state_data_t *data) {
     // until car_status == {...}
 
     /* Your Code Here */
-    bms_lv_routine(true);
+    bms_lv_routine();
+    all_measurements_check();
+    if (get_expired_errors() > 0) {
+        next_state = STATE_ERROR;
+    }
 
     // until car_status == {...}
     // car_status -> drive -> run
@@ -250,7 +251,7 @@ state_t do_tson(state_data_t *data) {
         hv_status.status != primary_hv_status_status_airn_close && hv_status.status != primary_hv_status_status_precharge &&
         hv_status.status != primary_hv_status_status_airp_close && hv_status.status != primary_hv_status_status_ts_on) {
         next_state = STATE_IDLE;
-    } else if (error_get_fatal()) {
+    } else if (get_expired_errors()) {
         next_state = STATE_ERROR;
     }
     // car_status -> idle -> idle
@@ -305,13 +306,17 @@ state_t do_run(state_data_t *data) {
     // set rfe/frg ON
 
     /* Your Code Here */
-    bms_lv_routine(true);
+    bms_lv_routine();
+    all_measurements_check();
+    if (get_expired_errors() > 0) {
+        next_state = STATE_ERROR;
+    }
 
     // until car_status == run
     if (!(ecu_status.status == primary_ecu_status_status_drive || ecu_status.status == primary_ecu_status_status_enable_inv_drive) ||
         hv_status.status != primary_hv_status_status_ts_on) {
         next_state = STATE_IDLE;
-    } else if (error_get_fatal()) {
+    } else if (get_expired_errors()) {
         next_state = STATE_ERROR;
     }
 
@@ -345,7 +350,6 @@ state_t do_run(state_data_t *data) {
 // 1. from init to idle
 void init_to_idle(state_data_t *data) { /* Your Code Here */
     buzzer_beep_async(500, BUZZER_MODE_NORMAL);
-    // set_rfe_frg(1);
     set_relay(1);
     set_led(1, 0, 0);
 }

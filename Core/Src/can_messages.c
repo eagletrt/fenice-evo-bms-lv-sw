@@ -3,8 +3,8 @@
 #include "bms_fsm.h"
 #include "cooling_control.h"
 #include "dac_pump.h"
+#include "error_simple.h"
 #include "inverter_conversions.h"
-#include "lv_errors.h"
 #include "mcp23017.h"
 #include "radiator.h"
 #include "spi.h"
@@ -52,7 +52,7 @@ void primary_lv_cells_temp_stats_send(void);
 int (*primary_message_handlers[N_MONITORED_MESSAGES])(can_mgr_msg_t *) = CAN_MESSAGES_HANDLERS;
 
 void can_init_errors_handler(int can_mgr_error_code) {
-    error_set(ERROR_GROUP_BMS_LV_CAN, 0, HAL_GetTick());
+    error_simple_set(ERROR_GROUP_BMS_LV_CAN, 0);
 }
 
 int can_mgr_from_id_to_index(int can_id, int msg_id) {
@@ -83,7 +83,7 @@ int can_mgr_from_id_to_index(int can_id, int msg_id) {
 
 int can_start(void) {
     if (can_mgr_start(bms_lv_primary_can_id) < 0) {
-        error_set(ERROR_GROUP_BMS_LV_CAN, 0, HAL_GetTick());
+        error_simple_set(ERROR_GROUP_BMS_LV_CAN, 0);
     }
     return 0;
 }
@@ -201,18 +201,15 @@ int inverters_inv_l_rcv_handler(can_mgr_msg_t *msg) {
     inverters_inv_l_rcv_raw_to_conversion_struct(&inv_converted, &inv_raw);
 
     if (inv_converted.rcv_mux == inverters_inv_l_rcv_rcv_mux_ID_4A_T_Igbt) {
-        inv_temps[0] = convert_t_igbt(inv_converted.t_igbt);
-        float max    = max(inv_temps[0], inv_temps[1]);
+        inv_temps[0]   = convert_t_igbt(inv_converted.t_igbt);
+        float temp_max = fmaxf(inv_temps[0], inv_temps[1]);
 
-        // if ((get_current_time_ms() - last_time_auto_cooling_set) > 50) {
-        // last_time_auto_cooling_set = get_current_time_ms();
         if (radiator_is_auto()) {
-            radiator_auto_mode(max);
+            radiator_auto_mode(temp_max);
         }
         if (dac_pump_is_auto()) {
-            dac_pump_auto_mode(max);
+            dac_pump_auto_mode(temp_max);
         }
-        // }
     }
 
     return 0;
@@ -225,18 +222,15 @@ int inverters_inv_r_rcv_handler(can_mgr_msg_t *msg) {
     inverters_inv_r_rcv_raw_to_conversion_struct(&inv_converted, &inv_raw);
 
     if (inv_converted.rcv_mux == inverters_inv_r_rcv_rcv_mux_ID_4A_T_Igbt) {
-        inv_temps[1] = convert_t_igbt(inv_converted.t_igbt);
-        float max    = max(inv_temps[0], inv_temps[1]);
+        inv_temps[1]   = convert_t_igbt(inv_converted.t_igbt);
+        float temp_max = fmaxf(inv_temps[0], inv_temps[1]);
 
-        // if ((get_current_time_ms() - last_time_auto_cooling_set) > 50) {
-        // last_time_auto_cooling_set = get_current_time_ms();
         if (radiator_is_auto()) {
-            radiator_auto_mode(max);
+            radiator_auto_mode(temp_max);
         }
         if (dac_pump_is_auto()) {
-            dac_pump_auto_mode(max);
+            dac_pump_auto_mode(temp_max);
         }
-        // }
     }
 
     return 0;
@@ -269,7 +263,7 @@ void primary_lv_cells_voltage_send(void) {
         converted.voltage_1   = voltages[1 + i * 3];
         converted.voltage_2   = voltages[2 + i * 3];
         CANLIB_PACK_MSG(primary, PRIMARY, lv_cells_voltage, LV_CELLS_VOLTAGE);
-        ERROR_TOGGLE_IF(can_mgr_send(bms_lv_primary_can_id, &msg) != 0, ERROR_GROUP_BMS_LV_CAN, 0, HAL_GetTick());
+        ERROR_TOGGLE_IF(can_mgr_send(bms_lv_primary_can_id, &msg) != 0, ERROR_GROUP_BMS_LV_CAN, 0);
     }
 }
 
@@ -284,7 +278,7 @@ void primary_lv_cells_temp_send(void) {
         converted.temp_1      = temperatures[1 + i * 3];
         converted.temp_2      = temperatures[2 + i * 3];
         CANLIB_PACK_MSG(primary, PRIMARY, lv_cells_temp, LV_CELLS_TEMP);
-        ERROR_TOGGLE_IF(can_mgr_send(bms_lv_primary_can_id, &msg) != 0, ERROR_GROUP_BMS_LV_CAN, 0, HAL_GetTick());
+        ERROR_TOGGLE_IF(can_mgr_send(bms_lv_primary_can_id, &msg) != 0, ERROR_GROUP_BMS_LV_CAN, 0);
     }
 }
 
@@ -296,7 +290,7 @@ void primary_lv_total_voltage_send(void) {
     converted.total = voltages[0] + voltages[1] + voltages[2] + voltages[3] + voltages[4] + voltages[5];
     CANLIB_PACK_MSG(primary, PRIMARY, lv_total_voltage, LV_TOTAL_VOLTAGE);
 
-    ERROR_TOGGLE_IF(can_mgr_send(bms_lv_primary_can_id, &msg) != 0, ERROR_GROUP_BMS_LV_CAN, 0, HAL_GetTick());
+    ERROR_TOGGLE_IF(can_mgr_send(bms_lv_primary_can_id, &msg) != 0, ERROR_GROUP_BMS_LV_CAN, 0);
 }
 
 void primary_lv_status_send(void) {
@@ -328,18 +322,16 @@ void primary_lv_status_send(void) {
 
     CANLIB_PACK_MSG(primary, PRIMARY, lv_status, LV_STATUS);
 
-    ERROR_TOGGLE_IF(can_mgr_send(bms_lv_primary_can_id, &msg) != 0, ERROR_GROUP_BMS_LV_CAN, 0, HAL_GetTick());
+    ERROR_TOGGLE_IF(can_mgr_send(bms_lv_primary_can_id, &msg) != 0, ERROR_GROUP_BMS_LV_CAN, 0);
 }
 
 void primary_lv_errors_send(void) {
     primary_lv_errors_converted_t converted = {0};
-    size_t expired_count                    = error_get_expired();
+    size_t expired_count                    = get_expired_errors();
 
     if (expired_count > 0) {
-        Error expired_instance[expired_count];
-        error_dump_expired(expired_instance);
-        for (size_t i = 0; i < expired_count; i++) {
-            switch (expired_instance[i].group) {
+        for (size_t i = 0; i < expired_count; ++i) {
+            switch (error_simple_dump[i].group) {
                 case ERROR_GROUP_BMS_LV_CELL_UNDERVOLTAGE:
                     converted.errors_cell_undervoltage = 1;
                     break;
@@ -376,7 +368,7 @@ void primary_lv_errors_send(void) {
         }
     }
 
-    extern uint8_t health_status;
+    uint8_t health_status                         = get_health_status();
     converted.health_signals_sign_battery_current = (health_status >> 5) % 2;
     converted.health_signals_battery_current      = (health_status >> 4) % 2;
     converted.health_signals_charger_current      = (health_status >> 3) % 2;
@@ -386,7 +378,7 @@ void primary_lv_errors_send(void) {
 
     CANLIB_PACK_MSG(primary, PRIMARY, lv_errors, LV_ERRORS);
 
-    ERROR_TOGGLE_IF(can_mgr_send(bms_lv_primary_can_id, &msg) != 0, ERROR_GROUP_BMS_LV_CAN, 0, HAL_GetTick());
+    ERROR_TOGGLE_IF(can_mgr_send(bms_lv_primary_can_id, &msg) != 0, ERROR_GROUP_BMS_LV_CAN, 0);
 }
 
 void primary_lv_current_charger_send(void) {
@@ -396,7 +388,7 @@ void primary_lv_current_charger_send(void) {
     converted.charger_current = mux_sensors_mA[mux_sensors_s_hall2_idx] / 1000.0f;
     CANLIB_PACK_MSG(primary, PRIMARY, lv_current_charger, LV_CURRENT_CHARGER);
 
-    ERROR_TOGGLE_IF(can_mgr_send(bms_lv_primary_can_id, &msg) != 0, ERROR_GROUP_BMS_LV_CAN, 0, HAL_GetTick());
+    ERROR_TOGGLE_IF(can_mgr_send(bms_lv_primary_can_id, &msg) != 0, ERROR_GROUP_BMS_LV_CAN, 0);
 }
 
 void primary_lv_current_battery_send(void) {
@@ -406,7 +398,7 @@ void primary_lv_current_battery_send(void) {
     converted.lv_current = mux_sensors_mA[mux_sensors_s_hall1_idx] / 1000.0;
     CANLIB_PACK_MSG(primary, PRIMARY, lv_current_battery, LV_CURRENT_BATTERY);
 
-    ERROR_TOGGLE_IF(can_mgr_send(bms_lv_primary_can_id, &msg) != 0, ERROR_GROUP_BMS_LV_CAN, 0, HAL_GetTick());
+    ERROR_TOGGLE_IF(can_mgr_send(bms_lv_primary_can_id, &msg) != 0, ERROR_GROUP_BMS_LV_CAN, 0);
 }
 
 void primary_lv_feedback_sd_send(void) {
@@ -420,7 +412,7 @@ void primary_lv_feedback_sd_send(void) {
 
     CANLIB_PACK_MSG(primary, PRIMARY, lv_feedback_sd_voltage, LV_FEEDBACK_SD_VOLTAGE);
 
-    ERROR_TOGGLE_IF(can_mgr_send(bms_lv_primary_can_id, &msg) != 0, ERROR_GROUP_BMS_LV_CAN, 0, HAL_GetTick());
+    ERROR_TOGGLE_IF(can_mgr_send(bms_lv_primary_can_id, &msg) != 0, ERROR_GROUP_BMS_LV_CAN, 0);
 }
 
 void primary_lv_feedback_enclosure_send(void) {
@@ -434,7 +426,7 @@ void primary_lv_feedback_enclosure_send(void) {
 
     CANLIB_PACK_MSG(primary, PRIMARY, lv_feedback_enclosure_voltage, LV_FEEDBACK_ENCLOSURE_VOLTAGE);
 
-    ERROR_TOGGLE_IF(can_mgr_send(bms_lv_primary_can_id, &msg) != 0, ERROR_GROUP_BMS_LV_CAN, 0, HAL_GetTick());
+    ERROR_TOGGLE_IF(can_mgr_send(bms_lv_primary_can_id, &msg) != 0, ERROR_GROUP_BMS_LV_CAN, 0);
 }
 
 void primary_lv_feedback_ts_send(void) {
@@ -448,7 +440,7 @@ void primary_lv_feedback_ts_send(void) {
 
     CANLIB_PACK_MSG(primary, PRIMARY, lv_feedback_ts_voltage, LV_FEEDBACK_TS_VOLTAGE);
 
-    ERROR_TOGGLE_IF(can_mgr_send(bms_lv_primary_can_id, &msg) != 0, ERROR_GROUP_BMS_LV_CAN, 0, HAL_GetTick());
+    ERROR_TOGGLE_IF(can_mgr_send(bms_lv_primary_can_id, &msg) != 0, ERROR_GROUP_BMS_LV_CAN, 0);
 }
 
 void primary_lv_feedback_gpio_send(void) {
@@ -468,7 +460,7 @@ void primary_lv_feedback_gpio_send(void) {
 
     CANLIB_PACK_MSG(primary, PRIMARY, lv_feedback_gpio_extender, LV_FEEDBACK_GPIO_EXTENDER);
 
-    ERROR_TOGGLE_IF(can_mgr_send(bms_lv_primary_can_id, &msg) != 0, ERROR_GROUP_BMS_LV_CAN, 0, HAL_GetTick());
+    ERROR_TOGGLE_IF(can_mgr_send(bms_lv_primary_can_id, &msg) != 0, ERROR_GROUP_BMS_LV_CAN, 0);
 }
 
 #define LV_FEEDBACK_THRESHOLD (12.0f)
@@ -487,7 +479,7 @@ void primary_lv_feedback_send(void) {
     };
     CANLIB_PACK_MSG(primary, PRIMARY, lv_feedback, LV_FEEDBACK);
 
-    ERROR_TOGGLE_IF(can_mgr_send(bms_lv_primary_can_id, &msg) != 0, ERROR_GROUP_BMS_LV_CAN, 0, HAL_GetTick());
+    ERROR_TOGGLE_IF(can_mgr_send(bms_lv_primary_can_id, &msg) != 0, ERROR_GROUP_BMS_LV_CAN, 0);
 }
 
 extern bool lv_is_charging;
@@ -495,7 +487,7 @@ extern bool lv_is_charging;
 void primary_lv_charging_status_send(void) {
     primary_lv_charging_status_converted_t converted = {.status = lv_is_charging};
     CANLIB_PACK_MSG(primary, PRIMARY, lv_charging_status, LV_CHARGING_STATUS);
-    ERROR_TOGGLE_IF(can_mgr_send(bms_lv_primary_can_id, &msg) != 0, ERROR_GROUP_BMS_LV_CAN, 0, HAL_GetTick());
+    ERROR_TOGGLE_IF(can_mgr_send(bms_lv_primary_can_id, &msg) != 0, ERROR_GROUP_BMS_LV_CAN, 0);
 }
 
 void primary_lv_cells_voltage_stats_send(void) {
@@ -511,7 +503,7 @@ void primary_lv_cells_voltage_stats_send(void) {
 
     primary_lv_cells_voltage_stats_converted_t converted = {.avg = vavg, .delta = (vmax - vmin), .max = vmax, .min = vmin};
     CANLIB_PACK_MSG(primary, PRIMARY, lv_cells_voltage_stats, LV_CELLS_VOLTAGE_STATS);
-    ERROR_TOGGLE_IF(can_mgr_send(bms_lv_primary_can_id, &msg) != 0, ERROR_GROUP_BMS_LV_CAN, 0, HAL_GetTick());
+    ERROR_TOGGLE_IF(can_mgr_send(bms_lv_primary_can_id, &msg) != 0, ERROR_GROUP_BMS_LV_CAN, 0);
 }
 
 void primary_lv_cells_temp_stats_send(void) {
@@ -527,7 +519,7 @@ void primary_lv_cells_temp_stats_send(void) {
 
     primary_lv_cells_temp_stats_converted_t converted = {.avg = vavg, .max = vmax, .min = vmin};
     CANLIB_PACK_MSG(primary, PRIMARY, lv_cells_temp_stats, LV_CELLS_TEMP_STATS);
-    ERROR_TOGGLE_IF(can_mgr_send(bms_lv_primary_can_id, &msg) != 0, ERROR_GROUP_BMS_LV_CAN, 0, HAL_GetTick());
+    ERROR_TOGGLE_IF(can_mgr_send(bms_lv_primary_can_id, &msg) != 0, ERROR_GROUP_BMS_LV_CAN, 0);
 }
 
 void primary_inverter_connection_status_send(void) {
@@ -542,7 +534,7 @@ void primary_inverter_connection_status_send(void) {
 
     CANLIB_PACK_MSG(primary, PRIMARY, lv_inverter_connection_status, LV_INVERTER_CONNECTION_STATUS);
 
-    ERROR_TOGGLE_IF(can_mgr_send(bms_lv_primary_can_id, &msg) != 0, ERROR_GROUP_BMS_LV_CAN, 0, HAL_GetTick());
+    ERROR_TOGGLE_IF(can_mgr_send(bms_lv_primary_can_id, &msg) != 0, ERROR_GROUP_BMS_LV_CAN, 0);
 }
 
 void primary_lv_version_send(void) {
@@ -551,7 +543,7 @@ void primary_lv_version_send(void) {
     converted.canlib_build_time    = CANLIB_BUILD_TIME;
     CANLIB_PACK_MSG(primary, PRIMARY, lv_version, LV_VERSION);
 
-    ERROR_TOGGLE_IF(can_mgr_send(bms_lv_primary_can_id, &msg) != 0, ERROR_GROUP_BMS_LV_CAN, 0, HAL_GetTick());
+    ERROR_TOGGLE_IF(can_mgr_send(bms_lv_primary_can_id, &msg) != 0, ERROR_GROUP_BMS_LV_CAN, 0);
 }
 
 void primary_lv_pump_speed_send(void) {
@@ -560,7 +552,7 @@ void primary_lv_pump_speed_send(void) {
     converted.pumps_speed = dac_pump_get_duty_cycle();
     CANLIB_PACK_MSG(primary, PRIMARY, lv_pumps_speed, LV_PUMPS_SPEED);
 
-    ERROR_TOGGLE_IF(can_mgr_send(bms_lv_primary_can_id, &msg) != 0, ERROR_GROUP_BMS_LV_CAN, 0, HAL_GetTick());
+    ERROR_TOGGLE_IF(can_mgr_send(bms_lv_primary_can_id, &msg) != 0, ERROR_GROUP_BMS_LV_CAN, 0);
 }
 
 void primary_lv_radiator_speed_send(void) {
@@ -569,37 +561,37 @@ void primary_lv_radiator_speed_send(void) {
     converted.radiator_speed = radiator_get_duty_cycle();
     CANLIB_PACK_MSG(primary, PRIMARY, lv_radiator_speed, LV_RADIATOR_SPEED);
 
-    ERROR_TOGGLE_IF(can_mgr_send(bms_lv_primary_can_id, &msg) != 0, ERROR_GROUP_BMS_LV_CAN, 0, HAL_GetTick());
+    ERROR_TOGGLE_IF(can_mgr_send(bms_lv_primary_can_id, &msg) != 0, ERROR_GROUP_BMS_LV_CAN, 0);
 }
 
-void send_primary_debug_1_signals(float field_1, float field_2, float field_3, float field_4) {
+void send_primary_debug_1_signals(float field_1, float field_2, float field_3) {
     primary_debug_signal_1_converted_t converted = {
         .device_id = primary_debug_signal_1_device_id_lv, .field_1 = field_1, .field_2 = field_2, .field_3 = field_3};
     CANLIB_PACK_MSG(primary, PRIMARY, debug_signal_1, DEBUG_SIGNAL_1);
 
-    ERROR_TOGGLE_IF(can_mgr_send(bms_lv_primary_can_id, &msg) != 0, ERROR_GROUP_BMS_LV_CAN, 0, HAL_GetTick());
+    ERROR_TOGGLE_IF(can_mgr_send(bms_lv_primary_can_id, &msg) != 0, ERROR_GROUP_BMS_LV_CAN, 0);
 }
 
-void send_primary_debug_2_signals(float field_1, float field_2, float field_3, float field_4) {
+void send_primary_debug_2_signals(float field_1, float field_2, float field_3) {
     primary_debug_signal_2_converted_t converted = {
         .device_id = primary_debug_signal_2_device_id_lv, .field_1 = field_1, .field_2 = field_2, .field_3 = field_3};
     CANLIB_PACK_MSG(primary, PRIMARY, debug_signal_2, DEBUG_SIGNAL_2);
 
-    ERROR_TOGGLE_IF(can_mgr_send(bms_lv_primary_can_id, &msg) != 0, ERROR_GROUP_BMS_LV_CAN, 0, HAL_GetTick());
+    ERROR_TOGGLE_IF(can_mgr_send(bms_lv_primary_can_id, &msg) != 0, ERROR_GROUP_BMS_LV_CAN, 0);
 }
 
-void send_primary_debug_3_signals(float field_1, float field_2, float field_3, float field_4) {
+void send_primary_debug_3_signals(float field_1, float field_2, float field_3) {
     primary_debug_signal_1_converted_t converted = {
         .device_id = primary_debug_signal_3_device_id_lv, .field_1 = field_1, .field_2 = field_2, .field_3 = field_3};
     CANLIB_PACK_MSG(primary, PRIMARY, debug_signal_1, DEBUG_SIGNAL_1);
 
-    ERROR_TOGGLE_IF(can_mgr_send(bms_lv_primary_can_id, &msg) != 0, ERROR_GROUP_BMS_LV_CAN, 0, HAL_GetTick());
+    ERROR_TOGGLE_IF(can_mgr_send(bms_lv_primary_can_id, &msg) != 0, ERROR_GROUP_BMS_LV_CAN, 0);
 }
 
-void send_primary_debug_4_signals(float field_1, float field_2, float field_3, float field_4) {
+void send_primary_debug_4_signals(float field_1, float field_2, float field_3) {
     primary_debug_signal_2_converted_t converted = {
         .device_id = primary_debug_signal_4_device_id_lv, .field_1 = field_1, .field_2 = field_2, .field_3 = field_3};
     CANLIB_PACK_MSG(primary, PRIMARY, debug_signal_2, DEBUG_SIGNAL_2);
 
-    ERROR_TOGGLE_IF(can_mgr_send(bms_lv_primary_can_id, &msg) != 0, ERROR_GROUP_BMS_LV_CAN, 0, HAL_GetTick());
+    ERROR_TOGGLE_IF(can_mgr_send(bms_lv_primary_can_id, &msg) != 0, ERROR_GROUP_BMS_LV_CAN, 0);
 }

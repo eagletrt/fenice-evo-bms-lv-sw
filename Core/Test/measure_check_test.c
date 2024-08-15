@@ -30,7 +30,7 @@ void buzzer_beep_async(uint32_t buzzer_duration, buzzer_mode_t sound_mode) {
     printf("Buzzer beep async for %u\n", buzzer_duration);
 }
 
-uint8_t get_health_status(float i_bat, float i_chg, float bat_out, float relay_out, float lvms_out);
+uint8_t set_health_status(float i_bat, float i_chg, float bat_out, float relay_out, float lvms_out);
 int check_status(uint8_t current_status);
 
 float mux_fb_mV[mux_fb_n_values];
@@ -51,7 +51,7 @@ void test_status_update() {
     float relay_out = 3000.0f;
     float lvms_out  = 4000.0f;
 
-    uint8_t current_status = get_health_status(i_bat, i_chg, bat_out, relay_out, lvms_out);
+    uint8_t current_status = set_health_status(i_bat, i_chg, bat_out, relay_out, lvms_out);
     TEST_ASSERT_EQUAL_UINT8(0b111011, current_status);
 }
 
