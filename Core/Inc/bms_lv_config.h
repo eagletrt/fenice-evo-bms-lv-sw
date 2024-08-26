@@ -22,7 +22,7 @@
 #define LV_VOLTAGE_CHECKS_DISABLED_TIMEOUT_ms (5000U)
 #define MIN_CHARGER_CURRENT_THRESHOLD_mA      (2500.0f)
 #define MIN_BATTERY_CURRENT_THRESHOLD_mA      (50.0f)
-#define LVMS_THRESHOLD_mV                     (20000)
+#define LVMS_THRESHOLD_mV                     (15000)
 #define HEALTH_STATUS_CHECK_ENABLED           (0U)
 #define WAIT_BEFORE_CHECKING_LVMS_ms          (5000U)
 #define BMS_LV_IGNORE_HARDFAULT
