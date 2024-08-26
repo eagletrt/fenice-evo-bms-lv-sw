@@ -29,6 +29,9 @@ extern uint8_t can_messages_is_new[N_MONITORED_MESSAGES];
     ntw##_##msg_name##_conversion_to_raw_struct(&raw, &converted); \
     ntw##_##msg_name##_pack(msg.data, &raw, PRIMARY_##MSG_NAME##_BYTE_SIZE);
 
+#define BMS_LV_SEND_MSG() can_mgr_send(bms_lv_primary_can_id, &msg);
+// #define BMS_LV_SEND_MSG() ERROR_TOGGLE_IF(can_mgr_send(bms_lv_primary_can_id, &msg) != 0, ERROR_GROUP_BMS_LV_CAN, 0);
+
 #define FEEDBACK_SET_STATE(feedback) converted.feedback = mux_fb_mV[mux_fb_##feedback##_fb_idx] / 1000.0;
 
 void can_init_errors_handler(int can_mgr_error_code);

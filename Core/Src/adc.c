@@ -67,9 +67,8 @@ void adc_routine_start(void) {
         dc_fb_mV[idx] = FLOAT_UNINITIALIZED_VALUE;
 
     set_mux_addr();
-    if (HAL_ADC_Start_DMA(&hadc2, (uint32_t *)adc2_raw, adc2_ch_n_values) != HAL_OK) {
-        error_simple_set(ERROR_GROUP_BMS_LV_ADC, 0);
-    };
+    HAL_StatusTypeDef result = HAL_ADC_Start_DMA(&hadc2, (uint32_t *)adc2_raw, adc2_ch_n_values);
+    ERROR_TOGGLE_IF(result != HAL_OK, ERROR_GROUP_BMS_LV_ADC, 0);
     // TODO: start vrefint calibration
 }
 

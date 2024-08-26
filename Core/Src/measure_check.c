@@ -113,11 +113,8 @@ void health_check(void) {
         error_simple_reset(ERROR_GROUP_BMS_LV_HEALTH, 0);
     }
 #else
-    if (lvms_out < LVMS_THRESHOLD_mV && get_current_time_ms() > WAIT_BEFORE_CHECKING_LVMS_ms) {
-        error_simple_set(ERROR_GROUP_BMS_LV_HEALTH, 0);
-    } else {
-        error_simple_reset(ERROR_GROUP_BMS_LV_HEALTH, 0);
-    }
+    bool is_lvms_off = lvms_out < LVMS_THRESHOLD_mV && get_current_time_ms() > WAIT_BEFORE_CHECKING_LVMS_ms;
+    ERROR_TOGGLE_IF(is_lvms_off, ERROR_GROUP_BMS_LV_HEALTH, 0);
 #endif
 }
 
@@ -130,12 +127,11 @@ void single_cells_voltages_checks(void) {
         /* TODO Undevoltage and overvoltage protection even while charging and voltage readings are incorrect */
     } else {
         for (size_t i = 0; i < CELL_COUNT; i++) {
-            if (voltages[i] < MIN_CELL_VOLTAGE_V) {
-                error_simple_set(ERROR_GROUP_BMS_LV_CELL_UNDERVOLTAGE, i);
-            }
-            if (voltages[i] > MAX_CELL_VOLTAGE_V) {
-                error_simple_set(ERROR_GROUP_BMS_LV_CELL_OVERVOLTAGE, i);
-            }
+            bool is_voltage_in_undervoltage = voltages[i] < MIN_CELL_VOLTAGE_V;
+            ERROR_TOGGLE_IF(is_voltage_in_undervoltage, ERROR_GROUP_BMS_LV_CELL_UNDERVOLTAGE, i);
+
+            bool is_voltage_in_overvoltage = voltages[i] > MAX_CELL_VOLTAGE_V;
+            ERROR_TOGGLE_IF(is_voltage_in_overvoltage, ERROR_GROUP_BMS_LV_CELL_OVERVOLTAGE, i);
             min_voltage = fmin(min_voltage, voltages[i]);
         }
 
@@ -143,15 +139,6 @@ void single_cells_voltages_checks(void) {
         if ((min_voltage < WARNING_VOLTAGE_V) && ((get_current_time_ms() - last_undervoltage_warning) > BUZZER_WARNING_INTERVAL)) {
             last_undervoltage_warning = get_current_time_ms();
             buzzer_beep_async(WARNING_BUZZ_DURATION_ms, BUZZER_MODE_WARNING);
-        }
-
-        for (size_t i = 0; i < CELL_COUNT; i++) {
-            if (voltages[i] >= MIN_CELL_VOLTAGE_V) {
-                error_simple_reset(ERROR_GROUP_BMS_LV_CELL_UNDERVOLTAGE, i);
-            }
-            if (voltages[i] <= MAX_CELL_VOLTAGE_V) {
-                error_simple_reset(ERROR_GROUP_BMS_LV_CELL_OVERVOLTAGE, i);
-            }
         }
     }
 }

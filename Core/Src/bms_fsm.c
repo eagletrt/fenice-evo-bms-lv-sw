@@ -211,7 +211,7 @@ state_t do_error(state_data_t *data) {
     // rfe/frg OFF
     set_rfe_frg(0);
     primary_lv_errors_send();
-    blocking_delay_ms(1000);
+    blocking_delay_ms(2000);
     /* Your Code Here */
     // TODO: error code check, [send it via can/write to flash], shutdown
     set_relay(0);

@@ -75,8 +75,9 @@ void monitor_routine(void) {
    * TODO: check correct timings and set appropriate errors
    * TODO: every instance should be for one different error
    */
-    ERROR_TOGGLE_IF(monitor_update_voltages() != MONITOR_OK, ERROR_GROUP_BMS_LV_SPI, 0);
-    ERROR_TOGGLE_IF(monitor_update_temperatures() != MONITOR_OK, ERROR_GROUP_BMS_LV_SPI, 0);
+    int volt_ok = monitor_update_voltages();
+    int temp_ok = monitor_update_temperatures();
+    ERROR_TOGGLE_IF(volt_ok && temp_ok, ERROR_GROUP_BMS_LV_SPI, 0);
 }
 
 /**

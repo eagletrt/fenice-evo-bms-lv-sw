@@ -24,7 +24,8 @@
 #define MIN_BATTERY_CURRENT_THRESHOLD_mA      (50.0f)
 #define LVMS_THRESHOLD_mV                     (20000)
 #define HEALTH_STATUS_CHECK_ENABLED           (0U)
-#define WAIT_BEFORE_CHECKING_LVMS_ms          (2000U)
+#define WAIT_BEFORE_CHECKING_LVMS_ms          (5000U)
+#define BMS_LV_IGNORE_HARDFAULT
 
 #define COOLING_TYPE_POLYNOMIAL (0u)
 #define COOLING_TYPE_PID        (1u)
