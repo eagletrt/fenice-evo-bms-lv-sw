@@ -13,6 +13,11 @@ primary_lv_pumps_speed_status pump_status;
 void dac_pump_init() {
     pump_duty_cycle = 0.0;
     pump_status     = primary_lv_pumps_speed_status_off;
+
+    HAL_DAC_Start(&hdac, DAC_CHANNEL_1);
+    HAL_DAC_Start(&hdac, DAC_CHANNEL_2);
+    HAL_DAC_SetValue(&hdac, DAC_CHANNEL_1, DAC_ALIGN_12B_R, 0U);
+    HAL_DAC_SetValue(&hdac, DAC_CHANNEL_2, DAC_ALIGN_12B_R, 0U);
 }
 
 void dac_pump_set_duty_cycle(float duty_cycle) {
@@ -23,10 +28,8 @@ void dac_pump_set_duty_cycle(float duty_cycle) {
     }
     analog_volt = (uint32_t)((voltage * MAX_DAC_OUT) / (MAX_OPAMP_OUT));
 
-    HAL_DAC_Start(&PUMP_DAC, PUMP_L_CHNL);
-    HAL_DAC_Start(&PUMP_DAC, PUMP_R_CHNL);
     HAL_DAC_SetValue(&PUMP_DAC, PUMP_L_CHNL, DAC_ALIGN_12B_R, analog_volt);
-    HAL_DAC_SetValue(&PUMP_DAC, PUMP_L_CHNL, DAC_ALIGN_12B_R, analog_volt);
+    HAL_DAC_SetValue(&PUMP_DAC, PUMP_R_CHNL, DAC_ALIGN_12B_R, analog_volt);
 
     pump_duty_cycle = duty_cycle;
 }
