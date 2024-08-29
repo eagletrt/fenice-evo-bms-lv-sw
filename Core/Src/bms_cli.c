@@ -28,6 +28,7 @@ void serial_tx(char *message, size_t size) {
 }
 
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
+    // __builtin_trap();
     if (ucli_receive_data((char)serial_rx_buffer) != UCLI_RETURN_CODE_OK) {
         return;
     }

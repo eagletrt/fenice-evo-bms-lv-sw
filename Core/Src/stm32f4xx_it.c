@@ -95,6 +95,39 @@ void NMI_Handler(void) {
   */
 void HardFault_Handler(void) {
     /* USER CODE BEGIN HardFault_IRQn 0 */
+  HAL_UART_Transmit(&huart1, (uint8_t*)"hard fault\n\r", 12, 10);
+      __asm__ (
+    "mrs r3, xpsr\n\t"
+  );
+  __asm__ (
+    "mrs r2, psp\n\t"
+  );
+  __asm__ (
+    "mrs r1, msp\n\t"
+  );
+  // __asm__ (
+  //   "ldr sp, =0x2001BF00\n\t"
+  // );
+  __asm__ (
+    "push.w {r1-r11,lr}\n\t"
+  );
+  __asm__ (
+    "mov r0, sp\n\t"
+  );
+  __asm__ (
+    "bl CrashCatcher_Entry\n\t"
+  );
+  // __asm__ (
+  //   // "bl CrashCatcher_DumpStart\n\t"
+  //   "pop.w {r1-r11,lr}\n\t"
+  // );
+  // __asm__ (
+  //   "mov sp, r1\n\t"
+  // );
+  // __asm__ (
+  //   "bx lr\n\t"
+  // );
+  // HAL_UART_Transmit(&huart1, (const uint8_t*)"fault handler exit\n\r", 20, 10);
 #ifdef BMS_LV_SHUTDOWN_IF_HARDFAULT
     set_discharge(0);
     set_rfe_frg(0);

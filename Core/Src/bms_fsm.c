@@ -22,6 +22,7 @@ The finite state machine has:
 #include "primary_network.h"
 #ifdef USE_BMS_LV_CLI
 #include "ucli.h"
+#include "CrashCatcher.h"
 #endif
 
 #include <stdint.h>
@@ -358,6 +359,7 @@ void init_to_idle(state_data_t *data) { /* Your Code Here */
     buzzer_beep_async(500, BUZZER_MODE_NORMAL);
     set_relay(1);
     set_led(1, 0, 0);
+    crash_report_init();
 }
 
 // This function is called in 4 transitions:

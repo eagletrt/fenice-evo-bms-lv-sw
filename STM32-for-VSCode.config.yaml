@@ -79,7 +79,7 @@ sourceFiles:
   - Core/Src/**
   - Core/Lib/can/**/*_network.c
   - Core/Lib/can/**/*_watchdog.c
-  # - Core/Lib/micro-libs/ucli/src/*.c
+  - Core/Lib/micro-libs/ucli/src/*.c
   - Core/Lib/micro-libs/can-manager/src/*.c
   - Core/Lib/micro-libs/generic-queue/*.c
   - Core/Lib/micro-libs/bms-monitor/src/*.c

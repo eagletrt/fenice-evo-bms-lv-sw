@@ -25,8 +25,8 @@
 #define LVMS_THRESHOLD_mV                     (15000)
 #define HEALTH_STATUS_CHECK_ENABLED           (0U)
 #define WAIT_BEFORE_CHECKING_LVMS_ms          (5000U)
-// #define BMS_LV_SHUTDOWN_IF_HARDFAULT
-// #define USE_BMS_LV_CLI
+#define BMS_LV_SHUTDOWN_IF_HARDFAULT
+#define USE_BMS_LV_CLI
 
 #define COOLING_TYPE_POLYNOMIAL (0u)
 #define COOLING_TYPE_PID        (1u)

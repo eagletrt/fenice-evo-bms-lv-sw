@@ -46,7 +46,15 @@ extern "C" {
 
 /* Exported macro ------------------------------------------------------------*/
 /* USER CODE BEGIN EM */
-
+#define CRASH_DEBUG_FLASH_BEGIN_ADDR (void*)0x08060000
+#define CRASH_DEBUG_RAM_START_ADDR (void*)0x20000000
+#define CRASH_DEBUG_RAM_LENGTH_KB 125
+#define CRASH_DEBUG_FLAGS_ADDR CRASH_DEBUG_FLASH_BEGIN_ADDR + 0
+#define CRASH_DEBUG_FAULT_HAPPENED_MASK (uint8_t)1<<7
+#define CRASH_DEBUG_FAULT_SAVED_MASK (uint8_t)1<<6
+#define CRASH_DEBUG_FAULT_SENT_MASK (uint8_t)1<<5
+#define CRASH_DEBUG_STATE_DUMP_END_POINTER_ADDR CRASH_DEBUG_FLASH_BEGIN_ADDR + 4
+#define CRASH_DEBUG_STATE_DUMP_ADDR CRASH_DEBUG_FLASH_BEGIN_ADDR + 8
 /* USER CODE END EM */
 
 /* Exported functions prototypes ---------------------------------------------*/

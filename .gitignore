@@ -11,3 +11,5 @@
 
 **/.vscode/*
 !**/.vscode/extensions.json
+
+STM32Make.make
