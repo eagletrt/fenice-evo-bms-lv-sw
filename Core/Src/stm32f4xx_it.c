@@ -95,7 +95,7 @@ void NMI_Handler(void) {
   */
 void HardFault_Handler(void) {
     /* USER CODE BEGIN HardFault_IRQn 0 */
-#ifndef BMS_LV_IGNORE_HARDFAULT
+#ifdef BMS_LV_SHUTDOWN_IF_HARDFAULT
     set_discharge(0);
     set_rfe_frg(0);
     set_relay(0);

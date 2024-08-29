@@ -15,6 +15,10 @@ void set_cooling_control(cooling_control_t cc) {
     current_cooling_control = cc;
 }
 
+cooling_control_t get_cooling_control(void) {
+    return current_cooling_control;
+}
+
 float from_temperature_to_pumps_percentage(float temp) {
     if (temp < COOLING_OFF_THRESHOLD) {
         return 0.0f;

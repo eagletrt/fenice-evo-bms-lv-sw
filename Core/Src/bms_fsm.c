@@ -20,7 +20,9 @@ The finite state machine has:
 #include "cooling_control.h"
 #include "error_simple.h"
 #include "primary_network.h"
+#ifdef USE_BMS_LV_CLI
 #include "ucli.h"
+#endif
 
 #include <stdint.h>
 
@@ -62,7 +64,9 @@ void bms_lv_routine() {
     can_routine();
     gpio_extender_routine();
     monitor_routine();
+#ifdef USE_BMS_LV_CLI
     ucli_routine();
+#endif
 }
 
 uint8_t inverter_state = 0;
@@ -140,7 +144,9 @@ state_t do_init(state_data_t *data) {
     can_start();
 
     monitor_routine();
+#ifdef USE_BMS_LV_CLI
     bms_cli_init();
+#endif
 
     uint32_t prevtime = get_current_time_ms();
     while ((get_current_time_ms() - prevtime) < 500) {

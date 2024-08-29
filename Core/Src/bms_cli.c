@@ -1,5 +1,7 @@
 #include "bms_cli.h"
 
+#ifdef USE_BMS_LV_CLI
+
 uint32_t bms_cli_primask = 0;
 
 void cs_enter(void) {
@@ -253,3 +255,5 @@ int bms_cli_init(void) {
     serial_rx();
     return 0;
 }
+
+#endif  // USE_BMS_LV_CLI

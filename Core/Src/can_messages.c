@@ -23,7 +23,7 @@ primary_ecu_status_converted_t ecu_status;
 int primary_lv_set_radiator_speed_handler(can_mgr_msg_t *msg);
 int primary_lv_set_pumps_speed_handler(can_mgr_msg_t *msg);
 int primary_hv_status_handler(can_mgr_msg_t *msg);
-int primary_lv_cooling_aggressiveness_handler(can_mgr_msg_t *msg);
+int primary_lv_set_cooling_aggressiveness_handler(can_mgr_msg_t *msg);
 int inverters_inv_l_rcv_handler(can_mgr_msg_t *msg);
 int inverters_inv_r_rcv_handler(can_mgr_msg_t *msg);
 int primary_flash_request_handler(can_mgr_msg_t *msg);
@@ -48,6 +48,7 @@ void primary_lv_feedback_send(void);
 void primary_lv_charging_status_send(void);
 void primary_lv_cells_voltage_stats_send(void);
 void primary_lv_cells_temp_stats_send(void);
+void primary_lv_cooling_aggressiveness_send(void);
 
 int (*primary_message_handlers[N_MONITORED_MESSAGES])(can_mgr_msg_t *) = CAN_MESSAGES_HANDLERS;
 
@@ -75,6 +76,8 @@ int can_mgr_from_id_to_index(int can_id, int msg_id) {
             return BMS_LV_PRIMARY_LV_CAN_FLASH_REQ_TLM;
         case PRIMARY_ECU_STATUS_FRAME_ID:
             return BMS_LV_PRIMARY_ECU_STATUS;
+        case PRIMARY_LV_SET_COOLING_AGGRESSIVENESS_FRAME_ID:
+            return BMS_LV_PRIMARY_SET_COOLING_AGGRESSIVENESS;
         default:
             return -1;
     }
@@ -119,6 +122,7 @@ void can_send_messages() {
     CHECK_AND_UPDATE_TIME_ELAPSED_AND_SEND_MSG(LV_CELLS_VOLTAGE_STATS, primary_lv_cells_voltage_stats_send)
     CHECK_AND_UPDATE_TIME_ELAPSED_AND_SEND_MSG(LV_CELLS_TEMP_STATS, primary_lv_cells_temp_stats_send)
     CHECK_AND_UPDATE_TIME_ELAPSED_AND_SEND_MSG(LV_VERSION, primary_lv_version_send)
+    CHECK_AND_UPDATE_TIME_ELAPSED_AND_SEND_MSG(LV_COOLING_AGGRESSIVENESS, primary_lv_cooling_aggressiveness_send)
 }
 
 int can_routine(void) {
@@ -174,20 +178,22 @@ int primary_hv_status_handler(can_mgr_msg_t *msg) {
     return 0;
 }
 
-int primary_lv_cooling_aggressiveness_handler(can_mgr_msg_t *msg) {
-    primary_lv_cooling_aggressiveness_t lv_cooling_aggressiveness_raw;
-    primary_lv_cooling_aggressiveness_converted_t lv_cooling_aggressiveness_converted;
-    primary_lv_cooling_aggressiveness_unpack(&lv_cooling_aggressiveness_raw, msg->data, PRIMARY_LV_COOLING_AGGRESSIVENESS_BYTE_SIZE);
-    primary_lv_cooling_aggressiveness_raw_to_conversion_struct(&lv_cooling_aggressiveness_converted, &lv_cooling_aggressiveness_raw);
+int primary_lv_set_cooling_aggressiveness_handler(can_mgr_msg_t *msg) {
+    primary_lv_set_cooling_aggressiveness_t lv_set_cooling_aggressiveness_raw;
+    primary_lv_set_cooling_aggressiveness_converted_t lv_set_cooling_aggressiveness_converted;
+    primary_lv_set_cooling_aggressiveness_unpack(
+        &lv_set_cooling_aggressiveness_raw, msg->data, PRIMARY_LV_COOLING_AGGRESSIVENESS_BYTE_SIZE);
+    primary_lv_set_cooling_aggressiveness_raw_to_conversion_struct(
+        &lv_set_cooling_aggressiveness_converted, &lv_set_cooling_aggressiveness_raw);
 
-    switch (lv_cooling_aggressiveness_converted.status) {
-        case primary_lv_cooling_aggressiveness_status_weak: {
+    switch (lv_set_cooling_aggressiveness_converted.status) {
+        case primary_lv_set_cooling_aggressiveness_status_weak: {
             set_cooling_control(cooling_control_weak);
         }
-        case primary_lv_cooling_aggressiveness_status_normal: {
+        case primary_lv_set_cooling_aggressiveness_status_normal: {
             set_cooling_control(cooling_control_normal);
         }
-        case primary_lv_cooling_aggressiveness_status_aggressive: {
+        case primary_lv_set_cooling_aggressiveness_status_aggressive: {
             set_cooling_control(cooling_control_aggressive);
         }
     }
@@ -377,6 +383,15 @@ void primary_lv_errors_send(void) {
     converted.health_signals_lvms_out             = health_status % 2;
 
     CANLIB_PACK_MSG(primary, PRIMARY, lv_errors, LV_ERRORS);
+
+    BMS_LV_SEND_MSG();
+}
+
+void primary_lv_cooling_aggressiveness_send(void) {
+    primary_lv_cooling_aggressiveness_converted_t converted;
+
+    converted.status = get_cooling_control();
+    CANLIB_PACK_MSG(primary, PRIMARY, lv_cooling_aggressiveness, LV_COOLING_AGGRESSIVENESS);
 
     BMS_LV_SEND_MSG();
 }

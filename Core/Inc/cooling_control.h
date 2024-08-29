@@ -10,6 +10,7 @@
 typedef enum { cooling_control_weak = 0, cooling_control_normal, cooling_control_aggressive } cooling_control_t;
 
 void set_cooling_control(cooling_control_t cc);
+cooling_control_t get_cooling_control(void);
 
 #elif COOLING_TYPE == COOLING_TYPE_PID
 

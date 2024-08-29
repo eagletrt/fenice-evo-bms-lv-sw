@@ -17,7 +17,7 @@
      primary_flash_request_handler,         \
      primary_flash_request_handler,         \
      primary_ecu_status_handler,            \
-     primary_lv_cooling_aggressiveness_handler}
+     primary_lv_set_cooling_aggressiveness_handler}
 
 #define LV_VOLTAGE_CHECKS_DISABLED_TIMEOUT_ms (5000U)
 #define MIN_CHARGER_CURRENT_THRESHOLD_mA      (2500.0f)
@@ -25,7 +25,8 @@
 #define LVMS_THRESHOLD_mV                     (15000)
 #define HEALTH_STATUS_CHECK_ENABLED           (0U)
 #define WAIT_BEFORE_CHECKING_LVMS_ms          (5000U)
-#define BMS_LV_IGNORE_HARDFAULT
+// #define BMS_LV_SHUTDOWN_IF_HARDFAULT
+// #define USE_BMS_LV_CLI
 
 #define COOLING_TYPE_POLYNOMIAL (0u)
 #define COOLING_TYPE_PID        (1u)
@@ -182,7 +183,7 @@ enum {
     BMS_LV_PRIMARY_LV_CAN_FLASH_REQ_STEERING_WHEEL,
     BMS_LV_PRIMARY_LV_CAN_FLASH_REQ_TLM,
     BMS_LV_PRIMARY_ECU_STATUS,
-    BMS_LV_PRIMARY_COOLING_AGGRESSIVENESS,
+    BMS_LV_PRIMARY_SET_COOLING_AGGRESSIVENESS,
     N_MONITORED_MESSAGES
 };
 
@@ -206,6 +207,7 @@ enum {
     LV_MSG_LV_CELLS_VOLTAGE_STATS_MSG_IDX,
     LV_MSG_LV_CELLS_TEMP_STATS_MSG_IDX,
     LV_MSG_LV_VERSION_MSG_IDX,
+    LV_MSG_LV_COOLING_AGGRESSIVENESS_MSG_IDX,
     LV_MSG_N_MSG_TO_SEND
 };
 
