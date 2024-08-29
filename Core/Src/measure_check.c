@@ -99,7 +99,7 @@ void health_check(void) {
     lvms_out  = (int)dc_fb_mV[fb_lvms_out_idx];
 
     disable_voltage_checks = disable_undervoltage_and_overvoltage_checks(i_chg);
-    send_primary_debug_4_signals((float)disable_voltage_checks, dc_fb_mV[fb_lvms_out_idx] / 30000.0f, 0.0f);
+    // send_primary_debug_4_signals((float)disable_voltage_checks, dc_fb_mV[fb_lvms_out_idx] / 30000.0f, 0.0f);
 
     health_status = set_health_status(i_bat, i_chg, bat_out, relay_out, lvms_out);
 
