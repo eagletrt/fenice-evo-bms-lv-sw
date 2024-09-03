@@ -131,6 +131,7 @@ state_t do_init(state_data_t *data) {
     // cooling OFF
     radiator_init();
     dac_pump_init();
+    extra_pork_fan_always_on();
     // discharge ON
     set_discharge(0);
     // rfe/frg OFF
@@ -319,7 +320,8 @@ state_t do_run(state_data_t *data) {
     }
 
     // until car_status == run
-    if (!(ecu_status.status == primary_ecu_status_status_drive || ecu_status.status == primary_ecu_status_status_enable_inv_drive) ||
+    if (!(ecu_status.status == primary_ecu_status_status_drive || ecu_status.status == primary_ecu_status_status_enable_inv_drive ||
+          ecu_status.status == primary_ecu_status_status_re_enable_inverter_drive) ||
         hv_status.status != primary_hv_status_status_ts_on) {
         next_state = STATE_IDLE;
     } else if (get_expired_errors()) {

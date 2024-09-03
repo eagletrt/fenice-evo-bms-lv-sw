@@ -94,7 +94,7 @@ int can_start(void) {
 #define CYCLE_TIME_ELAPSED(MSG_NAME) \
     ((HAL_GetTick() - last_time_msg_sent_timestamp[LV_MSG_##MSG_NAME##_MSG_IDX]) > PRIMARY_##MSG_NAME##_CYCLE_TIME_MS)
 
-#define UPDATE_LAST_TIMESTAMP_SENT(MSG_NAME) (last_time_msg_sent_timestamp[LV_MSG_##MSG_NAME##_MSG_IDX] = HAL_GetTick())
+#define UPDATE_LAST_TIMESTAMP_SENT(MSG_NAME) last_time_msg_sent_timestamp[LV_MSG_##MSG_NAME##_MSG_IDX] = HAL_GetTick()
 
 #define CHECK_AND_UPDATE_TIME_ELAPSED_AND_SEND_MSG(MSG_NAME, send_function) \
     if (CYCLE_TIME_ELAPSED(MSG_NAME)) {                                     \
@@ -189,12 +189,15 @@ int primary_lv_set_cooling_aggressiveness_handler(can_mgr_msg_t *msg) {
     switch (lv_set_cooling_aggressiveness_converted.status) {
         case primary_lv_set_cooling_aggressiveness_status_weak: {
             set_cooling_control(cooling_control_weak);
+            break;
         }
         case primary_lv_set_cooling_aggressiveness_status_normal: {
             set_cooling_control(cooling_control_normal);
+            break;
         }
         case primary_lv_set_cooling_aggressiveness_status_aggressive: {
             set_cooling_control(cooling_control_aggressive);
+            break;
         }
     }
     return 0;

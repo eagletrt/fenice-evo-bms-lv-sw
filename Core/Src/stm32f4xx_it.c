@@ -96,9 +96,11 @@ void NMI_Handler(void) {
 void HardFault_Handler(void) {
     /* USER CODE BEGIN HardFault_IRQn 0 */
 #ifdef BMS_LV_SHUTDOWN_IF_HARDFAULT
-    set_discharge(0);
-    set_rfe_frg(0);
-    set_relay(0);
+    if (HAL_GetTick() < 5000) {
+        set_discharge(0);
+        set_rfe_frg(0);
+        set_relay(0);
+    }
 #endif
     /* USER CODE END HardFault_IRQn 0 */
     while (1) {

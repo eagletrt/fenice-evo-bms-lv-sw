@@ -12,6 +12,8 @@
 #define MIN_OPAMP_OUT     2.0
 
 void dac_pump_init();
+void extra_pork_fan_always_on(void);
+
 void dac_pump_set_duty_cycle(float duty_cycle);
 float dac_pump_get_duty_cycle();
 void dac_pump_set_status(primary_lv_pumps_speed_status mode);

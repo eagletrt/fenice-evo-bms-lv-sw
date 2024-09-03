@@ -191,6 +191,11 @@ void SystemClock_Config(void) {
   */
 void Error_Handler(void) {
     /* USER CODE BEGIN Error_Handler_Debug */
+#ifdef BMS_LV_SHUTDOWN_IF_ERROR
+    set_discharge(0);
+    set_rfe_frg(0);
+    set_relay(0);
+#endif
     /* User can add his own implementation to report the HAL error return state */
     __disable_irq();
     while (1) {

@@ -2,7 +2,7 @@
 
 #if COOLING_TYPE == COOLING_TYPE_POLYNOMIAL
 
-cooling_control_t current_cooling_control = cooling_control_weak;
+cooling_control_t current_cooling_control = cooling_control_aggressive;
 
 static const float pumps_coefficients_weak[3]          = {0.06267081819754365f, -4.42371562013492f, 77.31101885486927f};
 static const float radiator_coefficients_weak[3]       = {0.06860264519838995f, -5.620327774583103f, 108.79025301897668f};

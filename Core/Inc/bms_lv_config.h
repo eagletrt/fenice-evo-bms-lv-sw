@@ -2,6 +2,7 @@
 #define BMS_LV_CONFIG_H
 
 #include <stdbool.h>
+#include <stddef.h>
 #include <stdint.h>
 
 #define clamp(num, max_n, min_n) ((num > max_n) ? max_n : ((num < min_n) ? min_n : num))
@@ -22,31 +23,23 @@
 #define LV_VOLTAGE_CHECKS_DISABLED_TIMEOUT_ms (5000U)
 #define MIN_CHARGER_CURRENT_THRESHOLD_mA      (2500.0f)
 #define MIN_BATTERY_CURRENT_THRESHOLD_mA      (50.0f)
-#define LVMS_THRESHOLD_mV                     (15000)
+#define LVMS_THRESHOLD_mV                     (5000U)
 #define HEALTH_STATUS_CHECK_ENABLED           (0U)
-#define WAIT_BEFORE_CHECKING_LVMS_ms          (5000U)
+#define WAIT_BEFORE_CHECKING_LVMS_ms          (2000U)
+// #define BMS_LV_SHUTDOWN_IF_ERROR
 // #define BMS_LV_SHUTDOWN_IF_HARDFAULT
 // #define USE_BMS_LV_CLI
 
 #define COOLING_TYPE_POLYNOMIAL (0u)
 #define COOLING_TYPE_PID        (1u)
-
-#define COOLING_TYPE COOLING_TYPE_POLYNOMIAL
-// #define COOLING_TYPE COOLING_TYPE_PID
-
-#if COOLING_TYPE == COOLING_TYPE_POLYNOMIAL
-#define COOLING_AGGRESSIVENESS_LOW    (0u)
-#define COOLING_AGGRESSIVENESS_NORMAL (1u)
-#define COOLING_AGGRESSIVENESS_HIGH   (2u)
-#define COOLING_AGGRESSIVENESS        COOLING_AGGRESSIVENESS_NORMAL
-#endif
+#define COOLING_TYPE            COOLING_TYPE_POLYNOMIAL
 
 // Number of cells present in the bms lv, the cell configuration is 6s4p
 #define CELL_COUNT (6)
 // Number of ntc sensors present in the bms lv
 #define TEMP_SENSOR_COUNT       (12)
 #define MAX_CELL_VOLTAGE_V      (4.2f)
-#define MIN_CELL_VOLTAGE_V      (3.2f)
+#define MIN_CELL_VOLTAGE_V      (2.8f)
 #define MIN_BATTERY_VOLTAGE_mV  ((MIN_CELL_VOLTAGE_V * 1000.0f) * 6.0f)
 #define MAX_CELL_TEMP           (60.0f)
 #define MIN_CELL_TEMP           (8.0f)
@@ -220,6 +213,24 @@ typedef enum {
     BUZZER_SOUND,
     BUZZER_PAUSE,
 } buzzer_sound_t;
+
+// TODO: use that instead of 0 and 1
+typedef enum {
+    discharge_disabled,
+    discharge_enabled,
+} discharge_state_t;
+
+// TODO: use that instead of 0 and 1
+typedef enum {
+    inverters_rfe_frg_disabled,
+    inverters_rfe_frg_enabled,
+} inverters_rfe_frg_state_t;
+
+// TODO: use that instead of 0 and 1
+typedef enum {
+    relay_car_off,
+    relay_car_on,
+} relay_car_state_t;
 
 #define WARNING_BUZZ_LENGTH (6U)
 

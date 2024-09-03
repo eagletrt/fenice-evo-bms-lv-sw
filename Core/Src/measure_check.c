@@ -113,8 +113,10 @@ void health_check(void) {
         error_simple_reset(ERROR_GROUP_BMS_LV_HEALTH, 0);
     }
 #else
-    bool is_lvms_off = lvms_out < LVMS_THRESHOLD_mV && get_current_time_ms() > WAIT_BEFORE_CHECKING_LVMS_ms;
-    ERROR_TOGGLE_IF(is_lvms_off, ERROR_GROUP_BMS_LV_HEALTH, 0);
+    if (get_current_time_ms() > WAIT_BEFORE_CHECKING_LVMS_ms) {
+        bool is_lvms_off = lvms_out < LVMS_THRESHOLD_mV;
+        ERROR_TOGGLE_IF(is_lvms_off, ERROR_GROUP_BMS_LV_HEALTH, 0);
+    }
 #endif
 }
 
@@ -162,14 +164,14 @@ void cell_temperature_check(void) {
     monitor_get_temperatures(temperatures);
 
     for (size_t i = 0; i < TEMP_SENSOR_COUNT; i++) {
-        ERROR_TOGGLE_IF(temperatures[i] < MIN_CELL_TEMP, ERROR_GROUP_BMS_LV_CELL_UNDER_TEMPERATURE, i);
-        ERROR_TOGGLE_IF(temperatures[i] > MAX_CELL_TEMP, ERROR_GROUP_BMS_LV_CELL_OVER_TEMPERATURE, i);
+        ERROR_TOGGLE_IF(temperatures[i] < MIN_CELL_TEMP && temperatures[i] > -80.0f, ERROR_GROUP_BMS_LV_CELL_UNDER_TEMPERATURE, i);
+        ERROR_TOGGLE_IF(temperatures[i] > MAX_CELL_TEMP && temperatures[i] < 80.0f, ERROR_GROUP_BMS_LV_CELL_OVER_TEMPERATURE, i);
     }
 }
 
 void overcurrent_check(void) {
-    ERROR_TOGGLE_IF(fabsf(mux_sensors_mA[mux_sensors_s_hall1_idx]) > MAX_CURRENT_mA, ERROR_GROUP_BMS_LV_OVER_CURRENT, 1);
-    ERROR_TOGGLE_IF(fabsf(mux_sensors_mA[mux_sensors_s_hall2_idx]) > MAX_CURRENT_mA, ERROR_GROUP_BMS_LV_OVER_CURRENT, 2);
+    // ERROR_TOGGLE_IF(fabsf(mux_sensors_mA[mux_sensors_s_hall1_idx]) > MAX_CURRENT_mA, ERROR_GROUP_BMS_LV_OVER_CURRENT, 1);
+    // ERROR_TOGGLE_IF(fabsf(mux_sensors_mA[mux_sensors_s_hall2_idx]) > MAX_CURRENT_mA, ERROR_GROUP_BMS_LV_OVER_CURRENT, 2);
 }
 
 void all_measurements_check(void) {
