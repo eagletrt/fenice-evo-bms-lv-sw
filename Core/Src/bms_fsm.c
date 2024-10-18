@@ -187,7 +187,7 @@ state_t do_idle(state_data_t *data) {
         next_state = STATE_ERROR;
     }
 
-    if (hv_status.status == primary_hv_status_status_airn_close) {
+    if (hv_status.status == primary_hv_status_status_airn_check) {
         next_state = STATE_TSON;
     }
 
@@ -255,8 +255,8 @@ state_t do_tson(state_data_t *data) {
     if (ecu_status.status == primary_ecu_status_status_enable_inv_drive) {
         next_state = STATE_RUN;
     } else if (
-        hv_status.status != primary_hv_status_status_airn_close && hv_status.status != primary_hv_status_status_precharge &&
-        hv_status.status != primary_hv_status_status_airp_close && hv_status.status != primary_hv_status_status_ts_on) {
+        hv_status.status != primary_hv_status_status_airn_check && hv_status.status != primary_hv_status_status_precharge_check &&
+        hv_status.status != primary_hv_status_status_airp_check && hv_status.status != primary_hv_status_status_ts_on) {
         next_state = STATE_IDLE;
     } else if (get_expired_errors()) {
         next_state = STATE_ERROR;

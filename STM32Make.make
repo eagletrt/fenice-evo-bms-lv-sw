@@ -79,8 +79,6 @@ Core/Lib/can/lib/bms/bms_network.c \
 Core/Lib/can/lib/bms/bms_watchdog.c \
 Core/Lib/can/lib/inverters/inverters_network.c \
 Core/Lib/can/lib/inverters/inverters_watchdog.c \
-Core/Lib/can/lib/ivts/ivts_network.c \
-Core/Lib/can/lib/ivts/ivts_watchdog.c \
 Core/Lib/can/lib/primary/primary_network.c \
 Core/Lib/can/lib/primary/primary_watchdog.c \
 Core/Lib/can/lib/secondary/secondary_network.c \
@@ -231,13 +229,11 @@ C_INCLUDES =  \
 -ICore/Lib/can/lib \
 -ICore/Lib/can/lib/bms \
 -ICore/Lib/can/lib/inverters \
--ICore/Lib/can/lib/ivts \
 -ICore/Lib/can/lib/primary \
 -ICore/Lib/can/lib/secondary \
 -ICore/Lib/can/lib/simulator \
 -ICore/Lib/can/proto/bms \
 -ICore/Lib/can/proto/inverters \
--ICore/Lib/can/proto/ivts \
 -ICore/Lib/can/proto/primary \
 -ICore/Lib/can/proto/secondary \
 -ICore/Lib/can/proto/simulator \
