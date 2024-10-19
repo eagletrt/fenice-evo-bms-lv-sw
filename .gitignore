@@ -5,6 +5,7 @@
 *.map
 .mxproject
 *.out
+.stm32env
 
 **/build/
 **/Backup/*
