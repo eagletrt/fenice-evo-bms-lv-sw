@@ -241,13 +241,11 @@ C_INCLUDES =  \
 -ICore/Lib/invlib/can/lib \
 -ICore/Lib/invlib/can/lib/bms \
 -ICore/Lib/invlib/can/lib/inverters \
--ICore/Lib/invlib/can/lib/ivts \
 -ICore/Lib/invlib/can/lib/primary \
 -ICore/Lib/invlib/can/lib/secondary \
 -ICore/Lib/invlib/can/lib/simulator \
 -ICore/Lib/invlib/can/proto/bms \
 -ICore/Lib/invlib/can/proto/inverters \
--ICore/Lib/invlib/can/proto/ivts \
 -ICore/Lib/invlib/can/proto/primary \
 -ICore/Lib/invlib/can/proto/secondary \
 -ICore/Lib/invlib/can/proto/simulator \
@@ -293,6 +291,7 @@ C_INCLUDES =  \
 -ICore/Lib/micro-libs/can-manager/inc \
 -ICore/Lib/micro-libs/cli-legacy \
 -ICore/Lib/micro-libs/eeprom-config \
+-ICore/Lib/micro-libs/errorlib/inc \
 -ICore/Lib/micro-libs/generic-queue \
 -ICore/Lib/micro-libs/invlib \
 -ICore/Lib/micro-libs/llist-legacy \
@@ -302,7 +301,6 @@ C_INCLUDES =  \
 -ICore/Lib/micro-libs/m95256 \
 -ICore/Lib/micro-libs/mcp23017/inc \
 -ICore/Lib/micro-libs/min-heap/inc \
--ICore/Lib/micro-libs/munit \
 -ICore/Lib/micro-libs/pid \
 -ICore/Lib/micro-libs/priority-queue \
 -ICore/Lib/micro-libs/priority-queue/test \

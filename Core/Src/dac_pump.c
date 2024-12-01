@@ -28,6 +28,7 @@ void dac_pump_set_duty_cycle(float duty_cycle) {
     }
     analog_volt = (uint32_t)((voltage * MAX_DAC_OUT) / (MAX_OPAMP_OUT));
 
+    HAL_DAC_SetValue(&PUMP_DAC, PUMP_L_CHNL, DAC_ALIGN_12B_R, analog_volt);
     HAL_DAC_SetValue(&PUMP_DAC, PUMP_R_CHNL, DAC_ALIGN_12B_R, analog_volt);
 
     pump_duty_cycle = duty_cycle;
@@ -54,12 +55,4 @@ void dac_pump_auto_mode(float temp) {
     local_pumps_duty_cycle       = fminf(local_pumps_duty_cycle, 1.0f);
     local_pumps_duty_cycle       = fmaxf(local_pumps_duty_cycle, 0.0f);
     dac_pump_set_duty_cycle(local_pumps_duty_cycle);
-}
-
-void extra_pork_fan_always_on(void) {
-    float voltage        = 0.0;
-    uint32_t analog_volt = 0.0;
-    voltage = 1.0f * (MAX_OPAMP_OUT - MIN_OPAMP_OUT) + MIN_OPAMP_OUT;
-    analog_volt = (uint32_t)((voltage * MAX_DAC_OUT) / (MAX_OPAMP_OUT));
-    HAL_DAC_SetValue(&PUMP_DAC, PUMP_L_CHNL, DAC_ALIGN_12B_R, analog_volt);
 }

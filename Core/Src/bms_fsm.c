@@ -131,7 +131,6 @@ state_t do_init(state_data_t *data) {
     // cooling OFF
     radiator_init();
     dac_pump_init();
-    extra_pork_fan_always_on();
     // discharge ON
     set_discharge(0);
     // rfe/frg OFF
